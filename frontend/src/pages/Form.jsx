@@ -3,14 +3,13 @@
 export default function Form() {
     return (
         <>
-            <main>
+            <main className="w-full flex justify-center items-center flex-col">
                 <div>
                     <h1>Controle de Hora Extra</h1>
                     <p></p>
                 </div>
                 <form
-                    style={{ all: 'unset' }}
-                    className="flex flex-col w-max items-center self-center rounded-3xl p-14 bg-black shadow-2xl gap-36"
+                    className="flex flex-col w-max items-center self-center rounded-3xl p-3 shadow-2xl gap-36"
                 >
                     <section className="flex w-max items-center flex-col rounded-3xl bg-gray-500 shadow-2xl">
                         <h2>Responsável pela solicitação</h2>
