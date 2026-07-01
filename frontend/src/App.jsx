@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import NotFound from './pages/NotFound.jsx'
-import Form from './pages/Form.jsx'
+import Form from './pages/Form/Form.jsx'
 import { useState } from 'react'
 import HomeIcon from '../img/home.svg?react'
 import FormIcon from '../img/form.svg?react'
@@ -32,7 +32,7 @@ export default function App() {
         {hamburguer && (
           <div className='absolute top-full left-0 flex-col justify-center items-center w-5/12 bg-white rounded-b-lg gap-5 overflow-hidden shadow-xl'>
             {btnMenu.map((btn) => (
-              <button className='flex items-center gap-2 bg-white w-full border-b-1 p-2 text-gray-500 border-gray-200 transition hover:bg-gray-100 active:bg-gray-100'>
+              <button key={btn.path} className='flex items-center gap-2 bg-white w-full border-b-1 p-2 text-gray-500 border-gray-200 transition hover:bg-gray-100 active:bg-blue-100 active:text-blue-500'>
                 {btn.icon}{btn.name}
               </button>
             ))}
