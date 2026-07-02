@@ -3,16 +3,18 @@ import SearchIcon from '../../img/search.svg?react'
 import ClearIcon from '../../img/clear.svg?react'
 
 export default function Search({
+    value = '',
     opcoes,
     placeholder = "Pesquisar...",
     onSelect,
+    onChange,
     containerStyle = "relative w-full",
-    inputStyle = "bg-[#f2f8ff] w-[100%] text-gray-600 py-3 pl-10 px-8 rounded-xl focus:ring-2 focus:ring-gray-100 outline-0 text-ellipsis placeholder:text-[#d6e4ff]",
+    inputStyle = "bg-gray-100 w-[100%] text-gray-600 py-3 pl-10 px-8 rounded-xl focus:ring-2 focus:ring-gray-100 outline-0 text-ellipsis placeholder:text-gray-400",
     listStyle = "absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg",
     itemStyle = "cursor-pointer px-4 py-2 hover:bg-gray-100 text-gray-700 active:bg-blue-100 active:text-blue-500",
     clearButtonStyle = "absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700",
     noResultStyle = "px-4 py-2 text-gray-500",
-    searchIconStyle = "absolute left-2 pr-1 top-1/2 -translate-y-1/2 border-r-2 text-blue-300 border-blue-300"
+    searchIconStyle = "absolute left-2 pr-1 top-1/2 -translate-y-1/2 border-r-2 text-gray-600 border-gray-600"
 }) {
     const [texto, setTexto] = useState("");
     const [aberto, setAberto] = useState(false);
@@ -45,7 +47,7 @@ export default function Search({
         <div className={containerStyle} ref={containerRef}>
             <input
                 type="text"
-                value={texto}
+                value={!texto ? value : texto}
                 placeholder={placeholder}
                 onChange={(e) => setTexto(e.target.value)}
                 onFocus={() => setAberto(true)}
@@ -70,6 +72,7 @@ export default function Search({
                                     setTexto(item.name);
                                     setAberto(false);
                                     onSelect?.(item);
+                                    onChange?.(item);
                                 }}
                                 className={itemStyle}
                             >
