@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast, { Toaster } from 'react-hot-toast';
-import { pdf } from "@react-pdf/renderer";
-import { PDFViewer } from "@react-pdf/renderer";
+import { pdf, PDFViewer } from "@react-pdf/renderer";
 import DocumentPDF from "../../PDF/DocumentPDF.jsx";
 import Search from '../../components/Search.jsx'
 import HomeIcon from '../../../img/home.svg?react'
@@ -41,14 +40,17 @@ export default function Form() {
     const [forms, setForms] = useState([novoForm(1)]);
     const [currentFormIndex, setCurrentFormIndex] = useState(0);
     const [nextId, setNextId] = useState(2);
-    const [funcionarioParaAdicionar, setFuncionarioParaAdicionar] = useState(null);
-    const [searchKey, setSearchKey] = useState(0);
+
+    const [funcionarioSelecionado, setFuncionarioSelecionado] = useState(null);
+    const [maquinaSelecionada, setMaquinaSelecionada] = useState(null);
+    const [funcionarioTexto, setFuncionarioTexto] = useState('');
+    const [maquinaTexto, setMaquinaTexto] = useState('');
+
     const currentForm = forms[currentFormIndex];
 
     const departamentoId = Departamentos.find((d) => d.name === currentForm.departamento)?.id;
 
     const opcoesMaquinas = departamentoId ? maquinas.filter((m) => m.idCusto === departamentoId) : [];
-
 
     function updateCurrentForm(field, value) {
         setForms((prev) =>
@@ -58,30 +60,43 @@ export default function Form() {
         );
     }
 
+    useEffect(() => {
+        setMaquinaSelecionada(null);
+        setMaquinaTexto('');
+    }, [currentForm.departamento]);
+
+    useEffect(() => {
+        setFuncionarioSelecionado(null);
+        setFuncionarioTexto('');
+    }, [currentFormIndex]);
+
     function adicionarFuncionario() {
-        if (!funcionarioParaAdicionar) return;
+        if (!funcionarioSelecionado || !maquinaSelecionada) return;
 
         const funcionarioExiste = funcionarios.some(
             (f) =>
-                f.id === funcionarioParaAdicionar.id &&
-                f.name === funcionarioParaAdicionar.name
+                f.id === funcionarioSelecionado.id &&
+                f.name === funcionarioSelecionado.name
         );
 
         if (!funcionarioExiste) {
             toast.error("Funcionário não encontrado!");
-            setFuncionarioParaAdicionar(null);
-            setSearchKey((prev) => prev + 1);
+            setFuncionarioSelecionado(null);
+            setFuncionarioTexto('');
             return;
         }
 
-        if (currentForm.funcionarios.some((f) => f.id === funcionarioParaAdicionar.id)) {
+        if (currentForm.funcionarios.some((f) => f.id === funcionarioSelecionado.id)) {
             toast.error("Funcionário já adicionado!");
         } else {
-            updateCurrentForm('funcionarios', [...currentForm.funcionarios, funcionarioParaAdicionar]);
+            updateCurrentForm('funcionarios', [
+                ...currentForm.funcionarios,
+                { ...funcionarioSelecionado, maquina: maquinaSelecionada },
+            ]);
         }
 
-        setFuncionarioParaAdicionar(null);
-        setSearchKey((prev) => prev + 1);
+        setFuncionarioSelecionado(null);
+        setFuncionarioTexto('');
     }
 
     function scrollPage(value) {
@@ -199,10 +214,10 @@ export default function Form() {
                     <div className="flex flex-col w-full relative">
                         <label className='text-gray-400 text-sm font-semibold'>Motivo Macro</label>
                         <Search
-                            key={`motivo-macro-${currentForm.id}`}
-                            opcoes={MotivoMacro}
                             value={currentForm.motivoMacro}
-                            onSelect={(item) => updateCurrentForm('motivoMacro', item.name)}
+                            opcoes={MotivoMacro}
+                            onChange={(texto) => updateCurrentForm('motivoMacro', texto)}
+                            onSelect={(item) => updateCurrentForm('motivoMacro', item?.name ?? '')}
                         />
                     </div>
 
@@ -220,10 +235,10 @@ export default function Form() {
                     <div className="relative flex w-full flex-col">
                         <label className='text-gray-400 text-sm font-semibold'>Departamento</label>
                         <Search
-                            key={`departamento-${currentForm.id}`}
                             value={currentForm.departamento}
                             opcoes={Departamentos}
-                            onSelect={(item) => updateCurrentForm('departamento', item.name)}
+                            onChange={(texto) => updateCurrentForm('departamento', texto)}
+                            onSelect={(item) => updateCurrentForm('departamento', item?.name ?? '')}
                         />
                     </div>
 
@@ -252,10 +267,10 @@ export default function Form() {
                     <div className="relative flex w-full flex-col">
                         <label className='text-gray-400 text-sm font-semibold'>Turno</label>
                         <Search
-                            key={`turno-${currentForm.id}`}
                             value={currentForm.turno}
                             opcoes={Shifts}
-                            onSelect={(item) => updateCurrentForm('turno', item.name)}
+                            onChange={(texto) => updateCurrentForm('turno', texto)}
+                            onSelect={(item) => updateCurrentForm('turno', item?.name ?? '')}
                         />
                     </div>
 
@@ -264,23 +279,33 @@ export default function Form() {
                         <div className="flex flex-row gap-2 w-full">
                             <div className="flex flex-col gap-2">
                                 <Search
-                                    opcoes={funcionarios.filter((f) => !currentForm.funcionarios.some((ff) => ff.id === f.id))}
-                                    onSelect={setFuncionarioParaAdicionar}
-                                    key={searchKey}
-                                    placeholder={"Insira o RE ou nome"}
+                                    value={funcionarioTexto}
+                                    opcoes={funcionarios.filter(
+                                        (f) => !currentForm.funcionarios.some((ff) => ff.id === f.id)
+                                    )}
+                                    onChange={setFuncionarioTexto}
+                                    onSelect={(funcionario) => {
+                                        setFuncionarioTexto(funcionario?.name ?? '');
+                                        setFuncionarioSelecionado(funcionario);
+                                    }}
+                                    placeholder="Insira o RE ou nome"
                                 />
-                                {funcionarioParaAdicionar && (
-                                    <Search
-                                        opcoes={opcoesMaquinas}
-                                        placeholder="Selecione a máquina"
-                                    />
-                                )}
+                                <Search
+                                    value={maquinaTexto}
+                                    opcoes={opcoesMaquinas}
+                                    placeholder="Selecione a máquina"
+                                    onChange={setMaquinaTexto}
+                                    onSelect={(maquina) => {
+                                        setMaquinaTexto(maquina?.name ?? '');
+                                        setMaquinaSelecionada(maquina.name);
+                                    }}
+                                />
                             </div>
 
                             <button
                                 type={"button"}
                                 className={"bg-blue-300 text-white rounded-xl px-4 py-2 font-bold flex items-center justify-center hover:bg-blue-400 active:bg-blue-500 transition cursor-pointer"}
-                                disabled={funcionarioParaAdicionar ? false : true}
+                                disabled={!funcionarioSelecionado || !maquinaSelecionada}
                                 onClick={() => adicionarFuncionario()}
                             >+</button>
                         </div>
@@ -304,10 +329,6 @@ export default function Form() {
                             <li className="text-blue-200">Nenhum funcionário adicionado.</li>
                         )}
                     </ul>
-
-                    <div className="">
-
-                    </div>
 
                     <div className="grid grid-cols-2 flex-row w-full relative gap-3">
                         <nav

@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+#root {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+}
+
 @theme {
   --animate-fade-in: fade-in 0.2s ease-out;
 
