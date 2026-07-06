@@ -165,15 +165,15 @@ export default function Form() {
     return (
         <>
             <Toaster position="top-center" reverseOrder={false} />
-            <main className="w-full flex items-center flex-col bg-[#ffffff] h-screen">
+            <main className="self-center w-full flex items-center flex-col bg-[#ffffff] h-screen lg:w-[85%]">
                 <div className='self-end flex flex-col w-full items-center text-blue-300 font-semibold justify-start p-2 gap-5'>
                     <FormIcon width={40} height={40} />
                     <p className="flex w-[80%] self-center justify-center font-semibold text-gray-400 border-gray-300 pb-2 border-b-2 rounded">Formulário - Solicitação HE</p>
                 </div>
 
                 {forms.length > 1 && (
-                    <div className="grid grid-cols-[80%_20%] gap-2 w-[80%] self-center my-4">
-                        <nav className="w-full flex flex-col gap-2 max-h-50 overflow-auto border-2 border-dotted rounded-xl p-3 border-blue-200">
+                    <div className="flex gap-2 w-[75%] self-center my-4">
+                        <nav className="w-full flex flex-col gap-2 max-h-50 overflow-auto border-2 border-dotted rounded-xl p-3 border-blue-200 md:grid md:grid-cols-2">
                             {forms.map((f, idx) => (
                                 <button
                                     key={f.id}
@@ -195,7 +195,7 @@ export default function Form() {
                             ))}
                         </nav>
 
-                        <nav className="bg-blue-100 rounded-2xl p-2 flex justify-center items-start gap-2">
+                        <nav className="bg-white rounded-2xl flex justify-center items-center">
                             {forms.length > 1 && (
                                 <TrashIcon
                                     width={40} height={40}
@@ -232,52 +232,66 @@ export default function Form() {
                         />
                     </div>
 
-                    <div className="relative flex w-full flex-col">
-                        <label className='text-gray-400 text-sm font-semibold'>Departamento</label>
-                        <Search
-                            value={currentForm.departamento}
-                            opcoes={Departamentos}
-                            onChange={(texto) => updateCurrentForm('departamento', texto)}
-                            onSelect={(item) => updateCurrentForm('departamento', item?.name ?? '')}
-                        />
-                    </div>
 
-                    <div className="relative flex w-full flex-col">
-                        <label className='text-gray-400 text-sm font-semibold'>Início</label>
-                        <input
-                            type='datetime-local'
-                            min={hoje}
-                            value={currentForm.inicio}
-                            onChange={(e) => updateCurrentForm('inicio', e.target.value)}
-                            className="bg-gray-100 text-gray-500 font-semibold py-3 px-10 rounded-xl focus:ring-2 focus:ring-gray-100 outline-0"
-                        />
-                    </div>
+                    <aside className="w-full flex flex-col gap-2 lg:grid lg:grid-cols-2 ">
 
-                    <div className="relative flex w-full flex-col">
-                        <label className='text-gray-400 text-sm font-semibold'>Fim</label>
-                        <input
-                            type='datetime-local'
-                            min={hoje}
-                            value={currentForm.fim}
-                            onChange={(e) => updateCurrentForm('fim', e.target.value)}
-                            className="bg-gray-100 text-gray-500 font-semibold py-3 px-10 rounded-xl focus:ring-2 focus:ring-gray-100 outline-0"
-                        />
-                    </div>
+                        <div className="relative flex w-full flex-col gap-2 md:grid md:grid-cols-2">
 
-                    <div className="relative flex w-full flex-col">
-                        <label className='text-gray-400 text-sm font-semibold'>Turno</label>
-                        <Search
-                            value={currentForm.turno}
-                            opcoes={Shifts}
-                            onChange={(texto) => updateCurrentForm('turno', texto)}
-                            onSelect={(item) => updateCurrentForm('turno', item?.name ?? '')}
-                        />
-                    </div>
+                            <div className="flex flex-col">
+                                <label className='text-gray-400 text-sm font-semibold'>Departamento</label>
+                                <Search
+                                    value={currentForm.departamento}
+                                    opcoes={Departamentos}
+                                    onChange={(texto) => updateCurrentForm('departamento', texto)}
+                                    onSelect={(item) => updateCurrentForm('departamento', item?.name ?? '')}
+                                />
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label className='text-gray-400 text-sm font-semibold'>Turno</label>
+                                <Search
+                                    value={currentForm.turno}
+                                    opcoes={Shifts}
+                                    onChange={(texto) => updateCurrentForm('turno', texto)}
+                                    onSelect={(item) => updateCurrentForm('turno', item?.name ?? '')}
+                                />
+                            </div>
+
+                        </div>
+
+                        <div className="relative flex w-full flex-col gap-2 md:grid md:grid-cols-2">
+
+                            <section className="flex flex-col">
+                                <label className='text-gray-400 text-sm font-semibold'>Início</label>
+                                <input
+                                    type='datetime-local'
+                                    min={hoje}
+                                    value={currentForm.inicio}
+                                    onChange={(e) => updateCurrentForm('inicio', e.target.value)}
+                                    className="bg-gray-100 text-gray-500 w-full font-semibold py-3 px-10 rounded-xl focus:ring-2 focus:ring-gray-100 outline-0"
+                                />
+                            </section>
+
+                            <section className="flex flex-col">
+                                <label className='text-gray-400 text-sm font-semibold'>Fim</label>
+                                <input
+                                    type='datetime-local'
+                                    min={hoje}
+                                    value={currentForm.fim}
+                                    onChange={(e) => updateCurrentForm('fim', e.target.value)}
+                                    className="bg-gray-100 text-gray-500 w-full font-semibold py-3 px-10 rounded-xl focus:ring-2 focus:ring-gray-100 outline-0"
+                                />
+                            </section>
+
+                        </div>
+
+                    </aside>
+
 
                     <div className="relative flex w-full flex-col">
                         <label className='text-gray-400 text-sm font-semibold'>Adicione as pessoas da hora extra:</label>
                         <div className="flex flex-row gap-2 w-full">
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2 w-full">
                                 <Search
                                     value={funcionarioTexto}
                                     opcoes={funcionarios.filter(
@@ -304,22 +318,24 @@ export default function Form() {
 
                             <button
                                 type={"button"}
-                                className={"bg-blue-300 text-white rounded-xl px-4 py-2 font-bold flex items-center justify-center hover:bg-blue-400 active:bg-blue-500 transition cursor-pointer"}
+                                className={`rounded-xl px-4 w-16 font-bold flex items-center justify-center transition cursor-pointer 
+                                    ${!funcionarioSelecionado || !maquinaSelecionada ? 'bg-gray-100 text-gray-300 hover:bg-red-200' : 'bg-blue-400 text-blue-100 hover:bg-blue-400 active:bg-blue-500'}`}
                                 disabled={!funcionarioSelecionado || !maquinaSelecionada}
                                 onClick={() => adicionarFuncionario()}
                             >+</button>
                         </div>
                     </div>
 
-                    <ul className="flex flex-col w-full gap-2 border-2 border-blue-300 border-dotted rounded-xl p-2 max-h-60 overflow-y-auto">
+                    <ul className="flex flex-col w-full gap-2 border-2 border-blue-300 border-dotted rounded-xl p-2 max-h-60 overflow-y-auto md:grid md:grid-cols-3">
                         {currentForm.funcionarios.length > 0 ? (
                             currentForm.funcionarios.map((funcionario) => (
-                                <li key={funcionario.id} className="bg-blue-100 text-blue-400 font-semibold py-3 px-4 rounded-xl flex justify-between items-center animate-fade-in">
-                                    {funcionario.name}
+                                <li key={funcionario.id} className="bg-blue-100 text-blue-400 font-semibold py-3 px-4 rounded-xl flex flex-col justify-between items-center animate-fade-in relative">
+                                    <label htmlFor="">{funcionario.name}</label>
+                                    <label htmlFor="" className="text-[0.6rem] text-blue-300">{funcionario.maquina}</label>
                                     <button
                                         type="button"
                                         onClick={() => { removerFuncionario(funcionario.id); }}
-                                        className="text-blue-800 hover:text-red-500 active:text-red-700"
+                                        className="absolute right-1 translate-y-[-50%] text-blue-400 hover:text-red-500 active:text-red-700"
                                     >
                                         <ClearIcon width={18} height={18} />
                                     </button>

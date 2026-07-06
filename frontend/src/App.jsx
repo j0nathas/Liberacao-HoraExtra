@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import NotFound from './pages/NotFound.jsx'
 import Form from './pages/Form/Form.jsx'
@@ -19,10 +19,11 @@ const btnMenu = [
   /* { name: Chart, path: "/Chart", icon: "", element: Chart } */
 ]
 
+// ... imports
 export default function App() {
-
-  const navigate = useNavigate("/form")
+  const navigate = useNavigate();
   const [hamburguer, setHamburguer] = useState(false);
+
   return (
     <>
       <header className='w-full flex items-center justify-between p-4 shadow-sm bg-white relative'>
@@ -52,18 +53,14 @@ export default function App() {
       </header>
 
       <Routes>
+        <Route path="/" element={<Navigate to="/home" replace />} />
+
         {btnMenu.map((btn) => (
-          btn.path === "/document" ? (<Route
+          <Route
             key={btn.path}
             path={btn.path}
-            element={btn.element}
-          />) : (
-            <Route
-              key={btn.path}
-              path={btn.path}
-              element={<btn.element />}
-            />
-          )
+            element={btn.path === "/document" ? btn.element : <btn.element />}
+          />
         ))}
       </Routes>
     </>

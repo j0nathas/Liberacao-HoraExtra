@@ -13,16 +13,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Navigate to="/login" replace />} />
 
-        <Route path="/home" element={
-          <ProtectedRoute> <App /> </ProtectedRoute>
-        } />
-        <Route path="/form" element={
-          <ProtectedRoute> <App /> </ProtectedRoute>
-        } />
-        <Route path="/document" element={
-          <ProtectedRoute> <App /> </ProtectedRoute>
+        <Route path="/*" element={
+          <ProtectedRoute>
+            <App />
+          </ProtectedRoute>
         } />
 
         <Route path="*" element={<NotFound />} />

@@ -22,7 +22,7 @@ public class TokenService {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.create()
-                    .withIssuer("gerenciamento-ferias")
+                    .withIssuer("projetoHE")
                     .withSubject(username)
                     .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
@@ -36,7 +36,7 @@ public class TokenService {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.require(algorithm)
-                    .withIssuer("gerenciamento-ferias")
+                    .withIssuer("projetoHE")
                     .build()
                     .verify(token)
                     .getSubject();
