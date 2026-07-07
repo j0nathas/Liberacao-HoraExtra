@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import toast, { Toaster } from 'react-hot-toast';
 import { pdf, PDFViewer } from "@react-pdf/renderer";
+import toast, { Toaster } from 'react-hot-toast';
 import DocumentPDF from "../../PDF/DocumentPDF.jsx";
 import Search from '../../components/Search.jsx'
 import HomeIcon from '../../../img/home.svg?react'
@@ -164,8 +164,7 @@ export default function Form() {
 
     return (
         <>
-            <Toaster position="top-center" reverseOrder={false} />
-            <main className="self-center w-full flex items-center flex-col bg-[#ffffff] h-screen lg:w-[85%]">
+            <main className="self-center w-full flex items-center flex-col bg-[#ffffff] h-max lg:w-[85%]">
                 <div className='self-end flex flex-col w-full items-center text-blue-300 font-semibold justify-start p-2 gap-5'>
                     <FormIcon width={40} height={40} />
                     <p className="flex w-[80%] self-center justify-center font-semibold text-gray-400 border-gray-300 pb-2 border-b-2 rounded">Formulário - Solicitação HE</p>

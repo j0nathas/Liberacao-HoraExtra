@@ -1,42 +1,58 @@
-import React, { useState } from 'react'; // Adicionado useState
-import { useNavigate } from 'react-router-dom'; // Adicionado para navegar após login
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from './services/api';
 import { EyeOff, Eye, Loader2 } from 'lucide-react';
+import { useAuth } from "./context/AuthContext";
+import toast, { Toaster } from 'react-hot-toast';
+import ByeIcon from '../img/bye.svg?react'
+
+import LogoutIcon from '../img/logout.svg?react'
 
 export default function LoginScreen() {
-    // 1. Estados para os campos e mensagens
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const { loadUser, user } = useAuth();
 
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setError('');
+        setError("");
         setLoading(true);
 
         try {
-            const response = await api.post('/auth/login', {
-                username: username,
-                password: password
+            await api.post("/auth/login", {
+                username,
+                password
             });
 
-            if (response.data.token) {
-                localStorage.setItem('token', response.data.token);
-                navigate('/home');
-            }
+            await loadUser();
+
+            navigate("/home");
+
         } catch (err) {
-            if (err.response && err.response.status === 401) {
-                setError('Usuário ou senha incorretos no AD Magna.');
-            } else {
-                setError('Não foi possível conectar ao servidor.');
+            if (err.response?.status === 401) {
+                setError("Usuário ou senha incorretos no AD Magna.");
+                return
+            } else if (
+                err.response?.status === 403 &&
+                err.response?.data === "USER_NOT_REGISTERED"
+            ) {
+                setError(`Usuário cadastrado no AD Magna, porém sem acesso ao sistema. Contate o ADM.`);
+                return
+            }
+            else {
+                setError("Não foi possível conectar ao servidor.");
+                return
             }
         } finally {
             setLoading(false);
+
         }
+        toast.success(`Bem vindo de volta, ${user.nome}!`);
     };
 
     return (

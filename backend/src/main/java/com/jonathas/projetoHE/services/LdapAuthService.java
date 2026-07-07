@@ -17,11 +17,7 @@ public class LdapAuthService {
     @Value("${ad.domain}")
     private String adDomain;
 
-    /**
-     * Tenta autenticar o usuário diretamente no Active Directory.
-     */
     public boolean authenticate(String username, String password) {
-        // Formata o usuário para o padrão do AD (ex: usuario@magna.global)
         String userPrincipalName = username.contains("@") ? username : username + "@" + adDomain;
 
         Hashtable<String, String> env = new Hashtable<>();
@@ -32,12 +28,10 @@ public class LdapAuthService {
         env.put(Context.SECURITY_CREDENTIALS, password);
 
         try {
-            // Tenta abrir uma conexão. Se a senha estiver errada, lança exceção.
             DirContext ctx = new InitialDirContext(env);
             ctx.close();
-            return true; // Autenticado com sucesso!
+            return true;
         } catch (Exception e) {
-            // Log do erro (opcional)
             System.out.println("Falha na autenticação AD para: " + username + " - Erro: " + e.getMessage());
             return false;
         }

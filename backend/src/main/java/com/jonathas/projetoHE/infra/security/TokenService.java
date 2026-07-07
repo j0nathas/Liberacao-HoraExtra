@@ -17,7 +17,6 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
 
-    // Gera o token após o AD confirmar a senha
     public String generateToken(String username) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
@@ -31,7 +30,6 @@ public class TokenService {
         }
     }
 
-    // Valida o token nas próximas requisições
     public String validateToken(String token) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);

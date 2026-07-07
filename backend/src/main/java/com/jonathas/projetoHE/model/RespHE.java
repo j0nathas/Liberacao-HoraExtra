@@ -13,6 +13,7 @@ import java.util.Optional;
 public class RespHE {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column (name = "ID_Resp")
     private Long id;
 
     @Column(name = "Login_Rede")
@@ -29,4 +30,6 @@ public class RespHE {
 
     private int RE;
 }
+
+
 
