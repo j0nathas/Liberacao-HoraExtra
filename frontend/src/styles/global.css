@@ -1,1 +1,87 @@
 @import "tailwindcss";
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+@theme {
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-cascata-profile: cascata-profile 0.4s ease-out;
+  --animate-name-profile: name-profile 0.4s ease-out;
+  --animate-bye: bye 1s ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes cascata-profile {
+    0% {
+      z-index: -1;
+      opacity: 0;
+      top: 2.5rem;
+    }
+
+    50% {
+      opacity: 1;
+      z-index: 20;
+      top: 4rem;
+    }
+
+    100% {
+      opacity: 1;
+      z-index: 20;
+      top: 3.5rem;
+    }
+  }
+
+  @keyframes name-profile {
+    0% {
+      opacity: 0;
+      left: -80%;
+    }
+
+    50% {
+      opacity: 1;
+      left: -130%;
+    }
+
+    100% {
+      opacity: 1;
+      left: -110%;
+    }
+  }
+
+
+  @keyframes bye {
+    0% {
+      transform: rotate(-30deg);
+    }
+
+    25% {
+      transform: rotate(30deg);
+    }
+
+    50% {
+      transform: rotate(-20deg);
+    }
+
+    75% {
+      transform: rotate(20deg);
+    }
+
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+
+
+}
