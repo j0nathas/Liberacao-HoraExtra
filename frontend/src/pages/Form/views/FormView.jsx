@@ -7,16 +7,19 @@ import FormIcon from '../../../../img/form.svg?react';
 import ClearIcon from '../../../../img/clear.svg?react';
 import TrashIcon from '../../../../img/trash.svg?react';
 import { hoje } from '../models/formModel.js';
-import { Departamentos, Shifts } from '../components/dadosFake.js';
+import { Shifts } from '../components/dadosFake.js';
 
 export default function FormView({
     forms,
     currentForm,
     currentFormIndex,
     setCurrentFormIndex,
-    opcoesMaquinas,
+    maquinas,
     opcoesFuncionarios,
+    departamentos,
     motivosMacro,
+    motivoTexto,
+    setMotivoTexto,
     loading,
     funcionarioSelecionado,
     maquinaSelecionada,
@@ -83,10 +86,13 @@ export default function FormView({
                 <div className="flex flex-col w-full relative">
                     <label className='text-gray-400 text-sm font-semibold'>Motivo Macro</label>
                     <Search
-                        value={currentForm.motivoMacro}
+                        value={motivoTexto}
                         opcoes={motivosMacro}
-                        onChange={(texto) => updateCurrentForm('motivoMacro', texto)}
-                        onSelect={(item) => updateCurrentForm('motivoMacro', item?.name ?? '')}
+                        onChange={setMotivoTexto}
+                        onSelect={(item) => {
+                            setMotivoTexto(item?.name ?? '');
+                            updateCurrentForm('motivoMacro', item?.name ?? '');
+                        }}
                     />
                 </div>
 
@@ -107,7 +113,7 @@ export default function FormView({
                             <label className='text-gray-400 text-sm font-semibold'>Departamento</label>
                             <Search
                                 value={currentForm.departamento}
-                                opcoes={Departamentos}
+                                opcoes={departamentos}
                                 onChange={(texto) => updateCurrentForm('departamento', texto)}
                                 onSelect={(item) => updateCurrentForm('departamento', item?.name ?? '')}
                             />
@@ -168,22 +174,25 @@ export default function FormView({
                             />
                             <Search
                                 value={maquinaTexto}
-                                opcoes={opcoesMaquinas}
-                                placeholder="Selecione a máquina"
+                                opcoes={maquinas}
                                 onChange={setMaquinaTexto}
-                                onSelect={(maquina) => {
-                                    setMaquinaTexto(maquina?.name ?? '');
-                                    setMaquinaSelecionada(maquina?.name);
+                                disabled={!currentForm.departamento}
+                                onSelect={(item) => {
+                                    setMaquinaTexto(item?.name ?? '');
+                                    setMaquinaSelecionada(item?.name ?? null);
                                 }}
+                                placeholder={currentForm.departamento ? "Selecione a máquina" : "Selecione um departamento primeiro"}
                             />
                         </div>
 
                         <button
                             type="button"
-                            className={`rounded-xl px-4 w-16 font-bold flex items-center justify-center transition cursor-pointer 
-                                ${!funcionarioSelecionado || !maquinaSelecionada ? 'bg-gray-100 text-gray-300 hover:bg-red-200' : 'bg-blue-400 text-blue-100 hover:bg-blue-400 active:bg-blue-500'}`}
                             disabled={!funcionarioSelecionado || !maquinaSelecionada}
-                            onClick={() => adicionarFuncionario()}
+                            className={`rounded-xl px-4 w-16 font-bold transition ${!funcionarioSelecionado || !maquinaSelecionada
+                                ? 'bg-gray-100 text-gray-300'
+                                : 'bg-blue-400 text-blue-100 hover:bg-blue-500'
+                                }`}
+                            onClick={adicionarFuncionario}
                         >+</button>
                     </div>
                 </div>

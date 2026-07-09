@@ -47,7 +47,6 @@ export default function Header() {
             const nome = user.nome;
             await api.post("/auth/logout");
             navigate("/login");
-            console.log(user.nome);
             toast.custom(() => (
                 <div className='bg-white p-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl'>
                     <img className="animate-bye text-yellow-600 text-8xl " width={35} height={35} src="../img/bye.png" alt="" />

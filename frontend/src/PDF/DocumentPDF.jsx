@@ -5,64 +5,204 @@ import {
     Text,
     View,
     StyleSheet,
-    Font
 } from "@react-pdf/renderer";
 
-// Estilização aprimorada
+// ============================================================
+// PALETA DE CORES — Sofisticada e de Alta Legibilidade
+// ============================================================
+const PALETA = [
+    { accent: "#1E40AF", bg: "#F8FAFC", badgeBg: "#E0F2FE", badgeText: "#0369A1" }, // Azul Real
+    { accent: "#0F766E", bg: "#F0FDFA", badgeBg: "#CCFBF1", badgeText: "#115E59" }, // Esmeralda / Teal
+    { accent: "#6D28D9", bg: "#F5F3FF", badgeBg: "#EDE9FE", badgeText: "#5B21B6" }, // Roxo Índigo
+    { accent: "#C2410C", bg: "#FFF7ED", badgeBg: "#FFEDD5", badgeText: "#9A3412" }, // Âmbar Escuro
+];
+
+//============================================================
+// MAP EMPRESAS 
+//============================================================
+const empresas = [{
+    nome: 'INSTITUTO TECNICO EDUCACIONAL MIRIAN MENCHINI',
+    formatado: 'ITEMM'
+},
+{
+    nome: 'Temporário',
+    formatado: 'ITEMM'
+},
+{
+    nome: 'EXPERT CONSULTORIA E TERCEIRIZAÇÃO LTDA',
+    formatado: 'EXPERT'
+},
+{
+    nome: 'MAGNA DO BRASIL PROD E SERV AUT LTDA',
+    formatado: 'MAGNA'
+},
+{
+    nome: 'OLSA BRASIL INDUSTRIA E COMERCIO LTDA',
+    formatado: 'OLSA'
+},
+{
+    nome: 'MAGNA DO BRASIL PROD E SERV AUTOMOTIVOS LTDA',
+    formatado: 'MAGNA'
+},
+{
+    nome: 'CLT',
+    formatado: 'CLT'
+},
+{
+    nome: 'BETEL TEMPORARIOS E TERCEIRIZADOS EIRELI',
+    formatado: 'BETEL'
+}
+
+
+]
+
+
+
+// ============================================================
+// ESTILOS (Design System Otimizado para Impressão/PDF)
+// ============================================================
 const styles = StyleSheet.create({
     page: {
-        padding: 40,
+        paddingTop: 80,      // Espaço reservado para o Header Fixo
+        paddingBottom: 60,   // Espaço reservado para o Footer Fixo
+        paddingHorizontal: 40,
         backgroundColor: "#FFFFFF",
-        fontSize: 10,
+        fontSize: 9,
         fontFamily: "Helvetica",
         color: "#334155",
     },
 
-    // Header Profissional
+    // ---------- Header Fixo ----------
     header: {
-        borderBottom: "2 solid #2D7FF9",
-        paddingBottom: 10,
-        marginBottom: 20,
+        position: "absolute",
+        top: 30,
+        left: 40,
+        right: 40,
+        borderBottom: "1.5 solid #CBD5E1",
+        paddingBottom: 8,
         flexDirection: "row",
         justifyContent: "space-between",
-        alignItems: "center",
-    },
-    headerTextGroup: {
-        flexDirection: "column",
+        alignItems: "flex-end",
     },
     title: {
-        color: "#1E40AF",
-        fontSize: 20,
+        color: "#0F172A",
+        fontSize: 16,
         fontWeight: "bold",
-        textTransform: "uppercase",
+        letterSpacing: 0.5,
     },
     subtitle: {
         color: "#64748B",
         fontSize: 9,
         marginTop: 2,
     },
+    headerMeta: {
+        fontSize: 8,
+        color: "#94A3B8",
+        textAlign: "right",
+    },
 
-    // Cards / Seções
+    // ---------- Cards e Blocos ----------
     card: {
-        marginBottom: 20,
+        marginBottom: 16,
         padding: 12,
+        backgroundColor: "#F8FAFC",
         border: "1 solid #E2E8F0",
-        borderRadius: 4,
+        borderRadius: 6,
     },
     sectionTitle: {
-        color: "#1E40AF",
+        color: "#1E293B",
         fontSize: 11,
         fontWeight: "bold",
+        paddingBottom: 2,
         marginBottom: 10,
         textTransform: "uppercase",
-        borderBottom: "1 solid #E2E8F0",
-        paddingBottom: 4,
+        letterSpacing: 0.5,
+        borderBottom: "1 solid #c1d6f7"
     },
 
-    // Grid de informações
+    // ---------- KPIs Métrica ----------
+    kpiRow: {
+        flexDirection: "row",
+        gap: 12,
+        marginBottom: 16,
+    },
+    kpiBox: {
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 12,
+        backgroundColor: "#F1F5F9",
+        borderRadius: 6,
+        borderLeft: "3 solid #3B82F6",
+    },
+    kpiLabel: {
+        fontSize: 8,
+        color: "#64748B",
+        textTransform: "uppercase",
+        marginBottom: 2,
+        fontWeight: "bold",
+    },
+    kpiValue: {
+        fontSize: 18,
+        color: "#0F172A",
+        fontWeight: "bold",
+    },
+
+    // ---------- Estrutura de Tabelas ----------
+    table: {
+        marginTop: 6,
+        border: "1 solid #E2E8F0",
+        borderRadius: 4,
+        overflow: "hidden",
+    },
+    tableHeader: {
+        flexDirection: "row",
+        backgroundColor: "#F1F5F9",
+        paddingVertical: 6,
+        paddingHorizontal: 8,
+        borderBottom: "1 solid #E2E8F0",
+    },
+    tableRow: {
+        flexDirection: "row",
+        paddingVertical: 6,
+        paddingHorizontal: 8,
+        borderBottom: "1 solid #F1F5F9",
+        alignItems: "center",
+    },
+    tableRowAlternate: {
+        flexDirection: "row",
+        paddingVertical: 6,
+        paddingHorizontal: 8,
+        backgroundColor: "#F8FAFC",
+        borderBottom: "1 solid #F1F5F9",
+        alignItems: "center",
+    },
+    tableHeaderText: {
+        fontSize: 7.5,
+        color: "#475569",
+        fontWeight: "bold",
+        textTransform: "uppercase",
+    },
+
+    // Colunas Alinhadas (Resumos)
+    colCentro: { width: "70%" },
+    colTempo: { width: "30%", textAlign: "right", color: "#002a85" },
+
+    // Colunas Alinhadas (Funcionários)
+    colID: { width: "6%", textAlign: "left" },
+    colNome: { width: "32%" },
+    colCC: { width: "6%", textAlign: "center" },
+    colEmpresa: { width: "23%", textAlign: "center" },
+    colCargo: { width: "13%" },
+    colMaquina: { width: "20%", textAlign: "right" },
+
+    // ---------- Grids de Informação ----------
     row: {
         flexDirection: "row",
-        marginBottom: 10,
+        marginBottom: 8,
+        gap: 10,
     },
     column: {
         flexDirection: "column",
@@ -70,226 +210,332 @@ const styles = StyleSheet.create({
     },
     label: {
         color: "#64748B",
-        fontSize: 8,
+        fontSize: 7.5,
         textTransform: "uppercase",
         marginBottom: 2,
     },
     value: {
         color: "#0F172A",
-        fontSize: 10,
+        fontSize: 9,
         fontWeight: "bold",
     },
+    valueRegular: {
+        color: "#334155",
+        fontSize: 8.5,
+    },
 
-    // Descrição detalhada
+    badge: {
+        alignSelf: "center",
+        fontSize: 8,
+        fontWeight: "bold",
+        paddingVertical: 2,
+        paddingHorizontal: 6,
+        borderRadius: 4,
+    },
+
+    // ---------- Caixas de Texto Corrido ----------
     descriptionBox: {
-        backgroundColor: "#F8FAFC",
+        backgroundColor: "#FFFFFF",
         padding: 8,
         borderRadius: 4,
-        borderLeft: "3 solid #CBD5E1",
+        border: "1 solid #E2E8F0",
+        borderLeft: "3 solid #94A3B8",
+        marginVertical: 8,
     },
     descriptionText: {
-        fontSize: 9,
-        lineHeight: 1.4,
-        color: "#334155",
-        fontStyle: "italic",
-    },
-
-    // Tabela de Funcionários
-    table: {
-        marginTop: 5,
-    },
-    tableHeader: {
-        flexDirection: "row",
-        backgroundColor: "#F1F5F9",
-        padding: 6,
-        borderBottom: "1 solid #CBD5E1",
-        fontWeight: "bold",
-    },
-    tableRow: {
-        flexDirection: "row",
-        padding: 6,
-        borderBottom: "1 solid #F1F5F9",
-    },
-    tableRowAlternate: {
-        flexDirection: "row",
-        padding: 6,
-        backgroundColor: "#FBFCFD",
-        borderBottom: "1 solid #F1F5F9",
-    },
-
-    // Colunas da Tabela
-    colID: { width: "15%" },
-    colNome: { width: "55%" },
-    colMaquina: { width: "30%" },
-
-    tableHeaderText: {
-        fontSize: 8,
+        fontSize: 8.5,
+        lineHeight: 1.3,
         color: "#475569",
+    },
+
+    // ---------- Invólucro de Solicitação Dinâmica ----------
+    solicitacaoWrapper: {
+        marginBottom: 20,
+    },
+    solicitacaoHeaderRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 6,
+    },
+    solicitacaoIndexBadge: {
+        width: 20,
+        height: 20,
+        borderRadius: 4,
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 8,
+    },
+    solicitacaoIndexText: {
+        fontSize: 10,
         fontWeight: "bold",
+        color: "#FFFFFF",
+    },
+    solicitacaoHeaderTextGroup: {
+        flexDirection: "column",
+        flex: 1,
+    },
+    solicitacaoLabel: {
+        fontSize: 7.5,
+        color: "#64748B",
         textTransform: "uppercase",
     },
+    solicitacaoTitulo: {
+        fontSize: 11,
+        fontWeight: "bold",
+        color: "#0F172A",
+    },
+    solicitacaoBody: {
+        padding: 12,
+        borderRadius: 6,
+        border: "1 solid #E2E8F0",
+        borderLeftWidth: 3,
+    },
 
+    // ---------- Rodapé Fixo ----------
     footer: {
         position: "absolute",
-        bottom: 30,
+        bottom: 25,
         left: 40,
         right: 40,
         textAlign: "center",
         color: "#94A3B8",
-        fontSize: 8,
+        fontSize: 7.5,
         borderTop: "1 solid #E2E8F0",
-        paddingTop: 10,
+        paddingTop: 8,
     },
     pageNumber: {
         position: "absolute",
-        bottom: 30,
+        bottom: 25,
         right: 40,
-        fontSize: 8,
+        fontSize: 7.5,
         color: "#94A3B8",
-    }
+    },
+    emptyState: {
+        fontSize: 8.5,
+        color: "#94A3B8",
+        padding: 8,
+        textAlign: "center",
+    },
 });
 
-// Helper para formatar data ISO (simples)
+// ============================================================
+// FORMATADORES
+// ============================================================
 const formatDateTime = (str) => {
-    if (!str) return "";
+    if (!str) return "—";
     const [date, time] = str.split("T");
     const [y, m, d] = date.split("-");
-    return `${d}/${m}/${y} às ${time}`;
+    return `${d}/${m}/${y} ${time ? `às ${time}` : ""}`;
 };
 
-export default function DocumentPDF() {
-    // Seus dados...
-    const formularios = [
-        {
-            "id": 1,
-            "motivoMacro": "Absenteísmo",
-            "motivoDetalhado": "Devido ao jogo do Brasil na segunda-feira, será necessário a efetuação de hora extra para acompanhar a demanda solicitada pela Stellantis do nosso produto Lanterna Fixa 2810 Lado Esquerdo e Lado Direito.",
-            "departamento": "MONTAGEM LANTERNAS",
-            "inicio": "2026-07-04T06:00",
-            "fim": "2026-07-04T14:30",
-            "turno": "1º Turno",
-            "funcionarios": [
-                { "id": 1835, "name": "Jonathas Oliveira", "maquina": "Linha 01" },
-                { "id": 1510, "name": "Leandro Almeida", "maquina": "Linha 01" },
-                { "id": 4, "name": "Ana Santos", "maquina": "Linha 01" },
-                { "id": 1132, "name": "Fabricio Fonseca", "maquina": "Linha 01" },
-                { "id": 7, "name": "Lucas Almeida", "maquina": "Linha 01" },
-            ]
-        },
-        {
-            "id": 1,
-            "motivoMacro": "Absenteísmo",
-            "motivoDetalhado": "Devido ao jogo do Brasil na segunda-feira, será necessário a efetuação de hora extra para acompanhar a demanda solicitada pela Stellantis do nosso produto Lanterna Fixa 2810 Lado Esquerdo e Lado Direito.",
-            "departamento": "MONTAGEM LANTERNAS",
-            "inicio": "2026-07-04T06:00",
-            "fim": "2026-07-04T14:30",
-            "turno": "1º Turno",
-            "funcionarios": [
-                { "id": 1835, "name": "Jonathas Oliveira", "maquina": "Linha 01" },
-                { "id": 1510, "name": "Leandro Almeida", "maquina": "Linha 01" },
-                { "id": 4, "name": "Ana Santos", "maquina": "Linha 01" },
-                { "id": 1132, "name": "Fabricio Fonseca", "maquina": "Linha 01" },
-                { "id": 7, "name": "Lucas Almeida", "maquina": "Linha 01" },
-            ]
-        },
+const formatDuracao = (hhmmss) => {
+    if (!hhmmss) return "0h";
+    const [h, m] = hhmmss.split(":").map(Number);
+    if (h === 0 && m === 0) return "0h";
+    return m === 0 ? `${h}h` : `${h}h ${m}m`;
+};
 
-    ];
+const geradoEm = new Date().toLocaleDateString("pt-BR");
+
+// ============================================================
+// COMPONENTES AUXILIARES
+// ============================================================
+function ResumoConsolidado({ dados }) {
+    const { totalPessoas, horasTotais, PorCentroCusto = [] } = dados;
+
+    return (
+        <View wrap={false}>
+            <View style={styles.kpiRow}>
+                <View style={styles.kpiBox}>
+                    <Text style={styles.kpiLabel}>Total de Pessoas</Text>
+                    <Text style={styles.kpiValue}>{totalPessoas}</Text>
+                </View>
+                <View style={[styles.kpiBox, { borderLeftColor: "#10B981" }]}>
+                    <Text style={styles.kpiLabel}>Horas Totais</Text>
+                    <Text style={styles.kpiValue}>{formatDuracao(horasTotais)}</Text>
+                </View>
+            </View>
+
+            <View style={styles.card}>
+                <Text style={styles.sectionTitle}>Horas por Centro de Custo</Text>
+                <View style={styles.table}>
+                    <View style={styles.tableHeader}>
+                        <Text style={[styles.tableHeaderText, styles.colCentro]}>Centro de Custo</Text>
+                        <Text style={[styles.tableHeaderText, styles.colTempo]}>Tempo Alocado</Text>
+                    </View>
+                    {PorCentroCusto.length === 0 ? (
+                        <Text style={styles.emptyState}>Nenhum centro de custo informado.</Text>
+                    ) : (
+                        PorCentroCusto.map((cc, i) => (
+                            <View
+                                key={cc.centroCusto}
+                                style={i % 2 === 0 ? styles.tableRow : styles.tableRowAlternate}
+                            >
+                                <Text style={[styles.valueRegular, styles.colCentro]}>{cc.centroCusto}</Text>
+                                <Text style={[styles.value, styles.colTempo]}>
+                                    {formatDuracao(cc.tempo)}
+                                </Text>
+                            </View>
+                        ))
+                    )}
+                </View>
+            </View>
+        </View>
+    );
+}
+
+function SolicitacaoBloco({ solicitacao, index }) {
+    const cor = PALETA[index % PALETA.length];
+    const {
+        id,
+        motivoMacro,
+        motivoDetalhado,
+        departamento,
+        inicio,
+        fim,
+        turno,
+        funcionarios = [],
+        totalHoras,
+    } = solicitacao;
+
+    return (
+        // O wrap={false} aqui garante que o bloco inteiro mude de página junto se não couber por inteiro
+        <View style={styles.solicitacaoWrapper} wrap={false}>
+            <View style={styles.solicitacaoHeaderRow}>
+                <View style={[styles.solicitacaoIndexBadge, { backgroundColor: cor.accent }]}>
+                    <Text style={styles.solicitacaoIndexText}>{index + 1}</Text>
+                </View>
+                <View style={styles.solicitacaoHeaderTextGroup}>
+                    <Text style={styles.solicitacaoLabel}>ID #{id}</Text>
+                    <Text style={styles.solicitacaoTitulo}>{motivoMacro}</Text>
+                </View>
+                <View style={[styles.badge, { backgroundColor: cor.badgeBg }]}>
+                    <Text style={{ color: cor.badgeText, fontSize: 8, fontWeight: "bold" }}>
+                        {formatDuracao(totalHoras)}
+                    </Text>
+                </View>
+            </View>
+
+            <View style={[styles.solicitacaoBody, { backgroundColor: cor.bg, borderLeftColor: cor.accent }]}>
+                <View style={styles.row}>
+                    <View style={styles.column}>
+                        <Text style={styles.label}>Departamento</Text>
+                        <Text style={styles.value}>{departamento}</Text>
+                    </View>
+                    <View style={styles.column}>
+                        <Text style={styles.label}>Turno</Text>
+                        <Text style={styles.value}>{turno}</Text>
+                    </View>
+                    <View style={styles.column}>
+                        <Text style={styles.label}>Início</Text>
+                        <Text style={styles.valueRegular}>{formatDateTime(inicio)}</Text>
+                    </View>
+                    <View style={styles.column}>
+                        <Text style={styles.label}>Término</Text>
+                        <Text style={styles.valueRegular}>{formatDateTime(fim)}</Text>
+                    </View>
+                </View>
+
+                {motivoDetalhado && (
+                    <View style={styles.descriptionBox}>
+                        <Text style={styles.descriptionText}>{motivoDetalhado}</Text>
+                    </View>
+                )}
+
+                <View style={styles.table}>
+                    <View style={styles.tableHeader}>
+                        <Text style={[styles.tableHeaderText, styles.colID]}>RE</Text>
+                        <Text style={[styles.tableHeaderText, styles.colNome]}>Nome Completo</Text>
+                        <Text style={[styles.tableHeaderText, styles.colCC]}>CC</Text>
+                        <Text style={[styles.tableHeaderText, styles.colEmpresa]}>Empresa</Text>
+                        <Text style={[styles.tableHeaderText, styles.colCargo]}>Cargo</Text>
+                        <Text style={[styles.tableHeaderText, styles.colMaquina]}>Posto/Máq.</Text>
+                    </View>
+
+                    {funcionarios.length === 0 ? (
+                        <Text style={styles.emptyState}>Nenhum funcionário alocado.</Text>
+                    ) : (
+                        funcionarios.map((func, i) => (
+                            <View
+                                key={func.id || i}
+                                style={i % 2 === 0 ? styles.tableRow : styles.tableRowAlternate}
+                            >
+                                <Text style={[styles.valueRegular, styles.colID]}>{func.re || "—"}</Text>
+                                <Text style={[styles.value, styles.colNome]}>{func.name}</Text>
+                                <Text style={[styles.valueRegular, styles.colCC]}>{func.codigoCentroCusto || "—"}</Text>
+                                <Text style={[styles.valueRegular, styles.colEmpresa]}>{(() => {
+                                    if (!func.empresa) return "—";
+
+                                    const empresaEncontrada = empresas.find(
+                                        (obj) => obj.nome.trim().toUpperCase() === func.empresa.trim().toUpperCase()
+                                    );
+
+                                    return empresaEncontrada ? empresaEncontrada.formatado : func.empresa;
+                                })()}</Text>
+                                <Text style={[styles.valueRegular, styles.colCargo]}>{func.cargo || "—"}</Text>
+                                <Text style={[styles.valueRegular, styles.colMaquina]}>{func.maquina || "—"}</Text>
+                            </View>
+                        ))
+                    )}
+                </View>
+            </View>
+        </View>
+    );
+}
+
+// ============================================================
+// COMPONENTE PRINCIPAL EXPORTADO
+// ============================================================
+export default function DocumentPDF({ dadosConsolidados }) {
+
+    if (!dadosConsolidados) return null;
+
+    const { solicitacoes = [] } = dadosConsolidados;
 
     return (
         <Document title="Solicitação de Horas Extras">
-            {formularios.map((formulario, index) => (
-                <Page key={index} size="A4" style={styles.page}>
+            <Page size="A4" style={styles.page}>
 
-                    {/* CABEÇALHO */}
-                    <View style={styles.header}>
-                        <View style={styles.headerTextGroup}>
-                            <Text style={styles.title}>Solicitação de HE</Text>
-                            <Text style={styles.subtitle}>Relatório Gerencial de Produção</Text>
-                        </View>
-                        <Text style={{ fontSize: 9, color: "#64748B" }}>
-                            ID: #{formulario.id} | Gerado em: {new Date().toLocaleDateString('pt-BR')}
-                        </Text>
+                {/* CABEÇALHO — Fixo no topo absoluto de cada página */}
+                <View style={styles.header} fixed>
+                    <View>
+                        <Text style={styles.title}>Solicitações de Hora Extra</Text>
+                        <Text style={styles.subtitle}>Relatório Consolidado de Produção</Text>
                     </View>
+                    <Text style={styles.headerMeta}>Emitido em: {geradoEm}</Text>
+                </View>
 
-                    {/* INFOS GERAIS */}
-                    <View style={styles.card}>
-                        <Text style={styles.sectionTitle}>Informações Operacionais</Text>
+                {/* Bloco de Resumo Inicial */}
+                <ResumoConsolidado dados={dadosConsolidados} />
 
-                        <View style={styles.row}>
-                            <View style={styles.column}>
-                                <Text style={styles.label}>Departamento</Text>
-                                <Text style={styles.value}>{formulario.departamento}</Text>
-                            </View>
-                            <View style={styles.column}>
-                                <Text style={styles.label}>Motivo Macro</Text>
-                                <Text style={styles.value}>{formulario.motivoMacro}</Text>
-                            </View>
-                            <View style={styles.column}>
-                                <Text style={styles.label}>Turno</Text>
-                                <Text style={styles.value}>{formulario.turno}</Text>
-                            </View>
-                        </View>
+                {/* Separador de Seção */}
+                <Text style={[styles.sectionTitle, { marginTop: 8, marginBottom: 12 }]}>
+                    Solicitações Individuais ({solicitacoes.length})
+                </Text>
 
-                        <View style={styles.row}>
-                            <View style={styles.column}>
-                                <Text style={styles.label}>Início Previsto</Text>
-                                <Text style={styles.value}>{formatDateTime(formulario.inicio)}</Text>
-                            </View>
-                            <View style={styles.column}>
-                                <Text style={styles.label}>Término Previsto</Text>
-                                <Text style={styles.value}>{formatDateTime(formulario.fim)}</Text>
-                            </View>
-                        </View>
-                    </View>
+                {/* Listagem de Blocos Dinâmicos */}
+                {solicitacoes.length === 0 ? (
+                    <Text style={styles.emptyState}>Nenhuma solicitação registrada.</Text>
+                ) : (
+                    solicitacoes.map((solicitacao, index) => (
+                        <SolicitacaoBloco
+                            key={solicitacao.id || index}
+                            solicitacao={solicitacao}
+                            index={index}
+                        />
+                    ))
+                )}
 
-                    {/* MOTIVO DETALHADO */}
-                    <View style={styles.card}>
-                        <Text style={styles.sectionTitle}>Justificativa Detalhada</Text>
-                        <View style={styles.descriptionBox}>
-                            <Text style={styles.descriptionText}>
-                                {formulario.motivoDetalhado}
-                            </Text>
-                        </View>
-                    </View>
-
-                    {/* TABELA DE FUNCIONÁRIOS */}
-                    <View style={styles.card}>
-                        <Text style={styles.sectionTitle}>Equipe Alocada ({formulario.funcionarios.length})</Text>
-
-                        <View style={styles.table}>
-                            {/* Header da Tabela */}
-                            <View style={styles.tableHeader}>
-                                <Text style={[styles.tableHeaderText, styles.colID]}>RE / ID</Text>
-                                <Text style={[styles.tableHeaderText, styles.colNome]}>Nome Completo</Text>
-                                <Text style={[styles.tableHeaderText, styles.colMaquina]}>Posto/Máquina</Text>
-                            </View>
-
-                            {/* Linhas da Tabela */}
-                            {formulario.funcionarios.map((func, i) => (
-                                <View
-                                    key={func.id}
-                                    style={i % 2 === 0 ? styles.tableRow : styles.tableRowAlternate}
-                                >
-                                    <Text style={[styles.value, styles.colID]}>{func.id}</Text>
-                                    <Text style={[styles.value, styles.colNome]}>{func.name}</Text>
-                                    <Text style={[styles.value, styles.colMaquina]}>{func.maquina}</Text>
-                                </View>
-                            ))}
-                        </View>
-                    </View>
-
-                    {/* RODAPÉ */}
-                    <Text style={styles.footer}>
-                        Este documento é para uso interno e contém informações sensíveis.
-                    </Text>
-
-                    <Text
-                        style={styles.pageNumber}
-                        render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-                        fixed
-                    />
-                </Page>
-            ))}
+                {/* RODAPÉ — Fixo na base absoluta de todas as páginas */}
+                <Text style={styles.footer} fixed>
+                    Este documento é para uso interno e contém informações sensíveis corporativas.
+                </Text>
+                <Text
+                    style={styles.pageNumber}
+                    render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
+                    fixed
+                />
+            </Page>
         </Document>
     );
 }

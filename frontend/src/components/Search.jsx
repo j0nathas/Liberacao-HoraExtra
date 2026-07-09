@@ -19,16 +19,18 @@ export default function Search({
     getOptionId = (item) => item.id,
     filterLocal = true,
     disabled = false,
+    disabledText = '',
     autoFocus = false,
     noResultsText = "Nenhum resultado encontrado.",
     containerStyle = "relative w-full",
-    inputStyle = "bg-gray-100 w-[100%] text-gray-600 py-3 pl-10 px-8 rounded-xl focus:ring-2 focus:ring-gray-100 outline-0 text-ellipsis placeholder:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed",
+    inputStyle = "bg-gray-100 w-[100%] text-gray-600 py-3 pl-10 px-8 rounded-xl focus:ring-2 focus:ring-gray-100 outline-0 text-ellipsis placeholder:text-gray-400 disabled:placeholder:text-red-300 disabled:opacity-50 disabled:bg-red-100 disabled:cursor-not-allowed",
     listStyle = "absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg",
     itemStyle = "cursor-pointer px-4 py-2 hover:bg-gray-100 text-gray-700",
     itemActiveStyle = "bg-blue-100 text-blue-500",
     clearButtonStyle = "absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700",
     noResultStyle = "px-4 py-2 text-gray-500",
-    searchIconStyle = "absolute left-2 pr-1 top-1/2 -translate-y-1/2 border-r-2 text-gray-600 border-gray-600",
+    searchIconStyle = `absolute left-2 pr-1 top-1/2 -translate-y-1/2 border-r-2 ${!disabled ? ' text-gray-600 border-gray-600' : 'text-red-200 border-red-200'}`,
+    disabledTextStyle = 'absolute text-[10px] text-red-400',
 }) {
     const [aberto, setAberto] = useState(false);
     const [indiceAtivo, setIndiceAtivo] = useState(-1);
@@ -158,6 +160,7 @@ export default function Search({
                     )}
                 </ul>
             )}
+            {disabled ? <p className={disabledTextStyle}>{disabledText}</p> : ''}
         </div>
     );
 }

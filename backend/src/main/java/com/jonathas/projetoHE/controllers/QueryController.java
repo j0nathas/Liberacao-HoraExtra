@@ -46,7 +46,7 @@ public class QueryController {
     @GetMapping("/funcionarios")
     public ResponseEntity<List<Funcionarios>> funcionarios(@RequestParam(name = "pesquisa", required = false) String pesquisa) {
         if (pesquisa == null || pesquisa.trim().isEmpty()) {
-            return ResponseEntity.ok(funcionariosRepository.findTop20ByOrderByNomeAsc());
+            return ResponseEntity.ok(funcionariosRepository.findTop20ByOrderByNameAsc());
         }
 
         String termoParaBusca = TextUtils.formatarParaLike(pesquisa);

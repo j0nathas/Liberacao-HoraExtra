@@ -13,9 +13,9 @@ public interface FuncionariosRepository extends JpaRepository<Funcionarios, Long
 
 
         @Query("SELECT f FROM Funcionarios f WHERE " +
-                "LOWER(f.nome) LIKE LOWER(:pesquisa) OR " +
+                "LOWER(f.name) LIKE LOWER(:pesquisa) OR " +
                 "LOWER(f.re) LIKE LOWER(:pesquisa)")
         List<Funcionarios> pesquisarComFiltro(@Param("pesquisa") String pesquisa, Pageable pageable);
 
-    List<Funcionarios> findTop20ByOrderByNomeAsc();
+    List<Funcionarios> findTop20ByOrderByNameAsc();
 }

@@ -20,7 +20,7 @@ public class Funcionarios {
     private String re;
 
     @Column(name = "Nome_Registro")
-    private String nome;
+    private String name;
 
    @Column(name = "Nome_Cargo")
     private String cargo;
