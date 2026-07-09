@@ -3,9 +3,11 @@ package com.jonathas.projetoHE.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "Cadastros_HE")
+@SQLRestriction("Situacao_Descricao = 'ATIVO'")
 @Getter
 @Setter
 public class Funcionarios {
@@ -18,7 +20,7 @@ public class Funcionarios {
     private String re;
 
     @Column(name = "Nome_Registro")
-    private String name;
+    private String nome;
 
    @Column(name = "Nome_Cargo")
     private String cargo;
@@ -26,8 +28,8 @@ public class Funcionarios {
     @Column(name = "Descricao_Mao_Obra")
     private String maoObra;
 
-    @Column(name = "Codigo_CentroCusto")
-    private String centroCusto;
+    @Column(name = "\"Codigo_CentroCusto\"")
+    private String codigoCentroCusto;
 
     @Column(name = "Nome_Empresa")
     private String empresa;

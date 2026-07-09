@@ -9,17 +9,6 @@ function normalizar(texto) {
         .toLowerCase();
 }
 
-/**
- * Combobox de busca totalmente controlado.
- *
- * Contrato único, igual em todo lugar que for usado:
- * - `value`    -> texto exibido no input (controlado pelo pai)
- * - `onChange` -> chamado a cada tecla digitada, com a nova string
- * - `onSelect` -> chamado quando um item da lista é escolhido (ou null ao limpar)
- *
- * Não existe mais `setDados`/`tipoDado`: quem usa o componente decide o que
- * fazer com `onChange`/`onSelect` no próprio estado do formulário.
- */
 export default function Search({
     value,
     onChange,
@@ -28,6 +17,7 @@ export default function Search({
     placeholder = "Pesquisar...",
     getOptionLabel = (item) => item.name,
     getOptionId = (item) => item.id,
+    filterLocal = true,
     disabled = false,
     autoFocus = false,
     noResultsText = "Nenhum resultado encontrado.",
@@ -46,7 +36,6 @@ export default function Search({
     const inputRef = useRef(null);
     const listboxId = useId();
 
-    // Fecha o dropdown ao clicar fora.
     useEffect(() => {
         function handleClickOutside(event) {
             if (containerRef.current && !containerRef.current.contains(event.target)) {
@@ -59,14 +48,19 @@ export default function Search({
     }, []);
 
     const resultados = useMemo(() => {
+        if (!filterLocal) return opcoes;
+
         const termo = normalizar(value ?? "");
         if (!termo) return opcoes;
+
         return opcoes.filter((item) => {
             const label = normalizar(String(getOptionLabel(item) ?? ""));
             const id = String(getOptionId(item) ?? "");
-            return label.includes(termo) || id.includes(termo);
+            const re = item.re ? normalizar(String(item.re)) : "";
+
+            return label.includes(termo) || id.includes(termo) || re.includes(termo);
         });
-    }, [opcoes, value, getOptionLabel, getOptionId]);
+    }, [opcoes, value, getOptionLabel, getOptionId, filterLocal]);
 
     function selecionar(item) {
         onSelect?.(item);
@@ -136,7 +130,6 @@ export default function Search({
                     type="button"
                     onClick={limpar}
                     className={clearButtonStyle}
-                    aria-label="Limpar campo"
                 >
                     <ClearIcon width={20} height={20} className="text-red-300 hover:text-red-500 active:text-red-700" />
                 </button>
@@ -152,7 +145,6 @@ export default function Search({
                                 <li
                                     key={id}
                                     role="option"
-                                    aria-selected={ativo}
                                     onMouseEnter={() => setIndiceAtivo(idx)}
                                     onClick={() => selecionar(item)}
                                     className={`${itemStyle} ${ativo ? itemActiveStyle : ""}`}

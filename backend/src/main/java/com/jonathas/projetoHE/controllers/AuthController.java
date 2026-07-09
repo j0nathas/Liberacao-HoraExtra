@@ -7,11 +7,14 @@ import com.jonathas.projetoHE.infra.security.TokenService;
 import com.jonathas.projetoHE.model.RespHE;
 import com.jonathas.projetoHE.repositories.RespHeRepository;
 import com.jonathas.projetoHE.services.LdapAuthService;
+import com.jonathas.projetoHE.services.LogService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -30,8 +33,11 @@ public class AuthController {
     @Autowired
     private RespHeRepository respHeRepository;
 
+    @Autowired
+    private LogService logService;
+
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody LoginRequestDTO data) {
+    public ResponseEntity login(@RequestBody LoginRequestDTO data, HttpServletRequest request) {
         boolean isValid = ldapAuthService.authenticate(data.username(), data.password());
 
         if (isValid) {
@@ -46,6 +52,7 @@ public class AuthController {
                         .body("USER_NOT_REGISTERED");
             }
 
+            logService.registrar(usuario.get().getLogin(), "LOGIN", request);
 
             String token = tokenService.generateToken(usuario.get().getLogin());
 
@@ -74,7 +81,13 @@ public class AuthController {
 
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+
+        String login = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        if (login != null && !login.equals("anonymousUser")) {
+            logService.registrar(login, "LOGOUT", request);
+        }
 
         ResponseCookie cookie = ResponseCookie.from("access_token", "")
                 .httpOnly(true)

@@ -52,7 +52,6 @@ export default function LoginScreen() {
             setLoading(false);
 
         }
-        toast.success(`Bem vindo de volta, ${user.nome}!`);
     };
 
     return (

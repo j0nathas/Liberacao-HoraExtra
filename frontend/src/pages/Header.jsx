@@ -35,16 +35,24 @@ export default function Header() {
     const { user } = useAuth();
     const [profileOpen, setProfileOpen] = useState(false);
 
+    useEffect(() => {
+        toast.success(`Bem vindo de volta, ${user.nome}!`, {
+            id: "welcome-toast",
+        });
+    }, [user.nome]);
+
 
     const logout = async (e) => {
         try {
+            const nome = user.nome;
             await api.post("/auth/logout");
             navigate("/login");
+            console.log(user.nome);
             toast.custom(() => (
                 <div className='bg-white p-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl'>
                     <img className="animate-bye text-yellow-600 text-8xl " width={35} height={35} src="../img/bye.png" alt="" />
                     <nav className='flex flex-col border-l-2 pl-3 border-gray-200'>
-                        <p className='text-[1rem] font-normal text-gray-700'>Tchau, !</p>
+                        <p className='text-[1rem] font-normal text-gray-700'>Tchau, {user.nome}!</p>
                         <p className='text-[0.8rem] font-normal text-gray-500'>Nos vemos em breve.</p>
                     </nav>
                 </div>
