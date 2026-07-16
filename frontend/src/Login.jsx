@@ -31,7 +31,7 @@ export default function LoginScreen() {
 
             await loadUser();
 
-            navigate("/home");
+            navigate("/form");
 
         } catch (err) {
             if (err.response?.status === 401) {

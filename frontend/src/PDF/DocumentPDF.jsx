@@ -120,6 +120,30 @@ const styles = StyleSheet.create({
         borderBottom: "1 solid #c1d6f7"
     },
 
+    // ---------- Responsável ----------
+
+    respRow: {
+        flexDirection: "column",
+        alignItems: 'flex-end',
+        gap: 2,
+        marginBottom: 5
+    },
+
+    respBox: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: 'start',
+        gap: 2,
+    },
+    respLabel: {
+        fontSize: 6,
+        color: "#94A3B8",
+    },
+    respValue: {
+        fontSize: 6,
+        color: "#94A3B8",
+    },
+
     // ---------- KPIs Métrica ----------
     kpiRow: {
         flexDirection: "row",
@@ -341,10 +365,11 @@ const geradoEm = new Date().toLocaleDateString("pt-BR");
 // COMPONENTES AUXILIARES
 // ============================================================
 function ResumoConsolidado({ dados }) {
-    const { totalPessoas, horasTotais, PorCentroCusto = [] } = dados;
+    const { totalPessoas, horasTotais, porCentroCusto = [] } = dados;
 
     return (
         <View wrap={false}>
+
             <View style={styles.kpiRow}>
                 <View style={styles.kpiBox}>
                     <Text style={styles.kpiLabel}>Total de Pessoas</Text>
@@ -363,13 +388,13 @@ function ResumoConsolidado({ dados }) {
                         <Text style={[styles.tableHeaderText, styles.colCentro]}>Centro de Custo</Text>
                         <Text style={[styles.tableHeaderText, styles.colTempo]}>Tempo Alocado</Text>
                     </View>
-                    {PorCentroCusto.length === 0 ? (
+                    {porCentroCusto.length === 0 ? (
                         <Text style={styles.emptyState}>Nenhum centro de custo informado.</Text>
                     ) : (
-                        PorCentroCusto.map((cc, i) => (
+                        porCentroCusto.map((cc, i) => (
                             <View
                                 key={cc.centroCusto}
-                                style={i % 2 === 0 ? styles.tableRow : styles.tableRowAlternate}
+                                style={i % 2 === 0 ? styles.tableRow : styles.tableRowAlternate} c
                             >
                                 <Text style={[styles.valueRegular, styles.colCentro]}>{cc.centroCusto}</Text>
                                 <Text style={[styles.value, styles.colTempo]}>
@@ -490,7 +515,7 @@ export default function DocumentPDF({ dadosConsolidados }) {
 
     if (!dadosConsolidados) return null;
 
-    const { solicitacoes = [] } = dadosConsolidados;
+    const { nomeResp, sobrenomeResp, emailResp, solicitacoes = [] } = dadosConsolidados;
 
     return (
         <Document title="Solicitação de Horas Extras">
@@ -502,7 +527,24 @@ export default function DocumentPDF({ dadosConsolidados }) {
                         <Text style={styles.title}>Solicitações de Hora Extra</Text>
                         <Text style={styles.subtitle}>Relatório Consolidado de Produção</Text>
                     </View>
-                    <Text style={styles.headerMeta}>Emitido em: {geradoEm}</Text>
+
+                    <View>
+                        <View style={styles.respRow}>
+
+                            <Text style={styles.headerMeta}>Emitido em: {geradoEm}</Text>
+
+                            <View style={styles.respBox}>
+                                <Text style={styles.respLabel}>Responsável:</Text>
+                                <Text style={styles.respValue}>{nomeResp} {sobrenomeResp}</Text>
+                            </View>
+
+                            <View style={styles.respBox}>
+                                <Text style={styles.respLabel}>E-mail:</Text>
+                                <Text style={styles.respValue}>{emailResp}</Text>
+                            </View>
+
+                        </View>
+                    </View>
                 </View>
 
                 {/* Bloco de Resumo Inicial */}

@@ -1,3 +1,16 @@
+import api from '../../services/api.js';
+
+
+async function dadosResponsavel() {
+    const { data } = await api.get('/auth/me');
+    const id = data.id;
+    const nome = data.nome;
+    const sobrenome = data.sobrenome;
+    const email = data.email;
+
+    return { id, nome, sobrenome, email }
+}
+
 function transformarHoras(milissegundos) {
     const segundos = Math.floor((milissegundos / 1000) % 60);
     const minutos = Math.floor((milissegundos / (1000 * 60)) % 60);
@@ -6,7 +19,7 @@ function transformarHoras(milissegundos) {
     return `${String(horas).padStart(2, "0")}:${String(minutos).padStart(2, "0")}:${String(segundos).padStart(2, "0")}`;
 }
 
-export function generatePDFController(dados) {
+export async function generatePDFController(dados) {
     const listaTempo = [];
     let quantidadePessoas = 0;
     let tempoGeralMili = 0;
@@ -46,7 +59,14 @@ export function generatePDFController(dados) {
         tempo: transformarHoras(tempo)
     }));
 
+    let { id, nome, sobrenome, email } = await dadosResponsavel();
+
+
     return {
+        idResp: id,
+        nomeResp: nome,
+        sobrenomeResp: sobrenome,
+        emailResp: email,
         totalPessoas: quantidadePessoas,
         horasTotais: transformarHoras(tempoGeralMili),
         porCentroCusto: tempoPorCC,

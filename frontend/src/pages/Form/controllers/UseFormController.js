@@ -4,6 +4,7 @@ import api from '../../../services/api.js';
 import { Navigate, useNavigate } from 'react-router-dom'
 import { novoForm, validarFormularios } from '../models/formModel.js';
 import { generatePDFController } from '../../../PDF/controller/generatePDFController.js'
+import { gerarPDFBase64 } from '../../../PDF/controller/base64Controller.js'
 
 export function useFormController() {
 
@@ -189,15 +190,37 @@ export function useFormController() {
         removerFuncionario: (id) => updateCurrentForm('funcionarios', currentForm.funcionarios.filter(f => f.id !== id)),
         adicionarForm,
         removerForm,
-        handleSubmit: (e) => {
+        handleSubmit: async (e) => {
             e.preventDefault();
             const { valid, toast: msg } = validarFormularios(forms);
             if (!valid) return toast.error(msg);
-            const dadosConsolidados = generatePDFController(forms);
-            toast.success("PDF Criado com Sucesso!");
-            navigate('/document', { state: { forms: dadosConsolidados } });
+            const dadosConsolidados = await generatePDFController(forms);
+            const pdfBase64 = await gerarPDFBase64(dadosConsolidados);
+            try {
+                /*   const { data: user } = await api.get("/auth/me");
+                  const body = {
+                      base64: pdfBase64,
+                      areas: [...new Set(
+                          dadosConsolidados.solicitacoes.map(
+                              (solicitacao) => solicitacao.departamento
+                          )
+                      )] 
+                      nomeResp: user.nome,
+                      sobrenomeResp: user.sobrenome,
+                      emailResp: user.email
+                  };
+  
+                  console.log(pdfBase64)
+                  const response = await api.post('/post/criarDoc', body) */
+                toast.success("PDF Criado com Sucesso!");
+                navigate('/document', { state: { forms: dadosConsolidados } });
 
-            toast.success("Formulário enviado!");
+                toast.success("Formulário enviado!");
+            } catch (err) {
+                console.log(err);
+            }
+
+
         }
     };
 }

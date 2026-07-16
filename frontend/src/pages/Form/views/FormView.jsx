@@ -37,7 +37,7 @@ export default function FormView({
     handleSubmit,
 }) {
     return (
-        <main className="self-center w-full flex items-center flex-col bg-[#ffffff] h-max lg:w-[85%]">
+        <main className="self-center w-full flex items-center flex-col bg-[#ffffff] h-max lg:w-[95%] xl:w-[80%]">
             <div className='self-end flex flex-col w-full items-center text-blue-300 font-semibold justify-start p-2 gap-5'>
                 <FormIcon width={40} height={40} />
                 <p className="flex w-[80%] self-center justify-center font-semibold text-gray-400 border-gray-300 pb-2 border-b-2 rounded">Formulário - Solicitação HE</p>

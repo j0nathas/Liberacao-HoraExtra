@@ -14,6 +14,8 @@ export default function DocumentView() {
         return <Navigate to="/form" replace />;
     }
 
+    console.log(formsData)
+
     return (
         <PDFViewer width="100%" height="800" style={{ border: 'none' }}>
             <DocumentPDF dadosConsolidados={formsData} />

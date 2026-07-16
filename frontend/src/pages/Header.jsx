@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext'
-import { useNavigate, Navigate } from 'react-router-dom'
+import { useNavigate, Navigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import api from '../services/api';
 
@@ -33,6 +33,7 @@ export default function Header() {
     const [hamburguer, setHamburguer] = useState(false);
     const navigate = useNavigate();
     const { user } = useAuth();
+    const location = useLocation();
     const [profileOpen, setProfileOpen] = useState(false);
 
     useEffect(() => {
@@ -83,7 +84,10 @@ export default function Header() {
                 {hamburguer && (
                     <div className='absolute top-full z-10 left-0 flex-col justify-center items-center w-5/12 md:w-3/12 lg:w-2/12 bg-white rounded-b-lg gap-5 overflow-hidden shadow-xl'>
                         {btnMenu.map((btn) => (
-                            <button key={btn.path} onClick={() => { navigate(btn.path); setHamburguer(false) }} className='flex items-center gap-2 bg-white w-full border-b-1 p-2 text-gray-500 border-gray-200 transition hover:bg-gray-100 active:bg-blue-100 active:text-blue-500'>
+                            <button key={btn.path} onClick={() => { navigate(btn.path); setHamburguer(false) }} className={`${location.pathname === btn.path ? 'bg-blue-100 text-blue-600' : 'bg-white text-gray-500 hover:bg-gray-100 active:text-blue-500'}
+                            flex items-center gap-2  w-full border-b-1 p-2  border-gray-200 transition `}
+                                disabled={location.pathname === btn.path ? true : false}
+                            >
                                 {btn.icon}{btn.name}
                             </button>
                         ))}

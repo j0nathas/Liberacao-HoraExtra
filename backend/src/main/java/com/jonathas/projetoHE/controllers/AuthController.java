@@ -114,6 +114,7 @@ public class AuthController {
 
         return ResponseEntity.ok(
                 new MeResponseDTO(
+                        usuario.getId(),
                         usuario.getLogin(),
                         usuario.getNome(),
                         usuario.getSobrenome(),
