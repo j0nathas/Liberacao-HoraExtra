@@ -91,7 +91,10 @@ export default function FormView({
                         onChange={setMotivoTexto}
                         onSelect={(item) => {
                             setMotivoTexto(item?.name ?? '');
-                            updateCurrentForm('motivoMacro', item?.name ?? '');
+                            updateCurrentForm({
+                                motivoMacro: item?.name ?? '',
+                                motivoMacroId: item?.id ?? ''
+                            });
                         }}
                     />
                 </div>
@@ -179,7 +182,7 @@ export default function FormView({
                                 disabled={!currentForm.departamento}
                                 onSelect={(item) => {
                                     setMaquinaTexto(item?.name ?? '');
-                                    setMaquinaSelecionada(item?.name ?? null);
+                                    setMaquinaSelecionada(item);
                                 }}
                                 placeholder={currentForm.departamento ? "Selecione a máquina" : "Selecione um departamento primeiro"}
                             />
@@ -202,7 +205,7 @@ export default function FormView({
                         currentForm.funcionarios.map((funcionario) => (
                             <li key={funcionario.id} className="bg-blue-100 text-blue-400 font-semibold py-3 px-4 rounded-xl flex flex-col justify-between items-center animate-fade-in relative">
                                 <label htmlFor="" className="text-ellipsis whitespace-nowrap">{funcionario.name}</label>
-                                <label htmlFor="" className="text-[0.6rem] text-blue-300">{funcionario.maquina}</label>
+                                <label htmlFor="" className="text-[0.6rem] text-blue-300">{funcionario.maquina.nome}</label>
                                 <button
                                     type="button"
                                     onClick={() => { removerFuncionario(funcionario.id); }}

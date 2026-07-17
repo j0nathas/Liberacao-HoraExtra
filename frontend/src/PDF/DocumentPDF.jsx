@@ -498,7 +498,7 @@ function SolicitacaoBloco({ solicitacao, index }) {
                                     return empresaEncontrada ? empresaEncontrada.formatado : func.empresa;
                                 })()}</Text>
                                 <Text style={[styles.valueRegular, styles.colCargo]}>{func.cargo || "—"}</Text>
-                                <Text style={[styles.valueRegular, styles.colMaquina]}>{func.maquina || "—"}</Text>
+                                <Text style={[styles.valueRegular, styles.colMaquina]}>{func.maquina.nome || "—"}</Text>
                             </View>
                         ))
                     )}

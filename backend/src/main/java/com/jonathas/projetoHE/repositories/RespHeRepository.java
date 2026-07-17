@@ -6,6 +6,8 @@ import java.util.Optional;
 
 public interface RespHeRepository extends JpaRepository<RespHE, Long> {
 
+    Optional<RespHE> findById(int id);
+
     Optional<RespHE> findByLogin(String login);
 
     Optional<RespHE> findByEmail(String email);

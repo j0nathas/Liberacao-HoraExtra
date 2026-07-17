@@ -1,8 +1,8 @@
 package com.jonathas.projetoHE.controllers;
 
-import com.jonathas.projetoHE.model.Departamento;
 import com.jonathas.projetoHE.model.Funcionarios;
 import com.jonathas.projetoHE.model.MotivosMacro;
+import com.jonathas.projetoHE.model.listaMaquinas;
 import com.jonathas.projetoHE.repositories.DepartamentoRepository;
 import com.jonathas.projetoHE.repositories.FuncionariosRepository;
 import com.jonathas.projetoHE.repositories.MotivosMacroRepository;
@@ -38,8 +38,7 @@ public class QueryController {
     }
 
     @GetMapping("/maquinasPorDepartamento")
-    public ResponseEntity<List<String>> listarMaquinasPorDepartamento(@RequestParam(name = "selecao") String selecao) {
-        System.out.println("Chegou no controller! Filtro: " + selecao); // Se isso não aparecer no console, é Spring Security.
+    public ResponseEntity<List<listaMaquinas>> listarMaquinasPorDepartamento(@RequestParam(name = "selecao") String selecao) {
         return ResponseEntity.ok(departamentoRepository.maquinasPorDepartamento(selecao));
     }
 

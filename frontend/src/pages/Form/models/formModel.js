@@ -10,6 +10,7 @@ export function novoForm(id) {
     return {
         id,
         motivoMacro: '',
+        motivoMacroId: '',
         motivoDetalhado: '',
         departamento: '',
         inicio: '',

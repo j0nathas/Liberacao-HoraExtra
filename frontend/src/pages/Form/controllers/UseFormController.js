@@ -16,11 +16,16 @@ export function useFormController() {
     const [nextId, setNextId] = useState(2);
     const currentForm = forms[currentFormIndex];
 
-    const updateCurrentForm = useCallback((field, value) => {
+    const updateCurrentForm = useCallback((updates, value) => {
         setForms((prev) =>
-            prev.map((form, idx) =>
-                idx === currentFormIndex ? { ...form, [field]: value } : form
-            )
+            prev.map((form, idx) => {
+                if (idx !== currentFormIndex) return form;
+
+                if (typeof updates === 'string') {
+                    return { ...form, [updates]: value };
+                }
+                return { ...form, ...updates };
+            })
         );
     }, [currentFormIndex]);
 
@@ -107,7 +112,12 @@ export function useFormController() {
                 const { data } = await api.get(`/query/maquinasPorDepartamento`, {
                     params: { selecao: currentForm.departamento }
                 });
-                setListaMaquinas(data.map((item, index) => ({ id: index, name: item })));
+                setListaMaquinas(
+                    data.map((item) => ({
+                        id: item.codMaquina,
+                        name: item.maquina
+                    }))
+                );
             } catch (err) { console.error(err); }
         }
         carregarMaquinas();
@@ -158,7 +168,13 @@ export function useFormController() {
 
         updateCurrentForm('funcionarios', [
             ...currentForm.funcionarios,
-            { ...funcionarioSelecionado, maquina: maquinaSelecionada },
+            {
+                ...funcionarioSelecionado,
+                maquina: {
+                    id: maquinaSelecionada.id,
+                    nome: maquinaSelecionada.name
+                }
+            },
         ]);
 
         setFuncionarioSelecionado(null);
@@ -197,7 +213,36 @@ export function useFormController() {
             const dadosConsolidados = await generatePDFController(forms);
             const pdfBase64 = await gerarPDFBase64(dadosConsolidados);
             try {
-                /*   const { data: user } = await api.get("/auth/me");
+
+                await Promise.all(
+                    dadosConsolidados.solicitacoes.map((solicitacao) => {
+                        const formBody = {
+                            data: dadosConsolidados.data,
+                            id_user: dadosConsolidados.idResp,
+                            id_motivo_macro: solicitacao.motivoMacroId,
+                            motivo_detalhado: solicitacao.motivoDetalhado,
+                            departamento: solicitacao.departamento,
+                            turno: solicitacao.turno,
+                            inicio: new Date(solicitacao.inicio),
+                            fim: new Date(solicitacao.fim),
+                            funcionarios: solicitacao.funcionarios.map((funcionario) => ({
+                                id_funcionario: funcionario.id,
+                                id_maquina: funcionario.maquina.id
+                            }))
+                        };
+
+                        return api.post('/solicitacoes/enviar', formBody);
+                    })
+                );
+
+                const formBody = {
+                    data: dadosConsolidados.data,
+                    id_user: dadosConsolidados.idResp,
+                    id_motivo_macro: dadosConsolidados.motivoMacroId,
+                    motivo_detalhado: dadosConsolidados
+                }
+
+                /*
                   const body = {
                       base64: pdfBase64,
                       areas: [...new Set(
@@ -205,9 +250,9 @@ export function useFormController() {
                               (solicitacao) => solicitacao.departamento
                           )
                       )] 
-                      nomeResp: user.nome,
-                      sobrenomeResp: user.sobrenome,
-                      emailResp: user.email
+                      nomeResp: dadosConsolidados.nomeResp,
+                      sobrenomeResp: dadosConsolidados.sobrenomeResp,
+                      emailResp: dadosConsolidados.emailResp
                   };
   
                   console.log(pdfBase64)

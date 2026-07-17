@@ -64,6 +64,7 @@ export async function generatePDFController(dados) {
 
     return {
         idResp: id,
+        data: new Date(),
         nomeResp: nome,
         sobrenomeResp: sobrenome,
         emailResp: email,
