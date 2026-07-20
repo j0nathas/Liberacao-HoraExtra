@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequiredArgsConstructor
 public class PostController {
 
+    /*
     private final ZapSignService zapSignService;
 
     @PostMapping("/criarDoc")
@@ -22,8 +23,9 @@ public class PostController {
 
         System.out.println("Cookie: " + request.getHeader("Cookie"));
 
-        String resposta = zapSignService.criarDocumento(dto);
+        String resposta = String.valueOf(zapSignService.criarDocumento(dto));
 
         return ResponseEntity.ok(resposta);
-    }
+    } */
+
 }

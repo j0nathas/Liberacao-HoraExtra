@@ -16,5 +16,5 @@ public interface DepartamentoRepository extends JpaRepository<Departamento, Stri
     @Query("SELECT d.departamento FROM Departamento d GROUP BY d.departamento ORDER BY d.departamento DESC")
     List<String> listarDepartamentos();
 
-    Optional<Departamento> findByCodMaquina(Integer codMaquina);
+    Optional<Departamento> findByCodMaquina(String codMaquina);
 }

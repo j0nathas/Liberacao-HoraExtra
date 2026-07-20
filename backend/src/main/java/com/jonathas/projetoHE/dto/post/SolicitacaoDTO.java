@@ -7,6 +7,8 @@ public record SolicitacaoDTO(
 
         LocalDateTime data,
 
+        String base64,
+
         int id_user,
 
         int id_motivo_macro,

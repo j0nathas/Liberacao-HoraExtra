@@ -2,6 +2,7 @@ package com.jonathas.projetoHE.services;
 
 import com.jonathas.projetoHE.dto.zapsign.DocsRequestDTO;
 import com.jonathas.projetoHE.dto.zapsign.DocumentDTO;
+import com.jonathas.projetoHE.dto.zapsign.DocumentResponseDTO;
 import com.jonathas.projetoHE.dto.zapsign.SignerRequestDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +22,7 @@ public class ZapSignService {
     @Value("${zapsign.token}")
     private String token;
 
-    public String criarDocumento(DocumentDTO dto) {
+    public DocumentResponseDTO criarDocumento(DocumentDTO dto) {
 
         DocsRequestDTO request =
                 DocsRequestDTO.builder()
@@ -34,11 +35,19 @@ public class ZapSignService {
                         .signers(List.of(
 
                                 SignerRequestDTO.builder()
+                                        .name("Jonathas Oliveira")
+                                        .email("jonathas.oliveira@magna.com")
+                                        .authMode("assinaturaTela")
+                                        .sendAutomaticEmail(true)
+                                        .build()
+
+                                /*
+                                SignerRequestDTO.builder()
                                         .name(dto.getNomeResp() + " " + dto.getSobrenomeResp())
                                         .email(dto.getEmailResp())
                                         .authMode("assinaturaTela")
                                         .sendAutomaticEmail(true)
-                                        .build()
+                                        .build() */
 
                         ))
                         .build();
@@ -58,7 +67,7 @@ public class ZapSignService {
                     .header("Authorization", "Bearer " + token)
                     .body(json)
                     .retrieve()
-                    .body(String.class);
+                    .body(DocumentResponseDTO.class);
 
         } catch (RestClientResponseException e) {
 

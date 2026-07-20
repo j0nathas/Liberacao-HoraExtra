@@ -146,6 +146,8 @@ export function useFormController() {
 
     ////////////////// SINCRONIZAÇÃO DE ABAS ////////////////////
 
+    const [loading, setLoading] = useState(false);
+
 
     function scrollPage(value) {
         window.scrollTo({
@@ -206,18 +208,21 @@ export function useFormController() {
         removerFuncionario: (id) => updateCurrentForm('funcionarios', currentForm.funcionarios.filter(f => f.id !== id)),
         adicionarForm,
         removerForm,
+        loading,
         handleSubmit: async (e) => {
             e.preventDefault();
-            const { valid, toast: msg } = validarFormularios(forms);
-            if (!valid) return toast.error(msg);
-            const dadosConsolidados = await generatePDFController(forms);
-            const pdfBase64 = await gerarPDFBase64(dadosConsolidados);
+            setLoading(true);
             try {
+                const { valid, toast: msg } = validarFormularios(forms);
+                if (!valid) return toast.error(msg);
+                const dadosConsolidados = await generatePDFController(forms);
+                const pdfBase64 = await gerarPDFBase64(dadosConsolidados);
 
                 await Promise.all(
                     dadosConsolidados.solicitacoes.map((solicitacao) => {
                         const formBody = {
                             data: dadosConsolidados.data,
+                            base64: pdfBase64,
                             id_user: dadosConsolidados.idResp,
                             id_motivo_macro: solicitacao.motivoMacroId,
                             motivo_detalhado: solicitacao.motivoDetalhado,
@@ -235,34 +240,16 @@ export function useFormController() {
                     })
                 );
 
-                const formBody = {
-                    data: dadosConsolidados.data,
-                    id_user: dadosConsolidados.idResp,
-                    id_motivo_macro: dadosConsolidados.motivoMacroId,
-                    motivo_detalhado: dadosConsolidados
-                }
-
-                /*
-                  const body = {
-                      base64: pdfBase64,
-                      areas: [...new Set(
-                          dadosConsolidados.solicitacoes.map(
-                              (solicitacao) => solicitacao.departamento
-                          )
-                      )] 
-                      nomeResp: dadosConsolidados.nomeResp,
-                      sobrenomeResp: dadosConsolidados.sobrenomeResp,
-                      emailResp: dadosConsolidados.emailResp
-                  };
-  
-                  console.log(pdfBase64)
-                  const response = await api.post('/post/criarDoc', body) */
                 toast.success("PDF Criado com Sucesso!");
                 navigate('/document', { state: { forms: dadosConsolidados } });
 
                 toast.success("Formulário enviado!");
             } catch (err) {
                 console.log(err);
+            }
+
+            finally {
+                setLoading(false);
             }
 
 

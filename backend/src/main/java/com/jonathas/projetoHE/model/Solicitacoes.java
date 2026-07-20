@@ -39,4 +39,8 @@ public class Solicitacoes {
 
     private LocalDateTime inicio;
     private LocalDateTime fim;
+
+    private String status;
+    private String token;
+
 }

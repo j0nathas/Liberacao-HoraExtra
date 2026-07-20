@@ -8,6 +8,7 @@ import ClearIcon from '../../../../img/clear.svg?react';
 import TrashIcon from '../../../../img/trash.svg?react';
 import { hoje } from '../models/formModel.js';
 import { Shifts } from '../components/dadosFake.js';
+import { Loader2 } from 'lucide-react';
 
 export default function FormView({
     forms,
@@ -229,9 +230,10 @@ export default function FormView({
                     </nav>
                     <button
                         type="submit"
-                        className="bg-blue-300 text-white font-semibold py-3 px-6 rounded-xl hover:bg-blue-400 active:bg-blue-500 transition"
+                        className="bg-blue-300 text-white font-semibold py-3 px-6 rounded-xl hover:bg-blue-400 active:bg-blue-500 transition flex justify-center items-center"
+                        disabled={loading}
                     >
-                        Enviar Solicitações
+                        {loading ? <Loader2 className='animate-spin' /> : 'Enviar Solicitações'}
                     </button>
                 </div>
             </form>
