@@ -31,7 +31,7 @@ export default function LoginScreen() {
 
             await loadUser();
 
-            navigate("/home");
+            navigate("/form");
 
         } catch (err) {
             if (err.response?.status === 401) {
@@ -52,7 +52,6 @@ export default function LoginScreen() {
             setLoading(false);
 
         }
-        toast.success(`Bem vindo de volta, ${user.nome}!`);
     };
 
     return (
