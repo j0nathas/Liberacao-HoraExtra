@@ -26,6 +26,7 @@ public class CorpoEmailService {
                         
                         <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #2e6c80; margin: 20px 0;">
                             <p style="margin: 5px 0;"><strong>Departamento:</strong> %s</p>
+                            <p style="margin: 5px 0;"><strong> 🟢 Início:</strong> %s | <strong> 🔴 Fim:</strong> %s</p>
                             <p style="margin: 5px 0;"><strong>Total de Pessoas:</strong> %d</p>
                             <p style="margin: 5px 0;"><strong>Horas Previstas:</strong> %s</p>
                             <p style="margin: 8px 0;"><strong>Nome do Documento:</strong> %s</p>
@@ -45,7 +46,9 @@ public class CorpoEmailService {
                 </body>
                 </html>
                 """.formatted(
-                solicitacao.getDepartamento(), // 1º %s
+                solicitacao.getDepartamento(),
+                solicitacao.getInicio(),
+                solicitacao.getFim(),
                 totalPessoas,                  // 2º %d (mudei para decimal)
                 horasTotais,                   // 3º %s
                 dto.name(),                    // 4º %s

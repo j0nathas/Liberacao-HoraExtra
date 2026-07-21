@@ -33,7 +33,7 @@ public class TextUtils {
         Duration duracaoTotal = duracaoIndividual.multipliedBy(totalPessoas);
 
         long horas = duracaoTotal.toHours();
-        long minutos = duracaoTotal.toMinutes() % 60; 
+        long minutos = duracaoTotal.toMinutes() % 60;
 
         return String.format("%dh%02dm", horas, minutos);
     }
