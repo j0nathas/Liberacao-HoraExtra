@@ -21,6 +21,7 @@ import toast, { Toaster } from 'react-hot-toast';
 const btnMenu = [
     { name: "Home", path: "/home", icon: <HomeIcon width={35} height={35} /> },
     { name: "Form", path: "/form", icon: <FormIcon width={35} height={35} /> },
+    { name: "Enviados", path: "/sent", icon: <FormIcon width={35} height={35} /> },
     { name: "Document", path: "/document", icon: <FormIcon width={35} height={35} /> },
     /* { name: Chart, path: "/Chart", icon: "", element: Chart } */
 ]

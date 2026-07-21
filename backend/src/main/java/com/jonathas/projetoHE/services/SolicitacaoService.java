@@ -102,11 +102,6 @@ public class SolicitacaoService {
                 solicitacoesFuncionariosRepository.save(relacao);
             }
 
-            sentEmailService.enviarEmail(
-                    usuario.getEmail(),
-                    "HORA EXTRA ENVIADA",
-                    "Sua solicitação de hora extra foi enviada!");
-
             return solicitacao;
         } finally {
             requestLockService.liberar((long) dto.id_user());

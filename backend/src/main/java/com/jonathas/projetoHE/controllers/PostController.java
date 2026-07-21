@@ -1,6 +1,7 @@
 package com.jonathas.projetoHE.controllers;
 
 import com.jonathas.projetoHE.dto.zapsign.DocumentDTO;
+import com.jonathas.projetoHE.dto.zapsign.SignedBodyDTO;
 import com.jonathas.projetoHE.services.ZapSignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

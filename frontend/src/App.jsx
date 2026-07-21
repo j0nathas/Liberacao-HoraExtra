@@ -5,10 +5,12 @@ import Form from './pages/Form/Form.jsx'
 import Home from './pages/Home.jsx'
 import NotFound from './pages/NotFound.jsx'
 import DocumentView from './PDF/DocumentView.jsx'
+import SentForms from './pages/SentForms/SentForms.jsx';
 
 const btnMenu = [
   { path: "/home", element: Home },
   { path: "/form", element: Form },
+  { path: "/sent", element: SentForms },
   { path: "/document", element: DocumentView },
 ]
 
