@@ -3,6 +3,7 @@
 #root {
   display: flex;
   flex-direction: column;
+  height: 100vh;
 }
 
 @theme {
@@ -10,6 +11,9 @@
   --animate-cascata-profile: cascata-profile 0.4s ease-out;
   --animate-name-profile: name-profile 0.4s ease-out;
   --animate-bye: bye 1s ease-out;
+  --animate-open-list: open-list 0.3s ease-out;
+  --animate-close-list: close-list 0.3s ease-out;
+  --animate-list-in: list-in 0.3s ease-out;
 
   @keyframes fade-in {
     from {
@@ -80,6 +84,36 @@
 
     100% {
       transform: rotate(0deg);
+    }
+  }
+
+  @keyframes open-list {
+    from {
+      rotate: 0deg;
+    }
+
+    to {
+      roate: 180deg;
+    }
+  }
+
+  @keyframes close-list {
+    from {
+      rotate: 180deg;
+    }
+
+    to {
+      roate: 0deg;
+    }
+  }
+
+  @keyframes list-in {
+    from {
+      max-height: 0;
+    }
+
+    to {
+      max-height: 500px;
     }
   }
 

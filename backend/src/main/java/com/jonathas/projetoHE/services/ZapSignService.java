@@ -39,6 +39,20 @@ public class ZapSignService {
                                         .email("jonathas.oliveira@magna.com")
                                         .authMode("assinaturaTela")
                                         .sendAutomaticEmail(true)
+                                        .build(),
+
+                                SignerRequestDTO.builder()
+                                        .name("Jonathan Veloso")
+                                        .email("jonathan.veloso@magna.com")
+                                        .authMode("assinaturaTela")
+                                        .sendAutomaticEmail(true)
+                                        .build(),
+
+                                SignerRequestDTO.builder()
+                                        .name("Fabricio Fonseca")
+                                        .email("FABRICIO.FONSECA@magna.com")
+                                        .authMode("assinaturaTela")
+                                        .sendAutomaticEmail(true)
                                         .build()
 
                                 /*

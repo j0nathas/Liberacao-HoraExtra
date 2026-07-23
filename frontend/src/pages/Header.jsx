@@ -13,6 +13,7 @@ import ProfileIcon from '../../img/profile.svg?react'
 import ClockIcon from '../../img/clock.svg?react'
 import LogoutIcon from '../../img/logout.svg?react'
 import ConfigIcon from '../../img/config.svg?react'
+import SentIcon from '../../img/sent-date.svg?react'
 
 import ByeIcon from '../../img/bye.svg?react'
 import toast, { Toaster } from 'react-hot-toast';
@@ -21,8 +22,7 @@ import toast, { Toaster } from 'react-hot-toast';
 const btnMenu = [
     { name: "Home", path: "/home", icon: <HomeIcon width={35} height={35} /> },
     { name: "Form", path: "/form", icon: <FormIcon width={35} height={35} /> },
-    { name: "Enviados", path: "/sent", icon: <FormIcon width={35} height={35} /> },
-    { name: "Document", path: "/document", icon: <FormIcon width={35} height={35} /> },
+    { name: "Enviados", path: "/sent", icon: <SentIcon width={35} height={35} /> },
     /* { name: Chart, path: "/Chart", icon: "", element: Chart } */
 ]
 

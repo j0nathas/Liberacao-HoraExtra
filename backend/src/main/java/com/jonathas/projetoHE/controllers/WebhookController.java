@@ -60,7 +60,7 @@ public class WebhookController {
 
                 String corpoEmail = corpoEmailService.construirCorpoEmail(dto, solicitacao, funcionarios);
 
-                String[] emails = {"jonathas.oliveira@magna.com", "jonathan.veloso@magna.com", "leandro.almeida@magna.com"};
+                String[] emails = {"jonathas.oliveira@magna.com", "jonathan.veloso@magna.com", "FABRICIO.FONSECA@magna.com"};
 
                 sentEmailService.enviarEmail(
                         emails,
