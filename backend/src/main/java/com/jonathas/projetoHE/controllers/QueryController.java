@@ -1,15 +1,12 @@
 package com.jonathas.projetoHE.controllers;
 
-import com.jonathas.projetoHE.model.Funcionarios;
-import com.jonathas.projetoHE.model.MotivosMacro;
-import com.jonathas.projetoHE.model.listaMaquinas;
-import com.jonathas.projetoHE.repositories.DepartamentoRepository;
-import com.jonathas.projetoHE.repositories.FuncionariosRepository;
-import com.jonathas.projetoHE.repositories.MotivosMacroRepository;
+import com.jonathas.projetoHE.model.*;
+import com.jonathas.projetoHE.repositories.*;
 import com.jonathas.projetoHE.services.TextUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +23,12 @@ public class QueryController {
 
     @Autowired
     private DepartamentoRepository departamentoRepository;
+
+    @Autowired
+    private SolicitacaoRepository solicitacaoRepository;
+
+    @Autowired
+    private RespHeRepository respHeRepository;
 
     @GetMapping("/motivosMacro")
     public ResponseEntity<List<MotivosMacro>> listarMotivos() {
@@ -57,4 +60,24 @@ public class QueryController {
 
         return ResponseEntity.ok(resultados);
     }
+
+    @GetMapping("/solicitacoes")
+    public ResponseEntity<List<Solicitacoes>> solicitacoesPorUsuario(Authentication authentication) {
+        String login = authentication.getName();
+
+        RespHE usuario = respHeRepository.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        return ResponseEntity.ok(solicitacaoRepository.findAllByUsuarioIdOrderByIdDesc(usuario.getId()));
+    }
+/*
+    @GetMapping("/solicitacoes/info")
+    public ResponseEntity<List<Solicitacoes>> solicitacoesInfo(int id) {
+        String login = authentication.getName();
+
+        RespHE usuario = respHeRepository.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        return ResponseEntity.ok(solicitacaoRepository.findAllByUsuarioId(usuario.getId()));
+    } */
 }

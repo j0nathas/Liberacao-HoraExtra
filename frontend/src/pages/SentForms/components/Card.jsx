@@ -3,7 +3,7 @@ import SentIcon from '../../../../img/sent-date.svg?react'
 
 
 
-export default function Card({ status, openInfo }) {
+export default function Card({ dados, status, openInfo }) {
     const [viewCard, setViewCard] = useState(false);
 
 
@@ -16,9 +16,9 @@ export default function Card({ status, openInfo }) {
 
 
                     <div className="">
-                        <p>#ID 34</p>
-                        <p className="text-[11px] text-gray-400">Falta de Componente - Comprado</p>
-                        <p className={`text-[10px]  ${status ? "text-amber-300" : "text-green-300"}`}>Montagem de Lanternas</p>
+                        <p>#ID {dados.id}</p>
+                        <p className="text-[11px] text-gray-400">{dados.motivosMacro.descricao}</p>
+                        <p className={`text-[10px]  ${status ? "text-amber-300" : "text-green-300"}`}>{dados.departamento}</p>
                     </div>
 
                     <div className='flex flex-col gap-1'>
@@ -32,7 +32,7 @@ export default function Card({ status, openInfo }) {
 
                         <div className='flex items-center justify-center gap-1 text-gray-300 italic'>
                             <SentIcon width={15} height={15} />
-                            <p className='text-[10px]'>02/06/2026</p>
+                            <p className='text-[10px]'>{dados.data.split('T')[0]}</p>
                         </div>
                     </div>
 
@@ -41,9 +41,9 @@ export default function Card({ status, openInfo }) {
 
                 <section className="grid grid-cols-3 w-full justify-center items-center text-center text-sm rounded-3xl bg-gray-50 text-gray-400">
 
-                    <p className=" py-2 px-4 border-r-3 font-semibold border-white">06/07/2026</p>
+                    <p className=" py-2 px-4 border-r-3 font-semibold border-white">{dados.inicio.split('T')[0]}</p>
 
-                    <p className=" py-2 px-4 border-r-3 font-semibold border-white">1º Turno</p>
+                    <p className=" py-2 px-4 border-r-3 font-semibold border-white">{dados.turno}</p>
 
                     <p className=" py-2 px-4 font-semibold">30h</p>
 
@@ -51,7 +51,7 @@ export default function Card({ status, openInfo }) {
                 </section>
 
                 <button className="w-[50%] self-center bg-linear-to-r from-blue-500 to-[#7aadff] rounded-2xl text-white shadow-[0_0_10px_1px] shadow-blue-200 font-semibold py-2"
-                    onClick={openInfo}
+                    onClick={() => openInfo(dados)}
                 >Visualizar</button>
 
             </div>

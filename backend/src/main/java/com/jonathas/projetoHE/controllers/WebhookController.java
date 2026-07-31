@@ -14,57 +14,50 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/webhook")
 @RequiredArgsConstructor
 public class WebhookController {
 
-    /*
-    private final ZapSignService zapSignService;
-
-    @PostMapping("/criarDoc")
-    public ResponseEntity<?> criarDocumento(
-            @RequestBody DocumentDTO dto,
-            HttpServletRequest request
-    ) {
-
-        System.out.println("Cookie: " + request.getHeader("Cookie"));
-
-        String resposta = String.valueOf(zapSignService.criarDocumento(dto));
-
-        return ResponseEntity.ok(resposta);
-    } */
-
     private final SentEmailService sentEmailService;
     private final SolicitacaoRepository solicitacaoRepository;
-    private final CorpoEmailService corpoEmailService; // Nome corrigido
+    private final CorpoEmailService corpoEmailService;
     private final SolicitacaoFuncionariosRepository solicitacaoFuncionariosRepository;
 
     @PostMapping("/zapsign")
     public ResponseEntity<Void> webhook(@RequestBody SignedBodyDTO dto) {
 
-        var solicitacaoOpt = solicitacaoRepository.findByToken(dto.token());
+        List<Solicitacoes> solicitacoes = solicitacaoRepository.findAllByToken(dto.token());
 
-        if (solicitacaoOpt.isEmpty()) {
+        if (solicitacoes.isEmpty()) {
             return ResponseEntity.ok().build();
         }
 
-        Solicitacoes solicitacao = solicitacaoOpt.get();
-
         if ("signed".equals(dto.status())) {
             try {
-                List<SolicitacoesFuncionarios> funcionarios =
-                        solicitacaoFuncionariosRepository.findAllBySolicitacoesId(solicitacao.getId());
+                Map<Long, List<SolicitacoesFuncionarios>> funcionariosPorSolicitacao = solicitacoes.stream()
+                        .collect(Collectors.toMap(
+                                Solicitacoes::getId,
+                                s -> solicitacaoFuncionariosRepository.findAllBySolicitacoesId(s.getId())
+                        ));
 
-                String corpoEmail = corpoEmailService.construirCorpoEmail(dto, solicitacao, funcionarios);
+                String corpoEmail = corpoEmailService.construirCorpoEmail(dto, solicitacoes, funcionariosPorSolicitacao);
 
-                String[] emails = {"jonathas.oliveira@magna.com", "jonathan.veloso@magna.com", "FABRICIO.FONSECA@magna.com"};
+                String departamentos = solicitacoes.stream()
+                        .map(Solicitacoes::getDepartamento)
+                        .distinct()
+                        .collect(Collectors.joining(", "));
+
+                String[] emails = {"jonathas.oliveira@magna.com" /* , "jonathan.veloso@magna.com", "FABRICIO.FONSECA@magna.com" */};
 
                 sentEmailService.enviarEmail(
                         emails,
-                        "Hora Extra Assinada - " + solicitacao.getDepartamento(),
+                        "Hora Extra Assinada - " + departamentos,
                         corpoEmail
                 );
 
@@ -75,5 +68,4 @@ public class WebhookController {
 
         return ResponseEntity.ok().build();
     }
-
 }

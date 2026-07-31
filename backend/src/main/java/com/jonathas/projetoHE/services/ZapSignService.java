@@ -4,6 +4,8 @@ import com.jonathas.projetoHE.dto.zapsign.DocsRequestDTO;
 import com.jonathas.projetoHE.dto.zapsign.DocumentDTO;
 import com.jonathas.projetoHE.dto.zapsign.DocumentResponseDTO;
 import com.jonathas.projetoHE.dto.zapsign.SignerRequestDTO;
+import com.jonathas.projetoHE.model.RespHE;
+import com.jonathas.projetoHE.repositories.RespHeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -18,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ZapSignService {
     private final RestClient restClient;
+    private final RespHeRepository respHeRepository;
 
     @Value("${zapsign.token}")
     private String token;
@@ -39,21 +42,21 @@ public class ZapSignService {
                                         .email("jonathas.oliveira@magna.com")
                                         .authMode("assinaturaTela")
                                         .sendAutomaticEmail(true)
-                                        .build(),
-
-                                SignerRequestDTO.builder()
-                                        .name("Jonathan Veloso")
-                                        .email("jonathan.veloso@magna.com")
-                                        .authMode("assinaturaTela")
-                                        .sendAutomaticEmail(true)
-                                        .build(),
-
-                                SignerRequestDTO.builder()
-                                        .name("Fabricio Fonseca")
-                                        .email("FABRICIO.FONSECA@magna.com")
-                                        .authMode("assinaturaTela")
-                                        .sendAutomaticEmail(true)
                                         .build()
+
+//                                SignerRequestDTO.builder()
+//                                        .name("Jonathan Veloso")
+//                                        .email("jonathan.veloso@magna.com")
+//                                        .authMode("assinaturaTela")
+//                                        .sendAutomaticEmail(true)
+//                                        .build(),
+//
+//                                SignerRequestDTO.builder()
+//                                        .name("Fabricio Fonseca")
+//                                        .email("FABRICIO.FONSECA@magna.com")
+//                                        .authMode("assinaturaTela")
+//                                        .sendAutomaticEmail(true)
+//                                        .build()
 
                                 /*
                                 SignerRequestDTO.builder()
@@ -70,11 +73,9 @@ public class ZapSignService {
         try {
 
             ObjectMapper mapper = new ObjectMapper();
-
             String json = mapper.writeValueAsString(request);
 
-
-            return restClient.post()
+            DocumentResponseDTO response = restClient.post()
                     .uri("/docs")
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
@@ -83,13 +84,22 @@ public class ZapSignService {
                     .retrieve()
                     .body(DocumentResponseDTO.class);
 
+            if (response == null) {
+                throw new RuntimeException("ZapSign retornou uma resposta vazia.");
+            }
+
+            return response;
+
         } catch (RestClientResponseException e) {
 
             System.out.println("Status: " + e.getStatusCode());
-            System.out.println("Headers: " + e.getResponseHeaders());
             System.out.println("Body: " + e.getResponseBodyAsString());
 
-            throw e;
+            throw new RuntimeException("Erro ao criar documento na ZapSign.", e);
+
+        } catch (Exception e) {
+
+            throw new RuntimeException("Falha ao comunicar com a ZapSign.", e);
         }
 
     }

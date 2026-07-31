@@ -36,6 +36,7 @@ export default function Header() {
     const { user } = useAuth();
     const location = useLocation();
     const [profileOpen, setProfileOpen] = useState(false);
+    const initials = `${user.nome[0]}${user.sobrenome[0]}`;
 
     useEffect(() => {
         toast.success(`Bem vindo de volta, ${user.nome}!`, {
@@ -103,30 +104,38 @@ export default function Header() {
                         <p>{user.nome[0]}{user.sobrenome[0]}</p>
                     </button>
 
-                    {
-                        profileOpen && (
-                            <>
-                                <p className='absolute left-[-110%] hidden translate-y-[-50%] translate-x-[-60%] top-6/12 w-max animate-name-profile font-light md:block lg:block'>{user.nome} {user.sobrenome}</p>
-                                <div className="absolute top-14 flex flex-col items-center gap-2 z-50 animate-cascata-profile">
-                                    {btnSettings.map((btn) => {
-                                        const Icon = btn.icon;
-
-                                        return (
-                                            <button
-                                                key={btn.name}
-                                                onClick={btn.function}
-                                                className="w-12 h-12 flex items-center justify-center rounded-full transition-all bg-white text-gray-600 shadow-[0px_0px_10px_0px_#d4d4d4a3] cursor-pointer hover:translate-y-[-3px] active:bg-gray-100 active:text-gray-700"
-                                            >
-                                                <Icon width={28} height={28} />
-                                            </button>
-                                        );
-                                    })}
-
+                    {profileOpen && (
+                        <div className="absolute right-0 top-[calc(100%+10px)] w-56 rounded-2xl bg-white border border-[#E4E8F1] shadow-[0_12px_32px_rgba(27,35,64,0.14)] overflow-hidden z-50 animate-cascata-profile">
+                            <div className="flex items-center gap-3 px-4 py-3 border-b border-[#E4E8F1]">
+                                <div className="w-9 h-9 rounded-full bg-[#E6F1FB] text-[#185FA5] flex items-center justify-center text-[0.78rem] font-semibold shrink-0">
+                                    {initials}
                                 </div>
-                            </>
+                                <div className="min-w-0">
+                                    <p className="text-[0.85rem] font-medium text-[#1B2340] truncate">{user.nome} {user.sobrenome}</p>
+                                    <p className="text-[0.6rem] text-gray-400 font-light">{user.email}</p>
+                                </div>
+                            </div>
 
-                        )
-                    }
+                            <div className="py-1.5">
+                                {btnSettings.map((btn) => {
+                                    const Icon = btn.icon;
+                                    return (
+                                        <button
+                                            key={btn.name}
+                                            onClick={btn.function}
+                                            className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-[0.85rem] transition-colors cursor-pointer
+                                                    ${btn.name === 'Logout'
+                                                    ? 'text-[#A32D2D] hover:bg-[#FCEBEB]'
+                                                    : 'text-[#1B2340] hover:bg-[#F4F6FB]'}`}
+                                        >
+                                            <Icon width={18} height={18} />
+                                            {btn.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
 
 
                 </section>

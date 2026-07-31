@@ -1,19 +1,74 @@
-package com.jonathas.projetoHE.services; // Alterado para pacote de service
+package com.jonathas.projetoHE.services;
 
 import com.jonathas.projetoHE.dto.zapsign.SignedBodyDTO;
 import com.jonathas.projetoHE.model.Solicitacoes;
 import com.jonathas.projetoHE.model.SolicitacoesFuncionarios;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CorpoEmailService {
 
-    public String construirCorpoEmail(SignedBodyDTO dto, Solicitacoes solicitacao, List<SolicitacoesFuncionarios> funcionarios) {
+    public String construirCorpoEmail(
+            SignedBodyDTO dto,
+            List<Solicitacoes> solicitacoes,
+            Map<Long, List<SolicitacoesFuncionarios>> funcionariosPorSolicitacao
+    ) {
 
-        int totalPessoas = funcionarios.size();
+        int totalPessoasGeral = 0;
+        List<TextUtils.SolicitacaoDuracao> duracoes = new java.util.ArrayList<>();
 
-        String horasTotais = TextUtils.calcularTempoDecorrido(solicitacao.getInicio(), solicitacao.getFim(), totalPessoas);
+        for (Solicitacoes s : solicitacoes) {
+            int qtd = funcionariosPorSolicitacao.getOrDefault(s.getId(), List.of()).size();
+            totalPessoasGeral += qtd;
+            duracoes.add(new TextUtils.SolicitacaoDuracao(
+                    s.getInicio().toLocalDateTime(),
+                    s.getFim().toLocalDateTime(),
+                    qtd
+            ));
+        }
+
+        String horasTotaisGeral = TextUtils.calcularTempoTotal(duracoes);
+
+        String listaDepartamentos = solicitacoes.stream()
+                .map(Solicitacoes::getDepartamento)
+                .distinct()
+                .collect(Collectors.joining(", "));
+
+        StringBuilder blocosDepartamentos = new StringBuilder();
+
+        for (Solicitacoes s : solicitacoes) {
+            int qtd = funcionariosPorSolicitacao.getOrDefault(s.getId(), List.of()).size();
+
+            String horasDepartamento = TextUtils.calcularTempoTotal(
+                    List.of(new TextUtils.SolicitacaoDuracao(
+                            s.getInicio().toLocalDateTime(),
+                            s.getFim().toLocalDateTime(),
+                            qtd
+                    ))
+            );
+
+            blocosDepartamentos.append("""
+                    <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #2e6c80; margin: 15px 0; border-radius: 4px;">
+                        <p style="margin: 5px 0;"><strong>Departamento:</strong> %s</p>
+                        <p style="margin: 5px 0;"><strong>Turno:</strong> %s</p>
+                        <p style="margin: 5px 0;"><strong> 🟢 Início:</strong> %s | <strong> 🔴 Fim:</strong> %s</p>
+                        <p style="margin: 5px 0;"><strong>Total de Pessoas:</strong> %d</p>
+                        <p style="margin: 5px 0;"><strong>Horas Previstas:</strong> %s</p>
+                    </div>
+                    """.formatted(
+                    s.getDepartamento(),
+                    s.getTurno(),
+                    s.getInicio().toLocalDateTime(),
+                    s.getFim().toLocalDateTime(),
+                    qtd,
+                    horasDepartamento
+            ));
+        }
 
         return """
                 <html>
@@ -24,11 +79,16 @@ public class CorpoEmailService {
                         <p>Olá,</p>
                         <p>Um documento de hora extra foi aprovado e já está disponível!</p>
                         
-                        <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #2e6c80; margin: 20px 0;">
-                            <p style="margin: 5px 0;"><strong>Departamento:</strong> %s</p>
-                            <p style="margin: 5px 0;"><strong> 🟢 Início:</strong> %s | <strong> 🔴 Fim:</strong> %s</p>
+                        <div style="background-color: #eef4f7; padding: 15px; border-left: 4px solid #007bff; margin: 20px 0; border-radius: 4px;">
+                            <p style="margin: 5px 0;"><strong>Locais:</strong> %s</p>
                             <p style="margin: 5px 0;"><strong>Total de Pessoas:</strong> %d</p>
-                            <p style="margin: 5px 0;"><strong>Horas Previstas:</strong> %s</p>
+                            <p style="margin: 5px 0;"><strong>Total de Horas:</strong> %s</p>
+                        </div>
+
+                        <h3 style="color: #2e6c80; margin-top: 25px;">Detalhamento por Departamento</h3>
+                        %s
+
+                        <div style="margin: 20px 0;">
                             <p style="margin: 8px 0;"><strong>Nome do Documento:</strong> %s</p>
                             <br>
                              <a style="padding: 10px 20px; background-color: #007bff; border-radius: 5px; 
@@ -46,14 +106,13 @@ public class CorpoEmailService {
                 </body>
                 </html>
                 """.formatted(
-                solicitacao.getDepartamento(),
-                solicitacao.getInicio(),
-                solicitacao.getFim(),
-                totalPessoas,                  // 2º %d (mudei para decimal)
-                horasTotais,                   // 3º %s
-                dto.name(),                    // 4º %s
-                dto.signed_file(),             // 5º %s (Link do botão)
-                dto.signed_file()              // 6º %s (Link texto)
+                listaDepartamentos,
+                totalPessoasGeral,
+                horasTotaisGeral,
+                blocosDepartamentos.toString(),
+                dto.name(),
+                dto.signed_file(),
+                dto.signed_file()
         );
     }
 }

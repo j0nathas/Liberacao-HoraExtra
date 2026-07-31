@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequiredArgsConstructor
 public class PostController {
 
-    /*
     private final ZapSignService zapSignService;
 
     @PostMapping("/criarDoc")
@@ -27,6 +26,6 @@ public class PostController {
         String resposta = String.valueOf(zapSignService.criarDocumento(dto));
 
         return ResponseEntity.ok(resposta);
-    } */
+    }
 
 }

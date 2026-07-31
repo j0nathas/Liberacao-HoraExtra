@@ -8,6 +8,9 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "solicitacoes")
@@ -20,7 +23,7 @@ public class Solicitacoes {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime data;
+    private ZonedDateTime data;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_user")
@@ -37,10 +40,14 @@ public class Solicitacoes {
 
     private String turno;
 
-    private LocalDateTime inicio;
-    private LocalDateTime fim;
+    private ZonedDateTime inicio;
+    private ZonedDateTime fim;
 
     private String status;
     private String token;
+
+    @OneToMany(mappedBy = "solicitacoes", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<SolicitacoesFuncionarios> funcionarios = new ArrayList<>();
+
 
 }

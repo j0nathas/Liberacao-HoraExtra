@@ -1,6 +1,6 @@
 package com.jonathas.projetoHE.services;
 
-import com.jonathas.projetoHE.dto.post.SolicitacaoDTO;
+import com.jonathas.projetoHE.dto.post.SolicitacoesDTO;
 import com.jonathas.projetoHE.dto.post.SolicitacaoFuncionarioDTO;
 import com.jonathas.projetoHE.dto.zapsign.DocumentDTO;
 import com.jonathas.projetoHE.dto.zapsign.DocumentResponseDTO;
@@ -12,7 +12,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import com.jonathas.projetoHE.services.ZapSignService;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Slf4j
@@ -30,7 +35,7 @@ public class SolicitacaoService {
     private final SentEmailService sentEmailService;
 
     @Transactional
-    public Solicitacoes salvar(SolicitacaoDTO dto){
+    public List<Solicitacoes> salvar(SolicitacoesDTO dto) {
 
         if (!requestLockService.adquirir((long) dto.id_user())) {
             throw new ResponseStatusException(
@@ -39,73 +44,101 @@ public class SolicitacaoService {
             );
         }
 
-        try{
-
+        try {
             RespHE usuario = respHeRepository.findById(dto.id_user())
                     .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-            MotivosMacro motivo = motivosMacroRepository.findById((long) dto.id_motivo_macro())
-                    .orElseThrow(() -> new RuntimeException("Motivo não encontrado"));
+            LocalDateTime agora = LocalDateTime.now();
 
-            Solicitacoes solicitacao = new Solicitacoes();
+            for (var solicitacaoDTO : dto.solicitacoes()) {
 
-            solicitacao.setUsuario(usuario);
-            solicitacao.setMotivosMacro(motivo);
-            solicitacao.setMotivoDetalhado(dto.motivo_detalhado());
-            solicitacao.setDepartamento(dto.departamento());
-            solicitacao.setTurno(dto.turno());
-            solicitacao.setInicio(dto.inicio());
-            solicitacao.setFim(dto.fim());
-            solicitacao.setData(dto.data());
+                motivosMacroRepository.findById((long) solicitacaoDTO.id_motivo_macro())
+                        .orElseThrow(() -> new RuntimeException("Motivo não encontrado"));
+
+                if (solicitacaoDTO.inicio().isBefore(agora)) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "A data/hora de início não pode ser anterior ao momento atual."
+                    );
+                }
+                if (!solicitacaoDTO.fim().isAfter(solicitacaoDTO.inicio())) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "A data/hora de término deve ser posterior à data/hora de início."
+                    );
+                }
+
+                for (SolicitacaoFuncionarioDTO item : solicitacaoDTO.funcionarios()) {
+                    funcionariosRepository.findById((long) item.id_funcionario())
+                            .orElseThrow(() -> new RuntimeException("Funcionário não encontrado"));
+
+                    departamentoRepository.findByCodMaquina(String.valueOf(item.id_maquina()))
+                            .orElseThrow(() -> new RuntimeException("Máquina não encontrada"));
+                }
+            }
 
 
-            DocumentDTO body = new DocumentDTO(
-                    dto.base64(),
-                    usuario.getNome(),
-                    usuario.getSobrenome(),
-                    usuario.getEmail()
-            );
+            String token = null;
+            String status = "error";
 
             try {
-
-            DocumentResponseDTO resposta = zapSignService.criarDocumento(body);
-
-                solicitacao.setToken(resposta.token());
-                solicitacao.setStatus(resposta.status());
-
+                DocumentDTO documentDTO = new DocumentDTO(
+                        dto.base64(), usuario.getNome(), usuario.getSobrenome(), usuario.getEmail());
+                DocumentResponseDTO resposta = zapSignService.criarDocumento(documentDTO);
+                token = resposta.token();
+                status = resposta.status();
             } catch (Exception e) {
-
-                solicitacao.setStatus("error");
-                log.error("Erro ao criar documento no ZapSign", e);
-
+                log.error("Falha ao criar documento no ZapSign para o usuário {}: {}",
+                        dto.id_user(), e.getMessage());
             }
 
+            List<Solicitacoes> solicitacoesSalvas = new ArrayList<>();
+            final String tokenFinal = token;
+            final String statusFinal = status;
 
-            solicitacao = solicitacaoRepository.save(solicitacao);
+            dto.solicitacoes().forEach(solicitacaoDTO -> {
 
+                MotivosMacro motivo = motivosMacroRepository.findById((long) solicitacaoDTO.id_motivo_macro())
+                        .orElseThrow(() -> new RuntimeException("Motivo não encontrado"));
 
-            for (SolicitacaoFuncionarioDTO item : dto.funcionarios()) {
+                Solicitacoes solicitacao = new Solicitacoes();
+                solicitacao.setUsuario(usuario);
+                solicitacao.setMotivosMacro(motivo);
+                solicitacao.setMotivoDetalhado(solicitacaoDTO.motivo_detalhado());
+                solicitacao.setDepartamento(solicitacaoDTO.departamento());
+                solicitacao.setTurno(solicitacaoDTO.turno());
+                solicitacao.setInicio(solicitacaoDTO.inicio().atZone(ZoneId.of("America/Sao_Paulo")));
+                solicitacao.setFim(solicitacaoDTO.fim().atZone(ZoneId.of("America/Sao_Paulo")));
+                solicitacao.setData(agora.atZone(ZoneId.of("America/Sao_Paulo")));
+                solicitacao.setToken(tokenFinal);
+                solicitacao.setStatus(statusFinal);
 
-                Funcionarios funcionario = funcionariosRepository.findById((long) item.id_funcionario())
-                        .orElseThrow(() -> new RuntimeException("Funcionário não encontrado"));
+                solicitacao = solicitacaoRepository.save(solicitacao);
 
-                Departamento maquina = departamentoRepository
-                        .findByCodMaquina(String.valueOf(item.id_maquina()))
-                        .orElseThrow(() -> new RuntimeException("Máquina não encontrada"));
+                for (SolicitacaoFuncionarioDTO item : solicitacaoDTO.funcionarios()) {
 
-                SolicitacoesFuncionarios relacao = new SolicitacoesFuncionarios();
+                    Funcionarios funcionario = funcionariosRepository.findById((long) item.id_funcionario())
+                            .orElseThrow(() -> new RuntimeException("Funcionário não encontrado"));
 
-                relacao.setSolicitacoes(solicitacao);
-                relacao.setFuncionarios(funcionario);
-                relacao.setMaquinas(maquina);
+                    Departamento maquina = departamentoRepository
+                            .findByCodMaquina(String.valueOf(item.id_maquina()))
+                            .orElseThrow(() -> new RuntimeException("Máquina não encontrada"));
 
-                solicitacoesFuncionariosRepository.save(relacao);
-            }
+                    SolicitacoesFuncionarios relacao = new SolicitacoesFuncionarios();
+                    relacao.setSolicitacoes(solicitacao);
+                    relacao.setFuncionario(funcionario);
+                    relacao.setMaquina(maquina);
 
-            return solicitacao;
+                    solicitacoesFuncionariosRepository.save(relacao);
+                }
+
+                solicitacoesSalvas.add(solicitacao);
+            });
+
+            return solicitacoesSalvas;
+
         } finally {
             requestLockService.liberar((long) dto.id_user());
         }
-
     }
 }

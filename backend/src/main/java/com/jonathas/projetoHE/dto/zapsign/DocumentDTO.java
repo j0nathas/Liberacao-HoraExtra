@@ -7,10 +7,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DocumentDTO {
-
-    private String base64;
-    private String nomeResp;
-    private String sobrenomeResp;
-    private String emailResp;
-
+    String base64;
+    String nomeResp;
+    String sobrenomeResp;
+    String emailResp;
 }
