@@ -61,6 +61,8 @@ public class WebhookController {
                         corpoEmail
                 );
 
+                solicitacaoRepository.atualizarStatusPorToken(dto.token(), dto.status());
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

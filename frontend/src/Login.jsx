@@ -29,8 +29,9 @@ export default function LoginScreen() {
                 password
             });
 
-            await loadUser();
+            const usuario = await loadUser();
 
+            toast.success(`Bem vindo de volta, ${usuario.nome}!`);
             navigate("/form");
 
         } catch (err) {
@@ -57,7 +58,7 @@ export default function LoginScreen() {
     return (
         <main className="w-full h-screen items-center justify-center flex flex-col mx-auto font-sans bg-radial-[at_50%_75%] from-sky-400 via-blue-400 to-indigo-900 to-100%">
 
-            <section className='flex flex-col h-full gap-10 bg-white p-7 md:w-[75%] md:h-[75%] rounded-3xl shadow-2xl lg:w-[40%]'>
+            <section className='w-full  flex flex-col h-full gap-10 bg-white p-7 md:w-[75%] md:h-[75%] md:rounded-3xl shadow-2xl lg:w-[40%]'>
                 <header className="flex flex-col">
                     <h1 className="text-[32px] font-bold text-blue-900 leading-tight mb-4">
                         Oh, Olá!

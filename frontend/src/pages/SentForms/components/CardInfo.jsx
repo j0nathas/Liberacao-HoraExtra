@@ -9,6 +9,7 @@ import { useState } from "react";
 export default function CardInfo({ dados, closeInfo }) {
 
     const [openLista, setOpenLista] = useState(false);
+    const status = dados.status === "pending" ? "pendente" : dados.status === "signed" ? "aprovado" : "Não Enviado";
     return (
         <AnimatePresence>
             <motion.div
@@ -46,15 +47,21 @@ export default function CardInfo({ dados, closeInfo }) {
                     <div className="flex flex-col px-6 pb-5 w-full gap-5">
 
                         <div className="grid auto-rows-max gap-2 grid-cols-[70%_30%] w-full text-gray-600">
-                            <div className="flex flex-col border-l-3 border-amber-300 pl-2 bg-linear-to-l to-amber-50 from-45%">
+                            <div className={`flex flex-col border-l-3 pl-2
+                                ${status === "pendente" ? "border-amber-300 bg-linear-to-l to-amber-50 from-45%" : status === "aprovado" ? "border-green-300 bg-linear-to-l to-green-50 from-45%" : "border-red-300 bg-linear-to-l to-red-50 from-45%"}`}>
                                 <h2 className="text-xl font-semibold italic">ID {dados.id}</h2>
                                 <p className="text-sm">{dados.motivosMacro.descricao}</p>
-                                <p className="text-[0.7em] lg:text-[0.8rem] font-semibold text-amber-500">{dados.departamento}</p>
+                                <p className={`text-[0.7em] lg:text-[0.8rem] font-semibold 
+                                 ${status === "pendente" ? "text-amber-700" : status === "aprovado" ? "text-green-700" : "text-red-700"}
+                                `}
+                                >{dados.departamento}</p>
                             </div>
                             <div className="w-full flex flex-col items-end justify-center gap-1">
-                                <div className={`flex items-center justify-center gap-1 bg-amber-100 py-2 rounded-2xl w-25`}>
-                                    <article className="w-2 h-2 bg-amber-300 rounded-full"></article>
-                                    <p className="text-sm lg:text-[1rem] font-semibold text-amber-700">Pendente</p>
+                                <div className={`flex items-center justify-center gap-1 bg-amber-100 py-2 rounded-2xl w-25
+                                    ${status === "pendente" ? "bg-amber-100 text-amber-700" : status === "aprovado" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}
+                                    `}>
+                                    <p className={`text-sm lg:text-[1rem] font-semibold first-letter:uppercase`}>{status}</p>
+                                    <article className={`w-2 h-2 rounded-full ${status === "pendente" ? "bg-amber-300" : status === "aprovado" ? "bg-green-300" : "bg-red-300"}`}></article>
                                 </div>
 
                                 <div className='flex items-center justify-center gap-1 text-gray-300 italic w-25'>
@@ -96,19 +103,20 @@ export default function CardInfo({ dados, closeInfo }) {
                         </div>
 
                         <div>
-                            <button className="font-semibold flex gap-2 items-center"
+                            <button className="font-semibold flex gap-1 items-center text-center"
                                 onClick={() => { setOpenLista(!openLista) }}
                             >
                                 Lista de Pessoas
+                                <p className="text-[0.75em] font-sans md:text-[0.9rem] text-gray-500">({dados.funcionarios.length})</p>
                                 <OpenIcon className={`text-gray-500 ${openLista ? 'animate-open-list rotate-180' : 'animate-close-list rotate-0 '}`} width={12} height={12} />
                             </button>
 
                             {openLista && (
 
-                                <section className="animate-list-in flex md:grid md:grid-cols-2 lg:grid-cols-3 md:auto-rows-max flex-col md:h-50 h-40 overflow-auto gap-2 bg-gray-100 p-3 rounded-2xl">
+                                <section className="animate-list-in flex md:grid md:grid-cols-2 lg:grid-cols-3 md:auto-rows-max flex-col md:h-50 h-40 overflow-auto gap-2 p-3">
 
                                     {dados.funcionarios.map((pessoa) => (
-                                        <nav key={pessoa.id} className="border-l-4 border-gray-400 pl-2 bg-white p-2 rounded-sm shadow-2xs">
+                                        <nav key={pessoa.id} className=" pl-2 bg-white p-2 rounded-[15px] border-1 border-gray-300">
                                             <div className="flex items-center justify-between gap-1">
                                                 <p className="text-sm font-semibold">{pessoa.funcionario.name}</p>
                                                 <p className="text-[0.6em] font-semibold opacity-40">{pessoa.funcionario.re}</p>

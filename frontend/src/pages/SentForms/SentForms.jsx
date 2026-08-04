@@ -35,12 +35,12 @@ export default function SentForms() {
 
     return (
         <>
-            <main className='flex w-[100%] h-[100%] flex-col relative'>
+            <main className='flex w-[100%] h-[90vh] flex-col relative overflow-hidden '>
                 <Header />
 
-                <div className='grid auto-rows-max md:grid-cols-2 md:gap-4 lg:grid-cols-3 p-2 h-full bg-linear-to-b from-blue-100 to-purple-100 w-full'>
+                <div className='grid overflow-auto auto-rows-max md:grid-cols-2 md:gap-4 lg:grid-cols-3 xl:grid-cols-4 p-2 h-full bg-linear-to-b from-blue-100 to-purple-100 w-full'>
 
-                    {dados.map((solicitacao) => (<Card dados={solicitacao} key={solicitacao.id} status={status} openInfo={handleInfoOpen} />))}
+                    {dados.map((solicitacao) => (<Card dados={solicitacao} key={solicitacao.id} openInfo={handleInfoOpen} />))}
 
                 </div>
 

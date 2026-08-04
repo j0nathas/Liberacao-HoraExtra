@@ -9,6 +9,7 @@ export const hoje = new Date().toISOString().split('T')[0] + 'T00:00';
 export function novoForm(id) {
     return {
         id,
+        planta: '',
         motivoMacro: '',
         motivoMacroId: '',
         motivoDetalhado: '',

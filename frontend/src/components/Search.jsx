@@ -1,6 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import SearchIcon from '../../img/search.svg?react'
-import ClearIcon from '../../img/clear.svg?react'
+import { Search as SearchIcon, X as ClearIcon, ChevronDown } from "lucide-react";
 
 function normalizar(texto) {
     return texto
@@ -21,16 +20,6 @@ export default function Search({
     disabled = false,
     disabledText = '',
     autoFocus = false,
-    noResultsText = "Nenhum resultado encontrado.",
-    containerStyle = "relative w-full",
-    inputStyle = "bg-gray-100 w-[100%] text-gray-600 py-3 pl-10 px-8 rounded-xl focus:ring-2 focus:ring-gray-100 outline-0 text-ellipsis placeholder:text-gray-400 disabled:placeholder:text-red-300 disabled:opacity-50 disabled:bg-red-100 disabled:cursor-not-allowed",
-    listStyle = "absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg",
-    itemStyle = "cursor-pointer px-4 py-2 hover:bg-gray-100 text-gray-700",
-    itemActiveStyle = "bg-blue-100 text-blue-500",
-    clearButtonStyle = "absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700",
-    noResultStyle = "px-4 py-2 text-gray-500",
-    searchIconStyle = `absolute left-2 pr-1 top-1/2 -translate-y-1/2 border-r-2 ${!disabled ? ' text-gray-600 border-gray-600' : 'text-red-200 border-red-200'}`,
-    disabledTextStyle = 'absolute text-[10px] text-red-400',
 }) {
     const [aberto, setAberto] = useState(false);
     const [indiceAtivo, setIndiceAtivo] = useState(-1);
@@ -51,18 +40,14 @@ export default function Search({
 
     const resultados = useMemo(() => {
         if (!filterLocal) return opcoes;
-
         const termo = normalizar(value ?? "");
         if (!termo) return opcoes;
-
         return opcoes.filter((item) => {
             const label = normalizar(String(getOptionLabel(item) ?? ""));
-            const id = String(getOptionId(item) ?? "");
             const re = item.re ? normalizar(String(item.re)) : "";
-
-            return label.includes(termo) || id.includes(termo) || re.includes(termo);
+            return label.includes(termo) || re.includes(termo);
         });
-    }, [opcoes, value, getOptionLabel, getOptionId, filterLocal]);
+    }, [opcoes, value, getOptionLabel, filterLocal]);
 
     function selecionar(item) {
         onSelect?.(item);
@@ -71,96 +56,67 @@ export default function Search({
         setIndiceAtivo(-1);
     }
 
-    function limpar() {
-        onChange?.("");
-        onSelect?.(null);
-        setIndiceAtivo(-1);
-        inputRef.current?.focus();
-    }
-
-    function handleKeyDown(e) {
-        if (disabled) return;
-
-        if (e.key === "ArrowDown") {
-            e.preventDefault();
-            if (!aberto) {
-                setAberto(true);
-                return;
-            }
-            setIndiceAtivo((prev) => Math.min(prev + 1, resultados.length - 1));
-        } else if (e.key === "ArrowUp") {
-            e.preventDefault();
-            setIndiceAtivo((prev) => Math.max(prev - 1, 0));
-        } else if (e.key === "Enter") {
-            if (aberto && indiceAtivo >= 0 && resultados[indiceAtivo]) {
-                e.preventDefault();
-                selecionar(resultados[indiceAtivo]);
-            }
-        } else if (e.key === "Escape") {
-            setAberto(false);
-            setIndiceAtivo(-1);
-        }
-    }
-
     return (
-        <div className={containerStyle} ref={containerRef}>
-            <input
-                ref={inputRef}
-                type="text"
-                role="combobox"
-                aria-expanded={aberto}
-                aria-controls={listboxId}
-                aria-autocomplete="list"
-                autoFocus={autoFocus}
-                disabled={disabled}
-                value={value ?? ""}
-                placeholder={placeholder}
-                onChange={(e) => {
-                    onChange?.(e.target.value);
-                    setAberto(true);
-                    setIndiceAtivo(-1);
-                }}
-                onFocus={() => setAberto(true)}
-                onKeyDown={handleKeyDown}
-                className={inputStyle}
-            />
+        <div className="relative w-full" ref={containerRef}>
+            <div className="relative flex items-center">
+                <div className={`absolute left-3 transition-colors ${disabled ? 'text-slate-300' : 'text-slate-400'}`}>
+                    <SearchIcon size={18} />
+                </div>
 
-            <SearchIcon className={searchIconStyle} width={25} height={25} />
+                <input
+                    ref={inputRef}
+                    type="text"
+                    disabled={disabled}
+                    value={value ?? ""}
+                    placeholder={disabled ? (disabledText || "Bloqueado") : placeholder}
+                    onChange={(e) => {
+                        onChange?.(e.target.value);
+                        setAberto(true);
+                        setIndiceAtivo(-1);
+                    }}
+                    onFocus={() => setAberto(true)}
+                    className={`w-full bg-slate-50 border border-slate-200 text-slate-700 py-2.5 pl-10 pr-10 rounded-xl outline-none transition-all
+                        ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-100' : 'hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10'}
+                    `}
+                />
 
-            {value && !disabled && (
-                <button
-                    type="button"
-                    onClick={limpar}
-                    className={clearButtonStyle}
-                >
-                    <ClearIcon width={20} height={20} className="text-red-300 hover:text-red-500 active:text-red-700" />
-                </button>
-            )}
+                {value && !disabled && (
+                    <button
+                        type="button"
+                        onClick={() => { onChange(""); onSelect(null); }}
+                        className="absolute right-3 p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors"
+                    >
+                        <ClearIcon size={16} />
+                    </button>
+                )}
+
+                {!value && (
+                    <div className="absolute right-3 pointer-events-none text-slate-300">
+                        <ChevronDown size={18} />
+                    </div>
+                )}
+            </div>
 
             {aberto && !disabled && (
-                <ul id={listboxId} role="listbox" className={listStyle}>
+                <ul className="absolute z-50 mt-2 max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl py-2">
                     {resultados.length > 0 ? (
-                        resultados.map((item, idx) => {
-                            const id = getOptionId(item);
-                            const ativo = idx === indiceAtivo;
-                            return (
-                                <li
-                                    key={id}
-                                    role="option"
-                                    onMouseEnter={() => setIndiceAtivo(idx)}
-                                    onClick={() => selecionar(item)}
-                                    className={`${itemStyle} ${ativo ? itemActiveStyle : ""}`}
-                                >
-                                    {getOptionLabel(item)}
-                                </li>
-                            );
-                        })
+                        resultados.map((item, idx) => (
+                            <li
+                                key={getOptionId(item)}
+                                onClick={() => selecionar(item)}
+                                onMouseEnter={() => setIndiceAtivo(idx)}
+                                className={`cursor-pointer px-4 py-2.5 text-sm transition-colors ${idx === indiceAtivo ? 'bg-blue-50 text-blue-700 font-medium' : 'text-slate-600 hover:bg-slate-50'
+                                    }`}
+                            >
+                                {getOptionLabel(item)}
+                                {item.re && <span className="ml-2 text-xs opacity-50">({item.re})</span>}
+                            </li>
+                        ))
                     ) : (
-                        <li className={noResultStyle}>{noResultsText}</li>
+                        <li className="px-4 py-3 text-sm text-slate-400 italic text-center">Nenhum resultado</li>
                     )}
                 </ul>
             )}
-            {disabled ? <p className={disabledTextStyle}>{disabledText}</p> : ''}
         </div>
     );
 }
