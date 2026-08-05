@@ -36,25 +36,29 @@ public class QueryController {
     }
 
     @GetMapping("/departamentos")
-    public ResponseEntity<List<String>> listarDepartamentos() {
-        return ResponseEntity.ok(departamentoRepository.listarDepartamentos());
+    public ResponseEntity<List<String>> listarDepartamentos(@RequestParam(name = "planta") String planta) {
+        return ResponseEntity.ok(departamentoRepository.listarDepartamentos(planta));
     }
 
     @GetMapping("/maquinasPorDepartamento")
-    public ResponseEntity<List<listaMaquinas>> listarMaquinasPorDepartamento(@RequestParam(name = "selecao") String selecao) {
-        return ResponseEntity.ok(departamentoRepository.maquinasPorDepartamento(selecao));
+    public ResponseEntity<List<listaMaquinas>> listarMaquinasPorDepartamento(@RequestParam(name = "selecao") String selecao, @RequestParam(name = "planta") String planta) {
+        return ResponseEntity.ok(departamentoRepository.maquinasPorDepartamento(selecao, planta));
     }
 
     @GetMapping("/funcionarios")
-    public ResponseEntity<List<Funcionarios>> funcionarios(@RequestParam(name = "pesquisa", required = false) String pesquisa) {
+    public ResponseEntity<List<Funcionarios>> funcionarios(@RequestParam(name = "pesquisa", required = false) String pesquisa, @RequestParam(name = "planta") String planta) {
+        System.out.println(planta);
         if (pesquisa == null || pesquisa.trim().isEmpty()) {
             return ResponseEntity.ok(funcionariosRepository.findTop20ByOrderByNameAsc());
         }
 
         String termoParaBusca = TextUtils.formatarParaLike(pesquisa);
 
+        String codEmpresa = "MLB".equals(planta) ? "710" : "720";
+
         List<Funcionarios> resultados = funcionariosRepository.pesquisarComFiltro(
                 termoParaBusca,
+                codEmpresa,
                 org.springframework.data.domain.PageRequest.of(0, 20)
         );
 

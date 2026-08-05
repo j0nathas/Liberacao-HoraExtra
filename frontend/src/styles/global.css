@@ -1,10 +1,19 @@
 @import "tailwindcss";
 
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
 #root {
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  height: 100vh;
 }
+
 
 @theme {
   --animate-fade-in: fade-in 0.2s ease-out;

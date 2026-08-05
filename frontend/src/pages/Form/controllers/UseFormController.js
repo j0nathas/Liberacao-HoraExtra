@@ -64,29 +64,27 @@ export function useFormController() {
             }
             setLoadingFunc(true);
             try {
-                const { data } = await api.get(`/query/funcionarios`, { params: { pesquisa: funcionarioTexto } });
+                const { data } = await api.get(`/query/funcionarios`, { params: { pesquisa: funcionarioTexto, planta: currentForm.planta } });
                 setOpcoesFuncionarios(data);
             } catch (error) { console.error(error); }
             finally { setLoadingFunc(false); }
         };
         const timeoutId = setTimeout(buscarFuncionarios, 300);
         return () => clearTimeout(timeoutId);
-    }, [funcionarioTexto]);
+    }, [funcionarioTexto, currentForm.planta]);
 
     //////////////////////////////////////////////////////////////////////
 
 
     ////////////////////// GESTÃO DE DEPARTAMENTOS //////////////////////
     const [listaDepartamentos, setListaDepartamentos] = useState([]);
-    useEffect(() => {
-        async function carregar() {
-            try {
-                const { data } = await api.get("/query/departamentos");
-                setListaDepartamentos(data.map((name, index) => ({ id: index, name })));
-            } catch (err) { console.error(err); }
-        }
-        carregar();
-    }, []);
+
+    async function carregarDepartamentos(plantaSelecionada) {
+        try {
+            const { data } = await api.get("/query/departamentos", { params: { planta: plantaSelecionada } });
+            setListaDepartamentos(data.map((name, index) => ({ id: index, name })));
+        } catch (err) { console.error(err); }
+    }
 
     ////////////////////////////////////////////////////////////////////
 
@@ -102,7 +100,7 @@ export function useFormController() {
         setMaquinaTexto('');
         setMaquinaSelecionada(null);
 
-        if (!currentForm.departamento) {
+        if (!currentForm.departamento || !currentForm.planta) {
             setListaMaquinas([]);
             return;
         }
@@ -110,7 +108,7 @@ export function useFormController() {
         async function carregarMaquinas() {
             try {
                 const { data } = await api.get(`/query/maquinasPorDepartamento`, {
-                    params: { selecao: currentForm.departamento }
+                    params: { selecao: currentForm.departamento, planta: currentForm.planta }
                 });
                 setListaMaquinas(
                     data.map((item) => ({
@@ -121,7 +119,7 @@ export function useFormController() {
             } catch (err) { console.error(err); }
         }
         carregarMaquinas();
-    }, [currentForm.departamento]);
+    }, [currentForm.departamento, currentForm.planta]);
 
     //////////////////////////////////////////////////////////////////
 
@@ -261,6 +259,7 @@ export function useFormController() {
             }
 
 
-        }
+        },
+        carregarDepartamentos,
     };
 }

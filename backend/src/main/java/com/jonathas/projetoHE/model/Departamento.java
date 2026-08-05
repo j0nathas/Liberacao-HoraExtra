@@ -18,6 +18,9 @@ public class Departamento {
     @Column(name = "DESC_MAQUINA")
     private String maquina;
 
+    @Column(name = "PLANTA")
+    private String planta;
+
     @Column(name = "SETOR_PADRAO")
     private String departamento;
 

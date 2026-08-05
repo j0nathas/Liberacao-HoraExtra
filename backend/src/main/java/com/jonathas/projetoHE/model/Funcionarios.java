@@ -31,6 +31,9 @@ public class Funcionarios {
     @Column(name = "\"Codigo_CentroCusto\"")
     private String codigoCentroCusto;
 
+    @Column(name = "Codigo_Empresa")
+    private String codigoEmpresa;
+
     @Column(name = "Nome_Empresa")
     private String empresa;
 

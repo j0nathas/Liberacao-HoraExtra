@@ -10,11 +10,11 @@ import java.util.Optional;
 
 public interface DepartamentoRepository extends JpaRepository<Departamento, String> { // Mudei de Long para String
 
-    @Query("SELECT d.codMaquina, d.maquina  FROM Departamento d WHERE d.departamento = :selecao")
-    List<listaMaquinas> maquinasPorDepartamento(@Param("selecao") String selecao);
+    @Query("SELECT d.codMaquina, d.maquina  FROM Departamento d WHERE d.departamento = :selecao AND d.planta = :planta")
+    List<listaMaquinas> maquinasPorDepartamento(@Param("selecao") String selecao, @Param("planta") String planta);
 
-    @Query("SELECT d.departamento FROM Departamento d GROUP BY d.departamento ORDER BY d.departamento DESC")
-    List<String> listarDepartamentos();
+    @Query("SELECT d.departamento FROM Departamento d WHERE d.planta = :planta GROUP BY d.departamento ORDER BY d.departamento DESC")
+    List<String> listarDepartamentos(@Param("planta") String planta);
 
     Optional<Departamento> findByCodMaquina(String codMaquina);
 }

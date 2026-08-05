@@ -28,7 +28,7 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="flex-1 overflow-auto bg-slate-50">
       {/* Header de Boas-vindas */}
       <header className="bg-white border-b border-slate-200 px-8 py-10">
         <div className="max-w-7xl mx-auto">
