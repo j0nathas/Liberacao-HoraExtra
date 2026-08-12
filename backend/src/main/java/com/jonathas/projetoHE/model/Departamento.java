@@ -15,7 +15,7 @@ public class Departamento {
     @Column(name = "COD_MAQUINA")
     String codMaquina;
 
-    @Column(name = "DESC_MAQUINA")
+    @Column(name = "DESC_DEPARTAMENTO")
     private String maquina;
 
     @Column(name = "PLANTA")

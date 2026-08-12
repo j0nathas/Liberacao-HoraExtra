@@ -93,8 +93,15 @@ export default function FormView({
     const liberarTerceiroCard = currentForm.inicio && currentForm.fim && currentForm.turno && primeiroCardPreenchido;
     const tudoPreenchido = currentForm.funcionarios.length > 0 && liberarTerceiroCard;
 
+    const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
+
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+        setMostrarConfirmacao(true);
+    };
+
     return (
-        <main className="h-full overflow-auto flex flex-col gap-2 items-center">
+        <main className="h-full overflow-auto flex flex-col gap-2 items-center animate-fade-in">
             {forms.length > 1 && (
                 <header className="w-full bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3">
                     <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-3 overflow-x-auto no-scrollbar">
@@ -126,9 +133,9 @@ export default function FormView({
                 </header>
             )}
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 w-full max-w-7xl h-full items-center justify-center">
+            <form onSubmit={handleFormSubmit} className="grid grid-cols-1 w-full max-w-7xl h-full items-center justify-center gap-4 lg:gap-0 p-3 lg:p-0 md:gap-3 md:p-6">
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 w-[100%] gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 w-[100%] gap-4 lg:p-5">
                     {/* Card 1: Motivos e Local */}
                     <div className={`bg-white w-full rounded-2xl shadow-sm border border-gray-200 transition-all flex flex-col`}>
                         <div className={`bg-slate-50 px-6 py-4 border-b rounded-t-2xl border-slate-200 flex items-center relative gap-2 text-slate-700 font-semibold`}>
@@ -152,9 +159,9 @@ export default function FormView({
                                                 onClick={() => handlePlantaChange(planta.name)}
                                                 disabled={currentForm.funcionarios.length > 0}
                                                 className={`flex cursor-pointer justify-between gap-2 p-3 rounded-xl border-2 ${isSelected
-                                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                    ? 'border-blue-500 bg-blue-50 text-blue-700 disabled:bg-amber-50 disabled:text-amber-600 disabled:border-amber-200'
                                                     : 'border-slate-50 bg-slate-50 text-slate-500 hover:border-slate-200'
-                                                    } disabled:bg-amber-50 disabled:text-amber-600 disabled:border-amber-200 disabled:cursor-not-allowed transition-all`}
+                                                    }  disabled:cursor-not-allowed transition-all`}
                                             >
                                                 <span className="font-bold text-xs">{planta.name}</span>
                                                 {isSelected ? <CheckCircle2 size={16} /> : <div className="w-4 h-4 rounded-full border-2 border-slate-200" />}
@@ -196,14 +203,6 @@ export default function FormView({
                                     disabled={currentForm.funcionarios.length > 0 || !currentForm.planta}
                                     placeholder="Selecione o setor"
                                 />
-                                {currentForm.funcionarios.length > 0 && (
-                                    <div className="flex items-center gap-1.5 mt-2 animate-fade-in bg-amber-50 p-2 rounded-lg text-amber-600">
-                                        <Info size={14} className="" />
-                                        <p className="text-[10px]">
-                                            Não é possível trocar o departamento enquanto houver funcionários adicionados.
-                                        </p>
-                                    </div>
-                                )}
                                 {!currentForm.planta && (
                                     <div className="flex items-center gap-1.5 mt-2 animate-fade-in bg-amber-50 p-2 rounded-lg text-amber-600">
                                         <Info size={14} className="" />
@@ -229,6 +228,14 @@ export default function FormView({
                                     onChange={(e) => updateCurrentForm('motivoDetalhado', e.target.value)}
                                 />
                             </div>
+                            {currentForm.funcionarios.length > 0 && (
+                                <div className="flex items-center gap-1.5 mt-2 animate-fade-in bg-amber-50 p-2 rounded-lg text-amber-600">
+                                    <Info size={14} className="" />
+                                    <p className="text-[10px]">
+                                        Não é possível trocar o departamento ou a planta enquanto houver funcionários adicionados.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -253,7 +260,7 @@ export default function FormView({
                                 <label className={`text-sm font-semibold ${primeiroCardPreenchido ? 'text-slate-700' : 'text-slate-400'}`}>
                                     Turno da HE
                                 </label>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2">
                                     {Shifts.map((shift) => {
                                         const isSelected = currentForm.turno === shift.name;
                                         return (
@@ -510,6 +517,66 @@ export default function FormView({
                                 </p>
                             )}
                         </nav>
+                        {mostrarConfirmacao && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                                <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+
+                                    <div className="p-6">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="w-11 h-11 rounded-full bg-blue-50 flex items-center justify-center">
+                                                <Send size={20} className="text-blue-600" />
+                                            </div>
+
+                                            <div>
+                                                <h2 className="text-lg font-bold text-slate-800">
+                                                    Confirmar envio
+                                                </h2>
+
+                                                <p className="text-xs text-slate-500">
+                                                    Revise as informações antes de continuar.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                                            <p className="text-sm text-slate-600">
+                                                Você está prestes a enviar{' '}
+                                                <span className="font-bold text-slate-800">
+                                                    {forms.length} {forms.length === 1 ? 'solicitação' : 'solicitações'}
+                                                </span>.
+                                            </p>
+
+                                            <p className="text-sm text-slate-500 mt-2">
+                                                Deseja realmente continuar?
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-3 justify-end p-4 bg-slate-50 border-t border-slate-200">
+                                        <button
+                                            type="button"
+                                            onClick={() => setMostrarConfirmacao(false)}
+                                            className="px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 font-semibold text-sm hover:bg-slate-100 transition-all"
+                                        >
+                                            Cancelar
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={(event) => {
+                                                setMostrarConfirmacao(false);
+                                                handleSubmit(event);
+                                            }}
+                                            className="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-all flex items-center gap-2"
+                                        >
+                                            <Check size={16} />
+                                            Confirmar envio
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        )}
 
                     </div>
 

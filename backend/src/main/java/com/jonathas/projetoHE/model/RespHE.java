@@ -3,6 +3,7 @@ package com.jonathas.projetoHE.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Fetch;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -29,6 +30,10 @@ public class RespHE {
     private String sobrenome;
 
     private int RE;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
 }
 
 

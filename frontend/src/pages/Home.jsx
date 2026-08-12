@@ -11,6 +11,7 @@ import {
   BarChart3,
   Mail
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
   // Dados fictícios para o Dashboard
@@ -27,8 +28,10 @@ export default function Home() {
     { id: 3, depto: 'Manutenção', data: '20/05', status: 'E-mail enviado', color: 'blue' },
   ];
 
+  const navigate = useNavigate();
+
   return (
-    <main className="flex-1 overflow-auto bg-slate-50">
+    <main className="flex-1 overflow-auto bg-slate-50 animate-fade-in">
       {/* Header de Boas-vindas */}
       <header className="bg-white border-b border-slate-200 px-8 py-10">
         <div className="max-w-7xl mx-auto">
@@ -37,7 +40,8 @@ export default function Home() {
               <h1 className="text-3xl font-bold text-slate-900">Gestão de Horas Extra</h1>
               <p className="text-slate-500 mt-1">Bem-vindo, Administrador. O que deseja fazer hoje?</p>
             </div>
-            <button className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200">
+            <button onClick={() => navigate("/form")}
+              className="flex items-center cursor-pointer justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200">
               <PlusCircle size={20} />
               Nova Solicitação
             </button>
@@ -97,7 +101,7 @@ export default function Home() {
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
                 <h3 className="font-bold text-slate-800">Atividades Recentes</h3>
-                <button className="text-blue-600 text-sm font-semibold hover:underline">Ver tudo</button>
+                <button onClick={() => navigate("/sent")} className="text-blue-600 text-sm font-semibold hover:underline">Ver tudo</button>
               </div>
               <div className="divide-y divide-slate-50">
                 {solicitacoesRecentes.map((item) => (

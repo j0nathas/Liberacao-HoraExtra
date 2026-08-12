@@ -3,6 +3,7 @@ package com.jonathas.projetoHE.services;
 import java.text.Normalizer;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
@@ -44,5 +45,30 @@ public class TextUtils {
         long minutos = total.toMinutes() % 60;
 
         return String.format("%dh%02dm", horas, minutos);
+    }
+
+    public static String escapeCsv(String valor) {
+
+        if (valor == null) {
+            return "";
+        }
+
+        if (valor.contains(";") ||
+                valor.contains("\"") ||
+                valor.contains("\n") ||
+                valor.contains("\r")) {
+
+            return "\"" +
+                    valor.replace("\"", "\"\"") +
+                    "\"";
+        }
+
+        return valor;
+    }
+
+    private static final DateTimeFormatter HORA_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    public static String formatarHora(LocalDateTime hora) {
+        return hora != null ? hora.format(HORA_FORMATTER) : "";
     }
 }

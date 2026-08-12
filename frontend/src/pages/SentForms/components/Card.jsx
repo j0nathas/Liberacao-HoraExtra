@@ -1,82 +1,91 @@
 import { useState } from 'react'
+import { getISOWeek, formatDate, totalHours, totalAccHours } from '../Utils/SentUtils'
 import SentIcon from '../../../../img/sent-date.svg?react'
+import { CircleCheckBig, Clock, CircleSlash } from 'lucide-react';
 
-function getISOWeek(date) {
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-
-    // Ajusta para a quinta-feira da semana atual
-    d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
-
-    // Primeira quinta-feira do ano
-    const firstThursday = new Date(d.getFullYear(), 0, 4);
-    firstThursday.setDate(
-        firstThursday.getDate() +
-        3 -
-        ((firstThursday.getDay() + 6) % 7)
-    );
-
-    return (
-        1 +
-        Math.round((d - firstThursday) / (7 * 24 * 60 * 60 * 1000))
-    );
-}
 
 export default function Card({ dados, openInfo }) {
     const [viewCard, setViewCard] = useState(false);
     const status = dados.status === "pending" ? "pendente" : dados.status === "signed" ? "aprovado" : "Não Enviado";
 
+    const tone = {
+        pendente: {
+            frame: "bg-amber-100",
+            ink: "text-amber-700",
+            pill: "bg-amber-50 text-amber-700",
+            icon: <Clock width={15} height={15} />,
+        },
+        aprovado: {
+            frame: "bg-emerald-100",
+            ink: "text-emerald-700",
+            pill: "bg-emerald-50 text-emerald-700",
+            icon: <CircleCheckBig width={15} height={15} />,
+        },
+        "Não Enviado": {
+            frame: "bg-slate-100",
+            ink: "text-slate-600",
+            pill: "bg-slate-50 text-slate-600",
+            icon: <CircleSlash width={15} height={15} />,
+        },
+    }[status];
+
     return (
-        <>
+        <nav onClick={() => openInfo(dados)} className={`w-full drop-shadow-sm cursor-pointer flex flex-col rounded-[22px] p-1.5 ${tone.frame} transition-transform hover:-translate-y-0.5`}>
+            <div className="bg-white rounded-[17px] p-4 flex flex-col gap-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
 
-            <div className="flex flex-col relative bg-white shadow-[0px_0px_5px_0px_#ccc] p-4 rounded-xl gap-4 mt-2 overflow-hidden">
-                <p className={`absolute top-[0%] left-[0%] px-[0.65rem] py-1 text-sm rounded-br-3xl font-bold
-                    ${status === "pendente" ? "bg-amber-200 text-amber-600" : status === "aprovado" ? "bg-green-200 text-green-600" : "bg-gray-200"}`}>{dados.id}</p>
-
-
-                <section className="flex justify-between items-center relative">
-
-
-                    <div className="relative mt-3">
-                        <p>Semana {getISOWeek(dados.inicio)}</p>
-                        <p className="text-[11px] text-gray-400">{dados.motivosMacro.descricao}</p>
-                        <p className={`text-[10px] font-semibold ${status === "pendente" ? "text-amber-500" : status === "aprovado" ? "text-green-500" : "text-gray-500"}`}>{dados.departamento}</p>
+                <section className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                        <span className={`flex items-center justify-center w-max p-2 h-6 rounded-full ${tone.pill}`}>
+                            {tone.icon}
+                        </span>
+                        <span className="text-xs font-semibold text-gray-400">#{dados.id}</span>
                     </div>
-
-                    <div className='flex flex-col gap-1'>
-                        <div className={`flex items-center px-3 py-1 gap-2 text-sm  rounded-3xl  
-                            ${status === "pendente" ? "bg-amber-100 text-amber-600" : status === "aprovado" ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-600"}`}>
-
-                            <p className='font-semibold first-letter:uppercase'>{status}</p>
-                            <article className={`w-3 h-3 rounded-full bg-amber-300 ${status === "pendente" ? 'bg-amber-300' : status === "aprovado" ? 'bg-green-300' : 'bg-gray-300'}`}></article>
-
-                        </div>
-
-                        <div className='flex items-center justify-center gap-1 text-gray-300 italic'>
-                            <SentIcon width={15} height={15} />
-                            <p className='text-[10px]'>{dados.data.split('T')[0]}</p>
-                        </div>
-                    </div>
-
                 </section>
 
+                <div>
+                    <h3 className="text-lg font-bold text-gray-800 leading-tight">
+                        Semana {getISOWeek(dados.inicio)}
+                    </h3>
+                    <div>
 
-                <section className="grid grid-cols-3 w-full justify-center items-center text-center text-sm rounded-3xl bg-gray-50 text-gray-400">
+                        <div className='flex items-center gap-1'>
+                            <p className="text-sm text-gray-500">
+                                {dados.motivosMacro.descricao} ·
+                            </p>
+                            <span className={`px-1 py-1 rounded-lg ${tone.pill} text-[8px] font-semibold uppercase tracking-wide first-letter:uppercase`}>
+                                {status}
+                            </span>
+                        </div>
 
-                    <p className=" py-2 px-4 border-r-3 font-semibold border-white">{dados.inicio.split('T')[0]}</p>
+                    </div>
 
-                    <p className=" py-2 px-4 border-r-3 font-semibold border-white">{dados.turno}</p>
+                </div>
 
-                    <p className=" py-2 px-4 font-semibold">30h</p>
-
-
+                <section className="flex flex-wrap gap-1.5">
+                    <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[11px] font-semibold uppercase tracking-wide">
+                        {dados.turno}
+                    </span>
+                    <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[11px] font-semibold uppercase tracking-wide">
+                        {dados.departamento}
+                    </span>
+                    <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[11px] font-semibold uppercase tracking-wide">
+                        {totalAccHours(dados.inicio, dados.fim, dados.funcionarios.length)}h
+                    </span>
                 </section>
-
-                <button className="w-[50%] self-center bg-linear-to-r transition-all from-blue-500 to-[#7aadff] rounded-sm text-white shadow-[0_0_10px_1px] shadow-blue-200 font-semibold py-2 cursor-pointer"
-                    onClick={() => openInfo(dados)}
-                >Visualizar</button>
-
             </div>
-        </>
+
+            <div className="flex items-center justify-between px-3 py-2">
+                <div className={`flex items-center gap-1 ${tone.ink}`}>
+                    <SentIcon width={12} height={12} />
+                    <span className="text-[11px] font-medium">{formatDate(dados.data.split('T')[0])}</span>
+                </div>
+                <button
+                    className={`text-[11px] font-bold uppercase tracking-wide ${tone.ink} hover:opacity-70 transition-opacity cursor-pointer`}
+                    onClick={() => openInfo(dados)}
+                >
+                    Clique para Visualizar →
+                </button>
+            </div>
+        </nav>
     )
 }

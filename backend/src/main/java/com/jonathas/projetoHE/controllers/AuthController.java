@@ -4,6 +4,7 @@ import com.jonathas.projetoHE.dto.auth.LoginRequestDTO;
 import com.jonathas.projetoHE.dto.auth.LoginResponseDTO;
 import com.jonathas.projetoHE.dto.auth.MeResponseDTO;
 import com.jonathas.projetoHE.infra.security.TokenService;
+import com.jonathas.projetoHE.model.Permissions;
 import com.jonathas.projetoHE.model.RespHE;
 import com.jonathas.projetoHE.repositories.RespHeRepository;
 import com.jonathas.projetoHE.services.LdapAuthService;
@@ -21,6 +22,8 @@ import org.springframework.http.ResponseCookie;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -61,7 +64,7 @@ public class AuthController {
                     .secure(false)
                     .sameSite("Lax")
                     .path("/")
-                    .maxAge(Duration.ofMinutes(15))
+                    .maxAge(tokenService.getExpirationDuration())
                     .build();
 
             return ResponseEntity.ok()
@@ -105,12 +108,17 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<MeResponseDTO> me(Authentication authentication) {
-        System.out.println("Entrou no /me");
 
         String login = authentication.getName();
 
         RespHE usuario = respHeRepository.findByLogin(login)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        Set<String> permissions = usuario.getRole()
+                .getPermissions()
+                .stream()
+                .map(Permissions::getNome)
+                .collect(Collectors.toSet());
 
         return ResponseEntity.ok(
                 new MeResponseDTO(
@@ -118,7 +126,8 @@ public class AuthController {
                         usuario.getLogin(),
                         usuario.getNome(),
                         usuario.getSobrenome(),
-                        usuario.getEmail()
+                        usuario.getEmail(),
+                        permissions
                 )
         );
     }

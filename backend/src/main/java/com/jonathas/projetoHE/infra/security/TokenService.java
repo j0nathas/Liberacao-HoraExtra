@@ -7,15 +7,20 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class TokenService {
 
     @Value("${api.security.token.secret}")
     private String secret;
+
+    @Value("${api.security.token.expiration-hours:2}")
+    private long expirationHours;
 
     public String generateToken(String username) {
         try {
@@ -28,6 +33,14 @@ public class TokenService {
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao gerar token", exception);
         }
+    }
+
+    public Duration getExpirationDuration() {
+        return Duration.ofHours(expirationHours);
+    }
+
+    private Instant genExpirationDate() {
+        return Instant.now().plus(expirationHours, ChronoUnit.HOURS);
     }
 
     public String validateToken(String token) {
@@ -43,7 +56,4 @@ public class TokenService {
         }
     }
 
-    private Instant genExpirationDate() {
-        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
-    }
 }

@@ -53,7 +53,7 @@ public class WebhookController {
                         .distinct()
                         .collect(Collectors.joining(", "));
 
-                String[] emails = {"jonathas.oliveira@magna.com" /* , "jonathan.veloso@magna.com", "FABRICIO.FONSECA@magna.com" */};
+                String[] emails = {"jonathas.oliveira@magna.com"};
 
                 sentEmailService.enviarEmail(
                         emails,

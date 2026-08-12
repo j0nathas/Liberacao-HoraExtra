@@ -1,4 +1,5 @@
 package com.jonathas.projetoHE.repositories;
+import com.jonathas.projetoHE.model.PeriodoSolicitacoesProjection;
 import com.jonathas.projetoHE.model.Solicitacoes;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,4 +30,11 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacoes, Long>
 """)
     int atualizarStatusPorToken(String token, String status);
 
+    @Query(value = """
+    SELECT
+        MIN(CAST(s.inicio AS DATE)) as dataMinima,
+        MAX(CAST(s.inicio AS DATE)) as dataMaxima
+    FROM Solicitacoes s
+    """, nativeQuery = true)
+    PeriodoSolicitacoesProjection buscarPeriodoSolicitacoes();
 }
