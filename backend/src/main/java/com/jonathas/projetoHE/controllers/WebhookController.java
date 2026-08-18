@@ -1,6 +1,7 @@
 package com.jonathas.projetoHE.controllers;
 
 import com.jonathas.projetoHE.dto.zapsign.SignedBodyDTO;
+import com.jonathas.projetoHE.model.DeptResp;
 import com.jonathas.projetoHE.services.CorpoEmailService;
 import com.jonathas.projetoHE.model.Solicitacoes;
 import com.jonathas.projetoHE.model.SolicitacoesFuncionarios;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -50,6 +52,8 @@ public class WebhookController {
 
                 String departamentos = solicitacoes.stream()
                         .map(Solicitacoes::getDepartamento)
+                        .filter(Objects::nonNull)
+                        .map(DeptResp::getDepartamento)
                         .distinct()
                         .collect(Collectors.joining(", "));
 

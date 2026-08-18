@@ -1,6 +1,7 @@
 package com.jonathas.projetoHE.services;
 
 import com.jonathas.projetoHE.dto.zapsign.SignedBodyDTO;
+import com.jonathas.projetoHE.model.DeptResp;
 import com.jonathas.projetoHE.model.Solicitacoes;
 import com.jonathas.projetoHE.model.SolicitacoesFuncionarios;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +38,8 @@ public class CorpoEmailService {
 
         String listaDepartamentos = solicitacoes.stream()
                 .map(Solicitacoes::getDepartamento)
+                .filter(Objects::nonNull)
+                .map(DeptResp::getDepartamento)
                 .distinct()
                 .collect(Collectors.joining(", "));
 

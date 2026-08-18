@@ -82,7 +82,7 @@ export function useFormController() {
     async function carregarDepartamentos(plantaSelecionada) {
         try {
             const { data } = await api.get("/query/departamentos", { params: { planta: plantaSelecionada } });
-            setListaDepartamentos(data.map((name, index) => ({ id: index, name })));
+            setListaDepartamentos(data.map((dado) => ({ id: dado.id, name: dado.departamento })));
         } catch (err) { console.error(err); }
     }
 
@@ -123,6 +123,22 @@ export function useFormController() {
 
     //////////////////////////////////////////////////////////////////
 
+    //////////////////////// PLANTAS ////////////////////////////
+
+    const [plantas, setPlantas] = useState([]);
+
+    useEffect(() => {
+        async function carregarPlantas() {
+            try {
+                const { data } = await api.get("/query/plantas");
+                setPlantas(data.map(item => ({ id: item.id, name: item.sigla })));
+            } catch (err) { console.error(err); }
+        }
+        carregarPlantas();
+    }, []);
+
+
+    //////////////////////////////////////////////////////////////////
 
     ////////////////////// MOTIVOS MACRO ////////////////////////////
 
@@ -150,7 +166,8 @@ export function useFormController() {
         const pdfBase64 = await gerarPDFBase64(dadosConsolidados);
 
         const solicitacoesParaEnvio = dadosConsolidados.solicitacoes.map(solicitacao => ({
-            departamento: solicitacao.departamento,
+            id_departamento: solicitacao.idDepartamento,
+            id_planta: solicitacao.idPlanta,
             id_motivo_macro: solicitacao.motivoMacroId,
             motivo_detalhado: solicitacao.motivoDetalhado,
             turno: solicitacao.turno,
@@ -225,6 +242,7 @@ export function useFormController() {
         currentFormIndex,
         departamentos: listaDepartamentos,
         maquinas: listaMaquinas,
+        plantas,
         motivosMacro,
         opcoesFuncionarios,
         loading: loadingFunc,
@@ -248,6 +266,7 @@ export function useFormController() {
         handleSubmit: async (e) => {
             e.preventDefault();
             setLoading(true);
+            console.log(currentForm)
             try {
                 await EnviarCriarDoc(forms);
             } catch (err) {

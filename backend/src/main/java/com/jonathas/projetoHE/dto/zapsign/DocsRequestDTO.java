@@ -26,6 +26,12 @@ public class DocsRequestDTO {
     @JsonProperty("brand_name")
     private String brandName;
 
+    @JsonProperty("signature_order_active")
+    private boolean signatureOrderActive;
+
+    @JsonProperty("has_simplified_signature")
+    private boolean hasSimplifiedSignature;
+
     @JsonProperty("created_by")
     private String createdBy;
 

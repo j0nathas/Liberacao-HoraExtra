@@ -1,9 +1,11 @@
 package com.jonathas.projetoHE.controllers;
 
 import com.jonathas.projetoHE.dto.query.PeriodoSolicitacoesDTO;
+import com.jonathas.projetoHE.dto.zapsign.DocInfoResponseDTO;
 import com.jonathas.projetoHE.model.*;
 import com.jonathas.projetoHE.repositories.*;
 import com.jonathas.projetoHE.services.TextUtils;
+import com.jonathas.projetoHE.services.ZapSignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -42,13 +44,23 @@ public class QueryController {
     @Autowired
     private SolicitacaoFuncionariosRepository  solicitacaoFuncionariosRepository;
 
+    @Autowired
+    private PlantasRepository plantasRepository;
+
+    private final ZapSignService zapSignService;
+
+    @GetMapping("/plantas")
+    public ResponseEntity<List<Plantas>> listarPlantas() {
+        return ResponseEntity.ok(plantasRepository.findAll());
+    }
+
     @GetMapping("/motivosMacro")
     public ResponseEntity<List<MotivosMacro>> listarMotivos() {
         return ResponseEntity.ok(motivosMacroRepository.findAll());
     }
 
     @GetMapping("/departamentos")
-    public ResponseEntity<List<String>> listarDepartamentos(@RequestParam(name = "planta") String planta) {
+    public ResponseEntity<List<DeptResp>> listarDepartamentos(@RequestParam(name = "planta") String planta) {
         return ResponseEntity.ok(departamentoRepository.listarDepartamentos(planta));
     }
 
@@ -85,6 +97,16 @@ public class QueryController {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
 
         return ResponseEntity.ok(solicitacaoRepository.findAllByUsuarioIdOrderByIdDesc(usuario.getId()));
+    }
+
+
+    @GetMapping("/infoDocZapSign")
+    public ResponseEntity<DocInfoResponseDTO> infoDocZapsign(
+            @RequestParam(name = "token") String tokenDoc
+    ) {
+        return ResponseEntity.ok(
+                zapSignService.infoDocumento(tokenDoc)
+        );
     }
 
     @GetMapping(

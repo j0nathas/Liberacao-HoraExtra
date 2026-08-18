@@ -66,7 +66,7 @@ export default function Card({ dados, openInfo }) {
                         {dados.turno}
                     </span>
                     <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[11px] font-semibold uppercase tracking-wide">
-                        {dados.departamento}
+                        {dados.departamento.departamento}
                     </span>
                     <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[11px] font-semibold uppercase tracking-wide">
                         {totalAccHours(dados.inicio, dados.fim, dados.funcionarios.length)}h

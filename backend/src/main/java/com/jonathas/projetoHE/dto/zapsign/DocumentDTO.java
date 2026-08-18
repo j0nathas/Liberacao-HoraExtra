@@ -1,6 +1,9 @@
 package com.jonathas.projetoHE.dto.zapsign;
 
+import com.jonathas.projetoHE.model.DeptResp;
 import lombok.*;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -11,4 +14,5 @@ public class DocumentDTO {
     String nomeResp;
     String sobrenomeResp;
     String emailResp;
+    List<DeptResp> departamentos;
 }

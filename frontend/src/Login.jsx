@@ -59,16 +59,17 @@ export default function LoginScreen() {
         <main className="w-full h-screen items-center justify-center flex flex-col mx-auto font-sans bg-radial-[at_50%_75%] from-sky-400 via-blue-400 to-indigo-900 to-100%">
 
             <section className='w-full  flex flex-col h-full gap-10 bg-white p-7 md:w-[75%] md:h-[75%] md:rounded-3xl shadow-2xl lg:w-[40%]'>
-                <header className="flex flex-col">
-                    <h1 className="text-[32px] font-bold text-blue-900 leading-tight mb-4">
-                        Oh, Olá!
-                    </h1>
-                    <h2 className="text-3xl font-light text-blue-300 leading-tight">
-                        Bem-vindo de volta
-                    </h2>
-                    <h2 className="text-3xl font-light text-blue-300 leading-tight">
-                        vamos começar?
-                    </h2>
+                <header className="flex flex-col gap-5">
+                    <img className='' src="../../img/logo.png" width={75} alt="" />
+                    <div>
+                        <h2 className="text-3xl f font-light text-blue-300 leading-tight">
+                            Bem-vindo de volta
+                        </h2>
+                        <h2 className="text-3xl font-light text-blue-300 leading-tight">
+                            vamos começar?
+                        </h2>
+                    </div>
+
                 </header>
 
                 <form onSubmit={handleLogin} className="flex flex-col h-full justify-between">
@@ -82,7 +83,7 @@ export default function LoginScreen() {
                     <div className="flex flex-col gap-8">
                         <div className="">
                             <label className="text-sm font-semibold text-blue-900 ml-1">
-                                Usuário de Rede
+                                Usuário de Rede ou E-mail
                             </label>
                             <input
                                 type="text"

@@ -18,11 +18,9 @@ public class Departamento {
     @Column(name = "DESC_DEPARTAMENTO")
     private String maquina;
 
-    @Column(name = "PLANTA")
-    private String planta;
-
-    @Column(name = "SETOR_PADRAO")
-    private String departamento;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_dept")
+    private DeptResp idDepartamento;
 
 }
 

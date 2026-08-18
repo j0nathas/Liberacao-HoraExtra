@@ -33,6 +33,8 @@ public class SolicitacaoService {
     private final RequestLockService requestLockService;
     private final ZapSignService zapSignService;
     private final SentEmailService sentEmailService;
+    private final DeptRespRepository deptRespRepository;
+    private final PlantasRepository plantasRepository;
 
     @Transactional
     public List<Solicitacoes> salvar(SolicitacoesDTO dto) {
@@ -82,8 +84,14 @@ public class SolicitacaoService {
             String status = "error";
 
             try {
+                List<DeptResp> departamentos = dto.solicitacoes().stream()
+                        .map(item -> deptRespRepository.findById((long) item.id_departamento())
+                                .orElseThrow(() -> new RuntimeException("Departamento não encontrado")))
+                        .distinct()
+                        .toList();
+
                 DocumentDTO documentDTO = new DocumentDTO(
-                        dto.base64(), usuario.getNome(), usuario.getSobrenome(), usuario.getEmail());
+                        dto.base64(), usuario.getNome(), usuario.getSobrenome(), usuario.getEmail(), departamentos);
                 DocumentResponseDTO resposta = zapSignService.criarDocumento(documentDTO);
                 token = resposta.token();
                 status = resposta.status();
@@ -101,11 +109,17 @@ public class SolicitacaoService {
                 MotivosMacro motivo = motivosMacroRepository.findById((long) solicitacaoDTO.id_motivo_macro())
                         .orElseThrow(() -> new RuntimeException("Motivo não encontrado"));
 
+                DeptResp departamento = deptRespRepository.findById((long) solicitacaoDTO.id_departamento())
+                        .orElseThrow(() -> new RuntimeException("Departamento não encontrado"));
+
+                Plantas planta = plantasRepository.findById(String.valueOf((int) solicitacaoDTO.id_planta())).orElseThrow(() -> new RuntimeException("Planta não encontrada"));
+
                 Solicitacoes solicitacao = new Solicitacoes();
                 solicitacao.setUsuario(usuario);
                 solicitacao.setMotivosMacro(motivo);
                 solicitacao.setMotivoDetalhado(solicitacaoDTO.motivo_detalhado());
-                solicitacao.setDepartamento(solicitacaoDTO.departamento());
+                solicitacao.setPlanta(planta);
+                solicitacao.setDepartamento(departamento);
                 solicitacao.setTurno(solicitacaoDTO.turno());
                 solicitacao.setInicio(solicitacaoDTO.inicio().atZone(ZoneId.of("America/Sao_Paulo")));
                 solicitacao.setFim(solicitacaoDTO.fim().atZone(ZoneId.of("America/Sao_Paulo")));

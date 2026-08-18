@@ -1,15 +1,43 @@
 import { motion, AnimatePresence } from "framer-motion";
 import SentIcon from '../../../../img/sent-date.svg?react'
 import OpenIcon from '../../../../img/open.svg?react'
-import { useState } from "react";
-import { CircleCheckBig, Clock, CircleSlash, X, ArrowRight } from 'lucide-react';
+import api from '../../../services/api.js'
+import { useEffect, useState } from "react";
+import { CircleCheckBig, Clock, CircleSlash, CircleX, X, ArrowRight } from 'lucide-react';
 import { totalAccHours, totalHours, formatDate } from "../Utils/SentUtils";
+
+
 
 
 export default function CardInfo({ dados, closeInfo }) {
 
     const [openLista, setOpenLista] = useState(false);
     const status = dados.status === "pending" ? "pendente" : dados.status === "signed" ? "aprovado" : "Não Enviado";
+
+    const [dadosZapSign, setDadosZapSign] = useState(null);
+    const [loadingSigners, setLoadingSigners] = useState(true);
+
+    useEffect(() => {
+        async function carregarInfoDocZapSign() {
+            try {
+
+                const response = await api.get(`/query/infoDocZapSign`, {
+                    params: {
+                        token: dados.token
+                    }
+                });
+                setDadosZapSign(response.data);
+
+            } catch (error) {
+                console.error("Erro ao consultar documento:", error);
+            }
+            finally {
+                setLoadingSigners(false);
+            }
+        }
+
+        carregarInfoDocZapSign();
+    }, []);
 
     const tone = {
         pendente: {
@@ -35,7 +63,12 @@ export default function CardInfo({ dados, closeInfo }) {
         },
     }[status];
 
-    // "2026-08-07T14:30:00" -> "14:30"
+    const signerTone = {
+        pending: { bg: "bg-amber-50", text: "text-amber-700", icon: <Clock width={9} height={9} /> },
+        signed: { bg: "bg-emerald-50", text: "text-emerald-700", icon: <CircleCheckBig width={9} height={9} /> },
+        rejected: { bg: "bg-red-50", text: "text-red-700", icon: <CircleX width={9} height={9} /> },
+    };
+
     const formatTime = (isoString) => isoString?.split('T')[1]?.slice(0, 5) ?? '--:--';
 
     return (
@@ -90,11 +123,38 @@ export default function CardInfo({ dados, closeInfo }) {
                                 {dados.motivosMacro.descricao}
                             </h2>
                             <p className={`text-xs font-bold uppercase tracking-wide mt-1 ${tone.ink}`}>
-                                {dados.departamento}
+                                {dados.departamento.departamento}
                             </p>
                         </div>
 
+                        {loadingSigners ? (
+                            <div className="flex flex-wrap gap-1.5">
+                                {Array.from({ length: 3 }).map((_, i) => (
+                                    <span key={i} className="h-5 w-16 rounded-lg bg-gray-100 animate-pulse" />
+                                ))}
+                            </div>
+                        ) : dadosZapSign ? (
+                            <div className="flex flex-wrap gap-1.5">
+                                {dadosZapSign.signers?.map((signer) => {
+                                    const t = signerTone[signer.status] ?? signerTone.pending;
+
+                                    return (
+                                        <span
+                                            key={signer.email}
+                                            className={`flex items-center gap-1 px-2 py-1 rounded-lg ${t.bg} ${t.text} text-[9px] md:text-sm font-semibold`}
+                                        >
+                                            {t.icon}
+                                            {signer.name}
+                                        </span>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <p className="text-xs text-gray-400">Não foi possível carregar as informações da assinatura.</p>
+                        )}
+
                         <section className="flex flex-wrap items-center gap-1.5 text-[9px] md:text-[11px]">
+
                             <span className={`flex items-center gap-1 px-2.5 py-1 rounded-lg ${tone.pill}  font-semibold uppercase tracking-wide first-letter:uppercase`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${tone.solid}`} />
                                 {status}
@@ -104,6 +164,7 @@ export default function CardInfo({ dados, closeInfo }) {
                                 {formatDate(dados.data.split('T')[0])}
                             </span>
                         </section>
+
 
                         {/* Timeline início -> fim, com a duração no meio */}
                         <section className="bg-gray-50 rounded-2xl px-3 py-1 md:px-4 md:py-3.5">

@@ -213,7 +213,7 @@ export default function Header() {
                     </div>
                 )}
 
-                <div className='self-center justify-self-center md:justify-self-start'><ClockIcon width={45} height={45} /></div>
+                <div className='self-center justify-self-center lg:justify-self-start'> <img src="../../img/logo.png" width={50} alt="" /> </div>
 
                 <nav className="hidden lg:flex justify-self-center items-center gap-2">
                     {btnMenu.map((btn) => (

@@ -365,12 +365,16 @@ const geradoEm = new Date().toLocaleDateString("pt-BR");
 // COMPONENTES AUXILIARES
 // ============================================================
 function ResumoConsolidado({ dados }) {
-    const { totalPessoas, horasTotais, porCentroCusto = [] } = dados;
+    const { totalPessoas, horasTotais, porCentroCusto = [], planta } = dados;
 
     return (
         <View wrap={false}>
 
             <View style={styles.kpiRow}>
+                <View style={styles.kpiBox}>
+                    <Text style={styles.kpiLabel}>Planta</Text>
+                    <Text style={styles.kpiValue}>{planta}</Text>
+                </View>
                 <View style={styles.kpiBox}>
                     <Text style={styles.kpiLabel}>Total de Pessoas</Text>
                     <Text style={styles.kpiValue}>{totalPessoas}</Text>

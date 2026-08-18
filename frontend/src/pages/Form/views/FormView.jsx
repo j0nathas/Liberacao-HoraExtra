@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Search from '../../../components/Search.jsx';
 import { hoje } from '../models/formModel.js';
-import { Shifts, Plantas } from '../components/dadosFake.js';
+import { Shifts } from '../components/dadosFake.js';
 import {
     Loader2,
     Plus,
@@ -26,6 +26,7 @@ export default function FormView({
     maquinas,
     opcoesFuncionarios,
     departamentos,
+    plantas,
     motivosMacro,
     motivoTexto,
     setMotivoTexto,
@@ -58,9 +59,12 @@ export default function FormView({
         updateCurrentForm('turno', turnoName);
     };
 
-    const handlePlantaChange = (plantaName) => {
-        updateCurrentForm('planta', plantaName);
-        carregarDepartamentos(plantaName);
+    const handlePlantaChange = (planta) => {
+        updateCurrentForm({
+            planta: planta.name,
+            idPlanta: planta.id
+        });
+        carregarDepartamentos(planta.name);
         updateCurrentForm('departamento', '');
         setFuncionarioTexto('');
         setFuncionarioSelecionado(null);
@@ -149,14 +153,14 @@ export default function FormView({
 
                             <div className="flex flex-col gap-2">
                                 <label className="text-sm font-semibold text-slate-700">Planta</label>
-                                <nav className="w-full grid grid-cols-2 gap-2 w-full">
-                                    {Plantas.map((planta) => {
+                                <nav className="w-full grid grid-cols-3 gap-2 w-full">
+                                    {plantas.map((planta) => {
                                         const isSelected = currentForm.planta === planta.name;
                                         return (
                                             <button
                                                 key={planta.id}
                                                 type="button"
-                                                onClick={() => handlePlantaChange(planta.name)}
+                                                onClick={() => handlePlantaChange(planta)}
                                                 disabled={currentForm.funcionarios.length > 0}
                                                 className={`flex cursor-pointer justify-between gap-2 p-3 rounded-xl border-2 ${isSelected
                                                     ? 'border-blue-500 bg-blue-50 text-blue-700 disabled:bg-amber-50 disabled:text-amber-600 disabled:border-amber-200'
@@ -168,6 +172,15 @@ export default function FormView({
                                             </button>
                                         );
                                     })}
+
+                                    <button
+                                        key={"VINHEDO"}
+                                        type="button"
+                                        className={`flex cursor-not-allowed justify-between gap-2 p-3 rounded-xl border-2 border-slate-50 opacity-40 bg-slate-50 text-slate-500`}
+                                    >
+                                        <span className="font-bold text-xs">MMB</span>
+                                        <div className="w-4 h-4 rounded-full border-2 border-slate-200" />
+                                    </button>
                                 </nav>
                             </div>
 
@@ -197,10 +210,17 @@ export default function FormView({
                                     onChange={setDepartamentoInput}
                                     onSelect={(item) => {
                                         const nome = item?.name ?? '';
+                                        const idDept = item?.id ?? 0;
                                         setDepartamentoInput(nome);
-                                        updateCurrentForm('departamento', nome);
+                                        updateCurrentForm({
+                                            departamento: nome,
+                                            idDepartamento: idDept
+                                        });
                                     }}
-                                    disabled={currentForm.funcionarios.length > 0 || !currentForm.planta}
+                                    disabled={
+                                        currentForm.funcionarios.length > 0 ||
+                                        !currentForm.planta
+                                    }
                                     placeholder="Selecione o setor"
                                 />
                                 {!currentForm.planta && (

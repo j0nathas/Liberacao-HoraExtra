@@ -5,9 +5,11 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 public record SolicitacaoDTO(
-        String departamento,
+        int id_departamento,
 
         int id_motivo_macro,
+
+        int id_planta,
 
         String motivo_detalhado,
 

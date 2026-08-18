@@ -29,7 +29,14 @@ public class SolicitacoesController {
         List<Solicitacoes> solicitacoes = solicitacaoService.salvar(dto);
 
         List<SolicitacaoResponseDTO> response = solicitacoes.stream()
-                .map(s -> new SolicitacaoResponseDTO(s.getId(), s.getStatus(), s.getToken(), s.getDepartamento()))
+                .map(s -> new SolicitacaoResponseDTO(
+                        s.getId(),
+                        s.getStatus(),
+                        s.getToken(),
+                        s.getDepartamento() != null
+                                ? s.getDepartamento().getDepartamento()
+                                : null
+                ))
                 .toList();
 
         return ResponseEntity.ok(response);

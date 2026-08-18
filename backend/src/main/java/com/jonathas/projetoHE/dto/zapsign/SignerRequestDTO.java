@@ -22,4 +22,7 @@ public class SignerRequestDTO {
     @JsonProperty("send_automatic_email")
     private Boolean sendAutomaticEmail;
 
+    @JsonProperty("order_group")
+    private int orderGroup;
+
 }
