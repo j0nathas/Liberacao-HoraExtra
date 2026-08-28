@@ -1,72 +1,44 @@
 import { motion, AnimatePresence } from "framer-motion";
 import SentIcon from '../../../../img/sent-date.svg?react'
-import OpenIcon from '../../../../img/open.svg?react'
 import api from '../../../services/api.js'
 import { useEffect, useState } from "react";
-import { CircleCheckBig, Clock, CircleSlash, CircleX, X, ArrowRight } from 'lucide-react';
+import { CircleCheckBig, Clock, CircleSlash, CircleX, X, ArrowRight, HardHat, Info } from 'lucide-react';
 import { totalAccHours, totalHours, formatDate } from "../Utils/SentUtils";
 
-
-
-
 export default function CardInfo({ dados, closeInfo }) {
-
-    const [openLista, setOpenLista] = useState(false);
-    const status = dados.status === "pending" ? "pendente" : dados.status === "signed" ? "aprovado" : "Não Enviado";
-
+    // Estado para controlar qual justificativa (máquina) está selecionada
+    const [activeJustIndex, setActiveJustIndex] = useState(0);
     const [dadosZapSign, setDadosZapSign] = useState(null);
     const [loadingSigners, setLoadingSigners] = useState(true);
+
+    // Simplificando acesso aos dados (considerando a primeira solicitação do array)
+    const solicitacao = dados.solicitacoes?.[0] || {};
+    const justificativaAtiva = solicitacao.justificativas?.[activeJustIndex] || {};
+
+    const status = dados.status === "pending" ? "pendente" : dados.status === "signed" ? "aprovado" : dados.status === "recusado" ? "recusado" : "Não Enviado";
 
     useEffect(() => {
         async function carregarInfoDocZapSign() {
             try {
-
-                const response = await api.get(`/query/infoDocZapSign`, {
-                    params: {
-                        token: dados.token
-                    }
-                });
+                const response = await api.get(`/query/infoDocZapSign`, { params: { token: dados.token } });
                 setDadosZapSign(response.data);
-
-            } catch (error) {
-                console.error("Erro ao consultar documento:", error);
-            }
-            finally {
-                setLoadingSigners(false);
-            }
+            } catch (error) { console.error("Erro ao consultar documento:", error); }
+            finally { setLoadingSigners(false); }
         }
-
-        carregarInfoDocZapSign();
-    }, []);
+        if (dados.token) carregarInfoDocZapSign();
+    }, [dados.token]);
 
     const tone = {
-        pendente: {
-            frame: "bg-amber-100",
-            ink: "text-amber-700",
-            pill: "bg-amber-50 text-amber-700",
-            solid: "bg-amber-500",
-            icon: <Clock width={15} height={15} />,
-        },
-        aprovado: {
-            frame: "bg-emerald-100",
-            ink: "text-emerald-700",
-            pill: "bg-emerald-50 text-emerald-700",
-            solid: "bg-emerald-500",
-            icon: <CircleCheckBig width={15} height={15} />,
-        },
-        "Não Enviado": {
-            frame: "bg-slate-100",
-            ink: "text-slate-600",
-            pill: "bg-slate-50 text-slate-600",
-            solid: "bg-slate-400",
-            icon: <CircleSlash width={15} height={15} />,
-        },
+        pendente: { frame: "bg-amber-100", ink: "text-amber-700", pill: "bg-amber-50 text-amber-700", solid: "bg-amber-500", icon: <Clock width={15} height={15} /> },
+        aprovado: { frame: "bg-emerald-100", ink: "text-emerald-700", pill: "bg-emerald-50 text-emerald-700", solid: "bg-emerald-500", icon: <CircleCheckBig width={15} height={15} /> },
+        recusado: { frame: "bg-red-100", ink: "text-red-600", pill: "bg-red-50 text-red-600", solid: "bg-red-400", icon: <CircleX width={15} height={15} /> },
+        "Não Enviado": { frame: "bg-slate-100", ink: "text-slate-600", pill: "bg-slate-50 text-slate-600", solid: "bg-slate-400", icon: <CircleSlash width={15} height={15} /> },
     }[status];
 
     const signerTone = {
         pending: { bg: "bg-amber-50", text: "text-amber-700", icon: <Clock width={9} height={9} /> },
         signed: { bg: "bg-emerald-50", text: "text-emerald-700", icon: <CircleCheckBig width={9} height={9} /> },
-        rejected: { bg: "bg-red-50", text: "text-red-700", icon: <CircleX width={9} height={9} /> },
+        rejeitou: { bg: "bg-red-50", text: "text-red-700", icon: <CircleX width={9} height={9} /> },
     };
 
     const formatTime = (isoString) => isoString?.split('T')[1]?.slice(0, 5) ?? '--:--';
@@ -74,193 +46,166 @@ export default function CardInfo({ dados, closeInfo }) {
     return (
         <AnimatePresence>
             <motion.div
-                className="fixed inset-0 z-50 flex items-end justify-center bg-black/30"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={closeInfo}
             >
                 <motion.div
                     onClick={(e) => e.stopPropagation()}
-                    className={`w-full lg:w-[60%] rounded-t-[28px] p-2 pb-0 ${tone.frame} shadow-2xl font-sans`}
-                    initial={{ y: "120%" }}
-                    animate={{ y: 0 }}
-                    exit={{ y: "100%" }}
-                    transition={{ type: "spring", stiffness: 350, damping: 35 }}
-                    drag="y"
-                    dragDirectionLock
-                    dragConstraints={{ top: 0, bottom: 0 }}
-                    dragElastic={0.4}
-                    onDragEnd={(event, info) => {
-                        if (info.offset.y > 120 || info.velocity.y > 600) {
-                            closeInfo();
-                        }
-                    }}
+                    className={`w-full lg:w-[50%] max-h-[95vh] rounded-t-[32px] p-2 pb-0 ${tone.frame} shadow-2xl overflow-hidden flex flex-col`}
+                    initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 >
-                    <div className="flex justify-center py-2.5 cursor-grab active:cursor-grabbing relative">
-                        <div className="h-1.5 w-14 rounded-full bg-white/70" />
+                    {/* Handle de fechar */}
+                    <div className="flex justify-center py-3 cursor-grab active:cursor-grabbing">
+                        <div className="h-1.5 w-12 rounded-full bg-white/60" />
                     </div>
 
-                    <div className="bg-white rounded-[22px] px-3 pt-3 pb-3 md:px-6 md:pt-6 md:pb-5 flex flex-col gap-2 md:gap-5">
+                    <div className="bg-white rounded-t-[24px] flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
 
-                        <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-2">
-                                <span className={`flex items-center justify-center w-8 h-8 rounded-full ${tone.pill}`}>
-                                    {tone.icon}
-                                </span>
-                                <span className="text-xs font-semibold text-gray-400">#{dados.id}</span>
-                            </div>
-                            <button
-                                onClick={closeInfo}
-                                className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 transition-colors"
-                            >
-                                <X width={14} height={14} />
-                            </button>
-                        </div>
-
-                        <div>
-                            <h2 className="text-xl font-bold text-gray-800 leading-tight">
-                                {dados.motivosMacro.descricao}
-                            </h2>
-                            <p className={`text-xs font-bold uppercase tracking-wide mt-1 ${tone.ink}`}>
-                                {dados.departamento.departamento}
-                            </p>
-                        </div>
-
-                        {loadingSigners ? (
-                            <div className="flex flex-wrap gap-1.5">
-                                {Array.from({ length: 3 }).map((_, i) => (
-                                    <span key={i} className="h-5 w-16 rounded-lg bg-gray-100 animate-pulse" />
-                                ))}
-                            </div>
-                        ) : dadosZapSign ? (
-                            <div className="flex flex-wrap gap-1.5">
-                                {dadosZapSign.signers?.map((signer) => {
-                                    const t = signerTone[signer.status] ?? signerTone.pending;
-
-                                    return (
-                                        <span
-                                            key={signer.email}
-                                            className={`flex items-center gap-1 px-2 py-1 rounded-lg ${t.bg} ${t.text} text-[9px] md:text-sm font-semibold`}
-                                        >
-                                            {t.icon}
-                                            {signer.name}
-                                        </span>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <p className="text-xs text-gray-400">Não foi possível carregar as informações da assinatura.</p>
-                        )}
-
-                        <section className="flex flex-wrap items-center gap-1.5 text-[9px] md:text-[11px]">
-
-                            <span className={`flex items-center gap-1 px-2.5 py-1 rounded-lg ${tone.pill}  font-semibold uppercase tracking-wide first-letter:uppercase`}>
-                                <span className={`w-1.5 h-1.5 rounded-full ${tone.solid}`} />
-                                {status}
-                            </span>
-                            <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-100 text-gray-500 font-semibold">
-                                <SentIcon width={11} height={11} />
-                                {formatDate(dados.data.split('T')[0])}
-                            </span>
-                        </section>
-
-
-                        {/* Timeline início -> fim, com a duração no meio */}
-                        <section className="bg-gray-50 rounded-2xl px-3 py-1 md:px-4 md:py-3.5">
-                            <div className="flex items-center justify-between">
-
-                                <div className="flex flex-col items-start">
-                                    <p className="text-[9px] uppercase tracking-wide text-gray-400 font-semibold">Início</p>
-                                    <p className="text-[14px] md:text-lg font-bold text-gray-800 leading-tight">{formatTime(dados.inicio)}</p>
-                                    <p className="text-[10px] text-gray-400">{formatDate(dados.inicio.split('T')[0])}</p>
-                                </div>
-
-                                <div className="flex-1 flex flex-col items-center px-3">
-                                    <span className={`text-[10px] font-bold ${tone.ink}`}>
-                                        {totalHours(dados.inicio, dados.fim)}h
+                        {/* Header Principal */}
+                        <header className="flex justify-between items-start mb-6">
+                            <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${tone.pill}`}>
+                                        Doc #{dados.id}
                                     </span>
-                                    <div className="w-full flex items-center gap-1 mt-1">
-                                        <span className={`w-2 h-2 rounded-full ${tone.solid}`} />
-                                        <span className="flex-1 border-t-2 border-dashed border-gray-300" />
-                                        <ArrowRight width={13} height={13} className="text-gray-300 shrink-0" />
-                                        <span className="flex-1 border-t-2 border-dashed border-gray-300" />
-                                        <span className={`w-2 h-2 rounded-full ${tone.solid}`} />
-                                    </div>
+                                    <span className="text-[10px] text-gray-400 font-medium">
+                                        Criado por {dados.usuario}
+                                    </span>
                                 </div>
-
-                                <div className="flex flex-col items-end">
-                                    <p className="text-[9px] uppercase tracking-wide text-gray-400 font-semibold">Fim</p>
-                                    <p className="md:text-lg font-bold text-gray-800 leading-tight">{formatTime(dados.fim)}</p>
-                                    <p className="text-[10px] text-gray-400">{formatDate(dados.fim.split('T')[0])}</p>
-                                </div>
-                            </div>
-                        </section>
-
-                        <section className="grid grid-cols-3 gap-2">
-                            <div className="flex flex-col items-center gap-0.5 bg-gray-50 rounded-xl py-1 md:py-2.5">
-                                <p className="text-[9px] uppercase tracking-wide text-gray-400 font-semibold">Turno</p>
-                                <p className="text-[0.8em] md:text-[0.9rem] text-gray-700 font-bold">{dados.turno}</p>
-                            </div>
-                            <div className="flex flex-col items-center gap-0.5 bg-gray-50 rounded-xl py-1 md:py-2.5">
-                                <p className="text-[9px] uppercase tracking-wide text-gray-400 font-semibold">Total</p>
-                                <p className="text-[0.8em] md:text-[0.9rem] text-gray-700 font-bold">
-                                    {totalHours(dados.inicio, dados.fim)}h
+                                <h2 className="text-2xl font-black text-gray-800 leading-tight">
+                                    {solicitacao.motivoMacro}
+                                </h2>
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                                    {solicitacao.departamento} • {solicitacao.planta}
                                 </p>
                             </div>
-                            <div className="flex flex-col items-center gap-0.5 bg-gray-50 rounded-xl py-1 md:py-2.5">
-                                <p className="text-[9px] uppercase tracking-wide text-gray-400 font-semibold">Acumulado</p>
-                                <p className="text-[0.8em] md:text-[0.9rem] text-gray-700 font-bold">
-                                    {totalAccHours(dados.inicio, dados.fim, dados.funcionarios.length)}h
-                                </p>
-                            </div>
-                        </section>
-
-                        <div className="relative">
-                            <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold mb-1.5">
-                                Motivo Detalhado
-                            </p>
-
-                            <div className="relative">
-                                <p className="text-[0.75em] md:text-[0.9rem] p-3 rounded-xl bg-gray-50 text-gray-600 max-h-30 overflow-y-auto md:h-max">
-                                    {dados.motivoDetalhado}
-                                </p>
-
-                            </div>
-                        </div>
-
-                        <div>
-                            <button
-                                className="font-semibold flex gap-1.5 items-center text-gray-700"
-                                onClick={() => { setOpenLista(!openLista) }}
-                            >
-                                Lista de Pessoas
-                                <span className="text-[0.75em] font-semibold md:text-[0.9rem] text-gray-400">({dados.funcionarios.length})</span>
-                                <OpenIcon className={`text-gray-400 ${openLista ? 'animate-open-list rotate-180' : 'animate-close-list rotate-0 '}`} width={12} height={12} />
+                            <button onClick={closeInfo} className="p-2 rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100">
+                                <X size={20} />
                             </button>
+                        </header>
 
-                            {openLista && (
-                                <section className="animate-list-in flex md:grid md:grid-cols-2 lg:grid-cols-3 md:auto-rows-max flex-col md:h-50 h-40 overflow-auto gap-2 pt-3">
-                                    {dados.funcionarios.map((pessoa) => (
-                                        <nav key={pessoa.id} className="pl-2 bg-gray-50 p-2 rounded-[15px] border border-gray-100">
-                                            <div className="flex items-center justify-between gap-1">
-                                                <p className="text-sm font-semibold text-gray-700">{pessoa.funcionario.name}</p>
-                                                <p className="text-[0.6em] font-semibold text-gray-400">{pessoa.funcionario.re}</p>
-                                            </div>
-                                            <p className="text-[0.6em] text-gray-400">{pessoa.maquina.maquina}</p>
-                                        </nav>
-                                    ))}
-                                </section>
+                        {/* Signatários */}
+                        <div className="mb-6">
+                            {loadingSigners ? (
+                                <div className="flex gap-2"><div className="h-6 w-24 bg-gray-100 animate-pulse rounded-lg" /></div>
+                            ) : (
+                                <div className="flex flex-wrap gap-1.5">
+                                    {dadosZapSign?.signers?.map((s) => {
+                                        const t = signerTone[s.status] || signerTone.pending;
+                                        return (
+                                            <span key={s.email} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${t.bg} ${t.text} text-[10px] font-bold border border-current/10`}>
+                                                {t.icon} {s.name}
+                                            </span>
+                                        );
+                                    })}
+                                </div>
                             )}
                         </div>
+
+                        {/* Timeline de Horário */}
+                        <section className="bg-gray-50 rounded-3xl p-5 mb-6 border border-gray-100">
+                            <div className="flex items-center justify-between">
+                                <div className="text-center md:text-left">
+                                    <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">Início</p>
+                                    <p className="text-xl font-black text-gray-800">{formatTime(solicitacao.inicio)}</p>
+                                    <p className="text-[10px] font-medium text-gray-500">{formatDate(solicitacao.inicio?.split('T')[0])}</p>
+                                </div>
+
+                                <div className="flex-1 px-6 flex flex-col items-center">
+                                    <span className={`text-xs font-black px-3 py-1 rounded-full mb-2 ${tone.pill}`}>
+                                        {totalHours(solicitacao.inicio, solicitacao.fim)}h
+                                    </span>
+                                    <div className="w-full flex items-center gap-2">
+                                        <div className={`h-2 w-2 rounded-full ${tone.solid}`} />
+                                        <div className="flex-1 h-[2px] border-t-2 border-dashed border-gray-300" />
+                                        <ArrowRight size={16} className="text-gray-300" />
+                                        <div className="flex-1 h-[2px] border-t-2 border-dashed border-gray-300" />
+                                        <div className={`h-2 w-2 rounded-full ${tone.solid}`} />
+                                    </div>
+                                    <p className="text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-tighter">{solicitacao.turno}</p>
+                                </div>
+
+                                <div className="text-center md:text-right">
+                                    <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">Término</p>
+                                    <p className="text-xl font-black text-gray-800">{formatTime(solicitacao.fim)}</p>
+                                    <p className="text-[10px] font-medium text-gray-500">{formatDate(solicitacao.fim?.split('T')[0])}</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* SELETOR DE JUSTIFICATIVAS (TABS) */}
+                        <div className="mb-4">
+                            <p className="text-[10px] uppercase font-black text-gray-400 mb-3 ml-1 tracking-widest">Justificativas por Posto ({solicitacao.justificativas?.length})</p>
+                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                {solicitacao.justificativas?.map((just, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setActiveJustIndex(index)}
+                                        className={`shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-2xl transition-all duration-300 border-2 ${activeJustIndex === index
+                                            ? `${tone.ink} border-current bg-white shadow-md`
+                                            : "bg-gray-50 border-transparent text-gray-400 hover:bg-gray-100"
+                                            }`}
+                                    >
+                                        <HardHat size={14} />
+                                        <span className="text-xs font-bold whitespace-nowrap">{just.maquina}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* CONTEÚDO DINÂMICO DA JUSTIFICATIVA ATIVA */}
+                        <motion.div
+                            key={activeJustIndex}
+                            initial={{ opacity: 0, x: 10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="space-y-4"
+                        >
+                            {/* Card da Justificativa */}
+                            <div className="bg-gray-50 rounded-2xl p-4 text-gray-700 shadow-lg relative overflow-hidden">
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-2 mb-2 opacity-60 text-[10px] font-bold uppercase">
+                                        <Info size={12} /> Justificativa
+                                    </div>
+                                    <p className="text-sm leading-relaxed font-medium">
+                                        "{justificativaAtiva.justificativa}"
+                                    </p>
+                                </div>
+                                <div className={`absolute -right-4 -bottom-4 w-24 h-24 rounded-full opacity-10 ${tone.solid}`} />
+                            </div>
+
+                            {/* Lista de Funcionários da Máquina */}
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center ml-1">
+                                    <p className="text-[10px] uppercase font-black text-gray-400 tracking-widest">Colaboradores Alocados</p>
+                                    <span className="text-[10px] font-bold bg-gray-100 px-2 py-0.5 rounded-md text-gray-500">
+                                        {justificativaAtiva.funcionarios?.length} pessoas
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    {justificativaAtiva.funcionarios?.map((pessoa, idx) => (
+                                        <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors">
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-bold text-gray-700">{pessoa.nome}</span>
+                                                <span className="text-[9px] text-gray-400 font-semibold uppercase">RE: {pessoa.RE}</span>
+                                            </div>
+                                            <div className={`w-1.5 h-1.5 rounded-full ${tone.solid} opacity-40`} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
                     </div>
 
-                    <div className="flex justify-center pt-2 pb-2 md:pt-3 md:pb-4">
+                    {/* Footer / Botão de Fechar */}
+                    <div className="p-4 bg-white border-t border-gray-50 flex justify-center">
                         <button
                             onClick={closeInfo}
-                            className={`px-8 py-2.5 rounded-full bg-white ${tone.ink} text-xs font-bold uppercase tracking-widest hover:opacity-70 transition-opacity`}
+                            className={`w-full py-4 rounded-2xl ${tone.ink} bg-gray-50 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-gray-100 transition-colors`}
                         >
-                            Fechar
+                            Fechar Detalhes
                         </button>
                     </div>
                 </motion.div>

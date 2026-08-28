@@ -1,6 +1,8 @@
 package com.jonathas.projetoHE.controllers;
 
 import com.jonathas.projetoHE.dto.query.PeriodoSolicitacoesDTO;
+import com.jonathas.projetoHE.dto.query.SolicitacaoDTO;
+import com.jonathas.projetoHE.dto.query.mapper.SolicitacaoMapper;
 import com.jonathas.projetoHE.dto.zapsign.DocInfoResponseDTO;
 import com.jonathas.projetoHE.model.*;
 import com.jonathas.projetoHE.repositories.*;
@@ -36,6 +38,9 @@ public class QueryController {
     private DepartamentoRepository departamentoRepository;
 
     @Autowired
+    private SolicitacoesRepository solicitacoesRepository;
+
+    @Autowired
     private SolicitacaoRepository solicitacaoRepository;
 
     @Autowired
@@ -47,13 +52,25 @@ public class QueryController {
     @Autowired
     private PlantasRepository plantasRepository;
 
+    @Autowired
+    private TipoSolicitacaoRepository tipoSolicitacaoRepository;
+
     private final ZapSignService zapSignService;
+
+    @Autowired
+    private SolicitacaoMapper solicitacaoMapper;
 
     @GetMapping("/plantas")
     public ResponseEntity<List<Plantas>> listarPlantas() {
         return ResponseEntity.ok(plantasRepository.findAll());
     }
 
+    @GetMapping("/nomeCC")
+    public ResponseEntity<String> AcharCentroCusto(@RequestParam(name = "codCC") String codCC) {
+        return departamentoRepository.findByCodCentroCusto(codCC)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
     @GetMapping("/motivosMacro")
     public ResponseEntity<List<MotivosMacro>> listarMotivos() {
         return ResponseEntity.ok(motivosMacroRepository.findAll());
@@ -62,6 +79,11 @@ public class QueryController {
     @GetMapping("/departamentos")
     public ResponseEntity<List<DeptResp>> listarDepartamentos(@RequestParam(name = "planta") String planta) {
         return ResponseEntity.ok(departamentoRepository.listarDepartamentos(planta));
+    }
+
+    @GetMapping("/tipoSolicitacoes")
+    public ResponseEntity<List<TipoSolicitacao>> listarTipos() {
+        return ResponseEntity.ok(tipoSolicitacaoRepository.findAll());
     }
 
     @GetMapping("/maquinasPorDepartamento")
@@ -90,13 +112,19 @@ public class QueryController {
     }
 
     @GetMapping("/solicitacoes")
-    public ResponseEntity<List<Solicitacoes>> solicitacoesPorUsuario(Authentication authentication) {
+    public ResponseEntity<List<SolicitacaoDTO>> solicitacoesPorUsuario(Authentication authentication) {
         String login = authentication.getName();
 
         RespHE usuario = respHeRepository.findByLogin(login)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
 
-        return ResponseEntity.ok(solicitacaoRepository.findAllByUsuarioIdOrderByIdDesc(usuario.getId()));
+        List<Solicitacao> entidades = solicitacaoRepository.findAllByUsuarioIdOrderByIdDesc(usuario.getId());
+
+        List<SolicitacaoDTO> dtos = entidades.stream()
+                .map(solicitacaoMapper::toDTO)
+                .toList();
+
+        return ResponseEntity.ok(dtos);
     }
 
 
@@ -109,101 +137,91 @@ public class QueryController {
         );
     }
 
-    @GetMapping(
-            value = "/exportar",
-            produces = "text/csv"
-    )
-    @PreAuthorize("hasAuthority('EXTRAIR_SOLICITACOES')")
-    public ResponseEntity<byte[]> exportarCSV(
-            @RequestParam LocalDate inicio,
-            @RequestParam LocalDate fim
-    ) {
+//    @GetMapping(
+//            value = "/exportar",
+//            produces = "text/csv"
+//    )
+//    @PreAuthorize("hasAuthority('EXTRAIR_SOLICITACOES')")
+//    public ResponseEntity<byte[]> exportarCSV(
+//            @RequestParam LocalDate inicio,
+//            @RequestParam LocalDate fim
+//    ) {
+//
+//        if (inicio.isAfter(fim)) {
+//            return ResponseEntity.badRequest().build();
+//        }
+//
+//        PeriodoSolicitacoesProjection periodo =
+//                solicitacoesRepository.buscarPeriodoSolicitacoes();
+//
+//        if (inicio.isBefore(periodo.getDataMinima())
+//                || fim.isAfter(periodo.getDataMaxima())) {
+//
+//            return ResponseEntity.badRequest().build();
+//        }
+//
+//        List<SolicitacaoExportProjection> dados =
+//                solicitacaoFuncionariosRepository
+//                        .buscarSolicitacoesParaExportacao(inicio, fim);
+//
+//        StringBuilder csv = new StringBuilder();
+//
+//
+//        csv.append('\uFEFF');
+//
+//        csv.append("Data;Departamento;Empresa;Local da Hora Extra;")
+//                .append("CHAPA;NOME;Turno;Hora Início;Hora Término;")
+//                .append("Tempo Gasto total;Motivo Macro;Justificativa;")
+//                .append("Transporte;Autorizado?\n");
+//
+//        for (SolicitacaoExportProjection item : dados) {
+//
+//            csv.append(escapeCsv(item.getData())).append(";")
+//                    .append(escapeCsv(item.getDepartamento())).append(";")
+//                    .append(escapeCsv(item.getEmpresa())).append(";")
+//                    .append(escapeCsv(item.getLocalDaHoraExtra())).append(";")
+//                    .append(escapeCsv(item.getChapa())).append(";")
+//                    .append(escapeCsv(item.getNome())).append(";")
+//                    .append(escapeCsv(item.getTurno())).append(";")
+//                    .append(escapeCsv(formatarHora(item.getHoraInicio()))).append(";")
+//                    .append(escapeCsv(formatarHora(item.getHoraTermino()))).append(";")
+//                    .append(escapeCsv(item.getTempoGastoTotal())).append(";")
+//                    .append(escapeCsv(item.getMotivoMacro())).append(";")
+//                    .append(escapeCsv(item.getJustificativa())).append(";")
+//                    .append(escapeCsv(item.getTransporte())).append(";")
+//                    .append(escapeCsv(item.getAutorizado())).append("\n");
+//        }
+//
+//        byte[] arquivo = csv
+//                .toString()
+//                .getBytes(StandardCharsets.UTF_8);
+//
+//        return ResponseEntity.ok()
+//                .header(
+//                        HttpHeaders.CONTENT_DISPOSITION,
+//                        "attachment; filename=\"solicitacoes.csv\""
+//                )
+//                .contentType(
+//                        MediaType.parseMediaType(
+//                                "text/csv; charset=UTF-8"
+//                        )
+//                )
+//                .body(arquivo);
+//    }
 
-        if (inicio.isAfter(fim)) {
-            return ResponseEntity.badRequest().build();
-        }
+//    @GetMapping("/periodo")
+//    @PreAuthorize("hasAuthority('EXTRAIR_SOLICITACOES')")
+//    public ResponseEntity<PeriodoSolicitacoesDTO> buscarPeriodo() {
+//
+//        PeriodoSolicitacoesProjection periodo =
+//                solicitacoesRepository.buscarPeriodoSolicitacoes();
+//
+//        return ResponseEntity.ok(
+//                new PeriodoSolicitacoesDTO(
+//                        periodo.getDataMinima(),
+//                        periodo.getDataMaxima()
+//                )
+//        );
+//    }
 
-        PeriodoSolicitacoesProjection periodo =
-                solicitacaoRepository.buscarPeriodoSolicitacoes();
-
-        if (inicio.isBefore(periodo.getDataMinima())
-                || fim.isAfter(periodo.getDataMaxima())) {
-
-            return ResponseEntity.badRequest().build();
-        }
-
-        List<SolicitacaoExportProjection> dados =
-                solicitacaoFuncionariosRepository
-                        .buscarSolicitacoesParaExportacao(inicio, fim);
-
-        StringBuilder csv = new StringBuilder();
-
-
-        csv.append('\uFEFF');
-
-        csv.append("Data;Departamento;Empresa;Local da Hora Extra;")
-                .append("CHAPA;NOME;Turno;Hora Início;Hora Término;")
-                .append("Tempo Gasto total;Motivo Macro;Justificativa;")
-                .append("Transporte;Autorizado?\n");
-
-        for (SolicitacaoExportProjection item : dados) {
-
-            csv.append(escapeCsv(item.getData())).append(";")
-                    .append(escapeCsv(item.getDepartamento())).append(";")
-                    .append(escapeCsv(item.getEmpresa())).append(";")
-                    .append(escapeCsv(item.getLocalDaHoraExtra())).append(";")
-                    .append(escapeCsv(item.getChapa())).append(";")
-                    .append(escapeCsv(item.getNome())).append(";")
-                    .append(escapeCsv(item.getTurno())).append(";")
-                    .append(escapeCsv(formatarHora(item.getHoraInicio()))).append(";")
-                    .append(escapeCsv(formatarHora(item.getHoraTermino()))).append(";")
-                    .append(escapeCsv(item.getTempoGastoTotal())).append(";")
-                    .append(escapeCsv(item.getMotivoMacro())).append(";")
-                    .append(escapeCsv(item.getJustificativa())).append(";")
-                    .append(escapeCsv(item.getTransporte())).append(";")
-                    .append(escapeCsv(item.getAutorizado())).append("\n");
-        }
-
-        byte[] arquivo = csv
-                .toString()
-                .getBytes(StandardCharsets.UTF_8);
-
-        return ResponseEntity.ok()
-                .header(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"solicitacoes.csv\""
-                )
-                .contentType(
-                        MediaType.parseMediaType(
-                                "text/csv; charset=UTF-8"
-                        )
-                )
-                .body(arquivo);
-    }
-
-    @GetMapping("/periodo")
-    @PreAuthorize("hasAuthority('EXTRAIR_SOLICITACOES')")
-    public ResponseEntity<PeriodoSolicitacoesDTO> buscarPeriodo() {
-
-        PeriodoSolicitacoesProjection periodo =
-                solicitacaoRepository.buscarPeriodoSolicitacoes();
-
-        return ResponseEntity.ok(
-                new PeriodoSolicitacoesDTO(
-                        periodo.getDataMinima(),
-                        periodo.getDataMaxima()
-                )
-        );
-    }
-
-/*
-    @GetMapping("/solicitacoes/info")
-    public ResponseEntity<List<Solicitacoes>> solicitacoesInfo(int id) {
-        String login = authentication.getName();
-
-        RespHE usuario = respHeRepository.findByLogin(login)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
-
-        return ResponseEntity.ok(solicitacaoRepository.findAllByUsuarioId(usuario.getId()));
-    } */
 }

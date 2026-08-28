@@ -57,25 +57,25 @@ public class ZapSignService {
                 .collect(Collectors.toCollection(ArrayList::new));
 
 
-        signatarios.add(
-                SignerRequestDTO.builder()
-                        .name("Jonathan Veloso")
-                        .email("jonathan.veloso@magna.com")
-                        .authMode("assinaturaTela")
-                        .sendAutomaticEmail(true)
-                        .orderGroup(signatarios.size() + 1)
-                        .build()
-        );
-
-        signatarios.add(
-                SignerRequestDTO.builder()
-                        .name("Fabricio Fonseca")
-                        .email("Fabricio.Fonseca@magna.com")
-                        .authMode("assinaturaTela")
-                        .sendAutomaticEmail(true)
-                        .orderGroup(signatarios.size() + 1)
-                        .build()
-        );
+//        signatarios.add(
+//                SignerRequestDTO.builder()
+//                        .name("Jonathan Veloso")
+//                        .email("jonathan.veloso@magna.com")
+//                        .authMode("assinaturaTela")
+//                        .sendAutomaticEmail(true)
+//                        .orderGroup(signatarios.size() + 1)
+//                        .build()
+//        );
+//
+//        signatarios.add(
+//                SignerRequestDTO.builder()
+//                        .name("Leandro Almeida")
+//                        .email("leandro.almeida@magna.com")
+//                        .authMode("assinaturaTela")
+//                        .sendAutomaticEmail(true)
+//                        .orderGroup(signatarios.size() + 1)
+//                        .build()
+//        );
 
 
         DocsRequestDTO request =
@@ -86,6 +86,9 @@ public class ZapSignService {
                         .message("Documento Teste")
                         .brandName("Magna Lighting")
                         .signatureOrderActive(true)
+                        .allowRefuseSignature(true)
+//                        .oneClickActive(true)
+//                        .requireSignature(false)
                         .createdBy(dto.getEmailResp())
                         .hasSimplifiedSignature(true)
                         .signers(signatarios
@@ -180,6 +183,36 @@ public class ZapSignService {
                     .header("Authorization", "Bearer " + token)
                     .retrieve()
                     .body(DocInfoResponseDTO.class);
+
+            if (response == null) {
+                throw new RuntimeException(
+                        "ZapSign retornou uma resposta vazia."
+                );
+            }
+
+            return response;
+
+        } catch (RestClientResponseException e) {
+
+            System.out.println("Status: " + e.getStatusCode());
+            System.out.println("Body: " + e.getResponseBodyAsString());
+
+            throw new RuntimeException(
+                    "Erro ao consultar documento na ZapSign.",
+                    e
+            );
+        }
+    }
+
+    public DocRedirectDTO linkDocumento(String documentToken) {
+        try {
+
+            DocRedirectDTO response = restClient.get()
+                    .uri("/docs/" + documentToken)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + token)
+                    .retrieve()
+                    .body(DocRedirectDTO.class);
 
             if (response == null) {
                 throw new RuntimeException(

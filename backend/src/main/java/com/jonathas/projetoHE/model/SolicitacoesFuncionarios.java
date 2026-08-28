@@ -15,15 +15,12 @@ public class SolicitacoesFuncionarios {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "id_soli")
-    @JsonIgnore // Evita o loop infinito
-    private Solicitacoes solicitacoes;
+    @JoinColumn(name = "id_justificativa")
+    @JsonIgnore
+    private SolicitacoesJustificativas justificativa;
 
     @ManyToOne
     @JoinColumn(name = "id_funcionario")
-    private Funcionarios funcionario; // Removido o 's' para o JSON ficar claro
+    private Funcionarios funcionario;
 
-    @ManyToOne
-    @JoinColumn(name = "id_maquina")
-    private Departamento maquina; // Removido o 's'
 }

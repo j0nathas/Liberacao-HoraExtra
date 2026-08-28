@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
-import { LayoutGrid, Send, CircleCheckBig } from "lucide-react";
+import { LayoutGrid, Send, CircleCheckBig, CircleX } from "lucide-react";
 
 const TABS = [
     { key: "todas", label: "Todas", icon: LayoutGrid },
     { key: "pendente", label: "Enviadas", icon: Send },
     { key: "aprovado", label: "Aprovadas", icon: CircleCheckBig },
+    { key: "recusado", label: "Recusadas", icon: CircleX }
 ];
 
 export default function Header({ filtro, onFiltroChange, counts }) {

@@ -15,6 +15,9 @@ public class Departamento {
     @Column(name = "COD_MAQUINA")
     String codMaquina;
 
+    @Column(name = "COD_CENTRO_CUSTO")
+    private String codCentroCusto;
+
     @Column(name = "DESC_DEPARTAMENTO")
     private String maquina;
 

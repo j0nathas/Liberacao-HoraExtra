@@ -1,40 +1,29 @@
-// models/formModel.js
-// Camada de Model: apenas dados e regras de negócio, sem React e sem efeitos colaterais.
-
 export const hoje = new Date().toISOString().split('T')[0] + 'T00:00';
 
-/**
- * Cria um novo formulário vazio.
- */
 export function novoForm(id) {
     return {
         id,
         planta: '',
+        tipo: '',
         motivoMacro: '',
         motivoMacroId: '',
-        motivoDetalhado: '',
         departamento: '',
         inicio: '',
         fim: '',
         turno: '',
-        funcionarios: []
+        justificativas: []
     };
 }
 
 export function validarFormularios(forms) {
     const formularioInvalido = forms.some((f) =>
-        f.motivoMacro === '' ||
-        f.motivoDetalhado === '' ||
-        f.departamento === '' ||
-        f.inicio === '' ||
-        f.fim === '' ||
-        f.turno === '' ||
-        f.funcionarios.length === 0
+        !f.planta || !f.motivoMacro || !f.departamento || !f.inicio || !f.fim || !f.turno ||
+        f.justificativas.length === 0 ||
+        f.justificativas.some(j => j.funcionarios.length === 0)
     );
 
     if (formularioInvalido) {
-        return { valid: false, toast: "Preencha todos os campos do formulário!" };
+        return { valid: false, toast: "Preencha todos os campos e adicione funcionários às máquinas!" };
     }
-
     return { valid: true, toast: null };
 }

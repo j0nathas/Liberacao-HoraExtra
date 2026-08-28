@@ -37,5 +37,13 @@ public interface DepartamentoRepository extends JpaRepository<Departamento, Stri
             @Param("planta") String planta
     );
 
+    @Query("""
+    SELECT DISTINCT dr.departamento
+    FROM Departamento d
+    JOIN d.idDepartamento dr
+    WHERE d.codCentroCusto = :codCC
+""")
+    Optional<String> findByCodCentroCusto(@Param("codCC") String codCC);
+
     Optional<Departamento> findByCodMaquina(String codMaquina);
 }

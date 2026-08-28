@@ -4,7 +4,6 @@ import com.jonathas.projetoHE.dto.post.SolicitacaoResponseDTO;
 import com.jonathas.projetoHE.dto.post.SolicitacoesDTO;
 import com.jonathas.projetoHE.model.Solicitacoes;
 import com.jonathas.projetoHE.services.SolicitacaoService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,16 +22,15 @@ public class SolicitacoesController {
 
     @PostMapping("/enviar")
     public ResponseEntity<List<SolicitacaoResponseDTO>> salvar(
-            @RequestBody SolicitacoesDTO dto,
-            HttpServletRequest request
+            @RequestBody SolicitacoesDTO dto
     ) {
-        List<Solicitacoes> solicitacoes = solicitacaoService.salvar(dto);
+        List<Solicitacoes> solicitacoesFilhas = solicitacaoService.salvar(dto);
 
-        List<SolicitacaoResponseDTO> response = solicitacoes.stream()
+        List<SolicitacaoResponseDTO> response = solicitacoesFilhas.stream()
                 .map(s -> new SolicitacaoResponseDTO(
                         s.getId(),
-                        s.getStatus(),
-                        s.getToken(),
+                        s.getSolicitacao().getStatus(),
+                        s.getSolicitacao().getToken(),
                         s.getDepartamento() != null
                                 ? s.getDepartamento().getDepartamento()
                                 : null

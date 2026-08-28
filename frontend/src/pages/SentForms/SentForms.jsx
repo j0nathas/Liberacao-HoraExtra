@@ -14,6 +14,7 @@ export default function SentForms() {
     const handleInfoOpen = (dados) => setSolicitacaoSelecionada(dados);
     const handleInfoClose = () => setSolicitacaoSelecionada(null);
 
+
     useEffect(() => {
         const carregarDados = async () => {
             try {
@@ -30,6 +31,7 @@ export default function SentForms() {
         if (filtro === 'todas') return dados;
         if (filtro === 'pendente') return dados.filter((d) => d.status === 'pending');
         if (filtro === 'aprovado') return dados.filter((d) => d.status === 'signed');
+        if (filtro === 'recusado') return dados.filter((d) => d.status === 'recusado');
         return dados;
     }, [dados, filtro]);
 
@@ -37,6 +39,7 @@ export default function SentForms() {
         todas: dados.length,
         pendente: dados.filter((d) => d.status === 'pending').length,
         aprovado: dados.filter((d) => d.status === 'signed').length,
+        recusado: dados.filter((d) => d.status === 'recusado').length,
     }), [dados]);
 
     return (

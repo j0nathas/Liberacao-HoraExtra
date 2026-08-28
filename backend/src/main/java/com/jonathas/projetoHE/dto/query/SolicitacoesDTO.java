@@ -1,18 +1,17 @@
 package com.jonathas.projetoHE.dto.query;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
 public record SolicitacoesDTO(
-        int id,
-        Date data,
-        String motivo_macro,
-        String motivo_detalhado,
+        Long id,
+        String motivoMacro, // Alterado para padrão Java
+        String tipoSolicitacao,
         String departamento,
         String turno,
-        Date inicio,
-        Date fim,
-        String status,
-        List<SolicitacoesFuncionariosDTO> funcionarios
-        ) {
-}
+        ZonedDateTime inicio,
+        ZonedDateTime fim,
+        String planta,
+        List<JustificativasDTO> justificativas
+) {}

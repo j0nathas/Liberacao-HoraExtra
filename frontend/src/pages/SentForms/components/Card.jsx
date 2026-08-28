@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { getISOWeek, formatDate, totalHours, totalAccHours } from '../Utils/SentUtils'
 import SentIcon from '../../../../img/sent-date.svg?react'
-import { CircleCheckBig, Clock, CircleSlash } from 'lucide-react';
+import { CircleCheckBig, Clock, CircleSlash, CircleX } from 'lucide-react';
 
 
 export default function Card({ dados, openInfo }) {
     const [viewCard, setViewCard] = useState(false);
-    const status = dados.status === "pending" ? "pendente" : dados.status === "signed" ? "aprovado" : "Não Enviado";
-
+    console.log(dados)
+    const status = dados.status === "pending" ? "pendente" : dados.status === "signed" ? "aprovado" : dados.status === "recusado" ? "recusado" : "Não Enviado";
     const tone = {
         pendente: {
             frame: "bg-amber-100",
@@ -27,6 +27,12 @@ export default function Card({ dados, openInfo }) {
             pill: "bg-slate-50 text-slate-600",
             icon: <CircleSlash width={15} height={15} />,
         },
+        recusado: {
+            frame: "bg-red-100",
+            ink: "text-red-600",
+            pill: "bg-red-50 text-red-600",
+            icon: <CircleX width={15} height={15} />,
+        },
     }[status];
 
     return (
@@ -44,14 +50,23 @@ export default function Card({ dados, openInfo }) {
 
                 <div>
                     <h3 className="text-lg font-bold text-gray-800 leading-tight">
-                        Semana {getISOWeek(dados.inicio)}
+                        Semana {
+                            [...new Set(
+                                dados.solicitacoes.map(solicitacao =>
+                                    getISOWeek(solicitacao.inicio)
+                                )
+                            )].join(', ')
+                        }
                     </h3>
                     <div>
 
                         <div className='flex items-center gap-1'>
-                            <p className="text-sm text-gray-500">
-                                {dados.motivosMacro.descricao} ·
-                            </p>
+                            {dados.solicitacoes.map((solicitacao) => (
+                                <p key={solicitacao.id} className="text-sm text-gray-500">
+                                    {solicitacao.motivoMacro}
+                                </p>
+                            ))}
+
                             <span className={`px-1 py-1 rounded-lg ${tone.pill} text-[8px] font-semibold uppercase tracking-wide first-letter:uppercase`}>
                                 {status}
                             </span>
@@ -62,7 +77,7 @@ export default function Card({ dados, openInfo }) {
                 </div>
 
                 <section className="flex flex-wrap gap-1.5">
-                    <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[11px] font-semibold uppercase tracking-wide">
+                    {/* <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[11px] font-semibold uppercase tracking-wide">
                         {dados.turno}
                     </span>
                     <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[11px] font-semibold uppercase tracking-wide">
@@ -70,7 +85,7 @@ export default function Card({ dados, openInfo }) {
                     </span>
                     <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[11px] font-semibold uppercase tracking-wide">
                         {totalAccHours(dados.inicio, dados.fim, dados.funcionarios.length)}h
-                    </span>
+                    </span> */}
                 </section>
             </div>
 

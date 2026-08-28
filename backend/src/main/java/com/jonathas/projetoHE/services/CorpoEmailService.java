@@ -4,6 +4,7 @@ import com.jonathas.projetoHE.dto.zapsign.SignedBodyDTO;
 import com.jonathas.projetoHE.model.DeptResp;
 import com.jonathas.projetoHE.model.Solicitacoes;
 import com.jonathas.projetoHE.model.SolicitacoesFuncionarios;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class CorpoEmailService {
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     public String construirCorpoEmail(
             SignedBodyDTO dto,
@@ -65,14 +69,16 @@ public class CorpoEmailService {
                         <p style="margin: 5px 0;"><strong>Horas Previstas:</strong> %s</p>
                     </div>
                     """.formatted(
-                    s.getDepartamento(),
-                    s.getTurno(),
+                    s.getDepartamento().getDepartamento(),
+                    s.getTurno().getTurno(),
                     s.getInicio().toLocalDateTime(),
                     s.getFim().toLocalDateTime(),
                     qtd,
                     horasDepartamento
             ));
         }
+
+        String urlAssinatura = "http://" + frontendUrl + "/zapsign/" + dto.token();
 
         return """
                 <html>
@@ -115,8 +121,8 @@ public class CorpoEmailService {
                 horasTotaisGeral,
                 blocosDepartamentos.toString(),
                 dto.name(),
-                dto.signed_file(),
-                dto.signed_file()
+                urlAssinatura,
+                urlAssinatura
         );
     }
 }

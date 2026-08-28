@@ -157,26 +157,52 @@ export function useFormController() {
 
     //////////////////////////////////////////////////////////////
 
+    //////////////////////TIPOS DE SOLICITACAO//////////////////
+
+    const [tiposSolicitacao, setTiposSolicitacao] = useState([]);
+
+    useEffect(() => {
+        async function carregar() {
+            try {
+                const { data } = await api.get("/query/tipoSolicitacoes");
+                setTiposSolicitacao(data);
+            } catch (err) { console.error(err); }
+        }
+        carregar();
+    }, []);
+
+    //////////////////////////////////////////////////////////////
+
     ////////////////////ENVIAR FORMS E CRIAR O DOC///////////////
 
     async function EnviarCriarDoc(forms) {
         const { valid, toast: msg } = validarFormularios(forms);
         if (!valid) return toast.error(msg);
+
         const dadosConsolidados = await generatePDFController(forms);
+
+        console.log(forms);
+        console.log(dadosConsolidados);
+
+
         const pdfBase64 = await gerarPDFBase64(dadosConsolidados);
 
         const solicitacoesParaEnvio = dadosConsolidados.solicitacoes.map(solicitacao => ({
-            id_departamento: solicitacao.idDepartamento,
-            id_planta: solicitacao.idPlanta,
             id_motivo_macro: solicitacao.motivoMacroId,
-            motivo_detalhado: solicitacao.motivoDetalhado,
-            turno: solicitacao.turno,
+            id_tipo: solicitacao.idTipo,
+            id_departamento: solicitacao.idDepartamento,
+            id_turno: solicitacao.idTurno,
             inicio: solicitacao.inicio,
             fim: solicitacao.fim,
-            funcionarios: solicitacao.funcionarios.map(funcionario => ({
-                id_funcionario: funcionario.id,
-                id_maquina: funcionario.maquina.id
-            }))
+            id_planta: solicitacao.idPlanta,
+            justificativas: solicitacao.justificativas.map(just => ({
+                id_maquina: just.maquina.id,
+                justificativa: just.justificativa,
+                funcionarios: just.funcionarios.map(funcionario => ({
+                    id_funcionario: funcionario.id
+                }))
+            })),
+
         }));
 
         const formBody = {
@@ -218,22 +244,30 @@ export function useFormController() {
         setFuncionarioSelecionado(null);
     }, [currentFormIndex]);
 
-    function adicionarFuncionario() {
-        if (!funcionarioSelecionado || !maquinaSelecionada) return;
+    const [vinculoTexto, setVinculoTexto] = useState();
+    const [vinculoJust, setVinculoJust] = useState();
 
-        updateCurrentForm('funcionarios', [
-            ...currentForm.funcionarios,
-            {
-                ...funcionarioSelecionado,
-                maquina: {
-                    id: maquinaSelecionada.id,
-                    nome: maquinaSelecionada.name
-                }
-            },
-        ]);
+    function adicionarFuncionario(vinculo) {
+        if (!funcionarioSelecionado || !vinculo) return;
 
-        setFuncionarioSelecionado(null);
+        const jaAdicionado = currentForm.justificativas.some(j =>
+            j.id === vinculo.idJustificativa &&
+            j.funcionarios.some(f => f.id === funcionarioSelecionado.id)
+        );
+        if (jaAdicionado) return;
+
+        const novasJustificativas = currentForm.justificativas.map(justificativa =>
+            justificativa.id === vinculo.idJustificativa
+                ? { ...justificativa, funcionarios: [...justificativa.funcionarios, funcionarioSelecionado] }
+                : justificativa
+        );
+
+        updateCurrentForm('justificativas', novasJustificativas);
+
         setFuncionarioTexto('');
+        setFuncionarioSelecionado(null);
+        setVinculoTexto('');
+        setVinculoJust(null);
     }
 
     return {
@@ -244,6 +278,7 @@ export function useFormController() {
         maquinas: listaMaquinas,
         plantas,
         motivosMacro,
+        tiposSolicitacao,
         opcoesFuncionarios,
         loading: loadingFunc,
         funcionarioTexto,
@@ -258,6 +293,10 @@ export function useFormController() {
         setMaquinaSelecionada,
         setCurrentFormIndex,
         updateCurrentForm,
+        vinculoTexto,
+        setVinculoTexto,
+        vinculoJust,
+        setVinculoJust,
         adicionarFuncionario,
         removerFuncionario: (id) => updateCurrentForm('funcionarios', currentForm.funcionarios.filter(f => f.id !== id)),
         adicionarForm,
@@ -266,7 +305,6 @@ export function useFormController() {
         handleSubmit: async (e) => {
             e.preventDefault();
             setLoading(true);
-            console.log(currentForm)
             try {
                 await EnviarCriarDoc(forms);
             } catch (err) {

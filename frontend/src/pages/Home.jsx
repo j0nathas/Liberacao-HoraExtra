@@ -93,7 +93,7 @@ export default function Home() {
                   <Mail size={60} />
                 </div>
                 <h3 className="font-bold text-slate-800">3. Finalização</h3>
-                <p className="text-xs text-slate-500 mt-2">E-mail automático com o PDF assinado para o RH e colaborador.</p>
+                <p className="text-xs text-slate-500 mt-2">E-mail automático com o PDF assinado.</p>
               </div>
             </div>
 

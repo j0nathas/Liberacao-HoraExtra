@@ -1,21 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, use } from 'react';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import 'dayjs/locale/pt-br';
+import useEmblaCarousel from 'embla-carousel-react';
+// Componentes e Ícones
 import Search from '../../../components/Search.jsx';
 import { hoje } from '../models/formModel.js';
 import { Shifts } from '../components/dadosFake.js';
 import {
-    Loader2,
-    Plus,
-    Trash2,
-    Clock,
-    UserPlus,
-    X,
-    FileText,
-    Info,
-    CheckCircle2,
-    Send,
-    Calendar,
-    ArrowRight,
-    Check
+    Loader2, Plus, Trash2, Clock, UserPlus, X, FileText,
+    Info, CheckCircle2, Send, Calendar, ArrowRight, Check, Hash, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 export default function FormView({
@@ -30,6 +26,7 @@ export default function FormView({
     motivosMacro,
     motivoTexto,
     setMotivoTexto,
+    tiposSolicitacao,
     loading,
     funcionarioSelecionado,
     maquinaSelecionada,
@@ -40,6 +37,10 @@ export default function FormView({
     setFuncionarioSelecionado,
     setMaquinaSelecionada,
     updateCurrentForm,
+    vinculoTexto,
+    setVinculoTexto,
+    vinculoJust,
+    setVinculoJust,
     adicionarFuncionario,
     removerFuncionario,
     adicionarForm,
@@ -47,16 +48,42 @@ export default function FormView({
     handleSubmit,
     carregarDepartamentos,
 }) {
-    const MAX_CHARS = 500;
-
+    // --- ESTADOS E CONSTANTES ---
+    const MAX_CHARS = 200;
     const [departamentoInput, setDepartamentoInput] = useState(currentForm.departamento || "");
+    const [limiteHora, setLimiteHora] = useState(null);
+    const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
+    const [justificativa, setJustificativa] = useState('');
+    const [emblaRef, emblaApi] = useEmblaCarousel({ align: 'center', dragFree: true });
+
+
+    useEffect(() => {
+        if (emblaApi && currentForm.justificativas.length > 1) {
+            emblaApi.scrollTo(currentForm.justificativas.length - 2);
+        }
+    }, [currentForm.justificativas.length, emblaApi]);
+
+
+    const prevJustificativasLength = useRef(currentForm.justificativas.length);
+
+    useEffect(() => {
+        const cresceu = currentForm.justificativas.length > prevJustificativasLength.current;
+        if (emblaApi && cresceu) {
+            emblaApi.scrollTo(currentForm.justificativas.length - 1);
+        }
+        prevJustificativasLength.current = currentForm.justificativas.length;
+    }, [currentForm.justificativas.length, emblaApi]);
+
 
     useEffect(() => {
         setDepartamentoInput(currentForm.departamento || "");
     }, [currentFormIndex, currentForm.departamento]);
 
-    const handleTurnoChange = (turnoName) => {
-        updateCurrentForm('turno', turnoName);
+    const handleTurnoChange = (shift) => {
+        updateCurrentForm({
+            turno: shift.name,
+            idTurno: shift.id
+        });
     };
 
     const handlePlantaChange = (planta) => {
@@ -71,8 +98,43 @@ export default function FormView({
         setDepartamentoInput(null);
     };
 
+    const handleTipoChange = (type) => {
+        updateCurrentForm({
+            tipo: type.tipo_solicitacao,
+            idTipo: type.id
+        });
+        setLimiteHora(type.limite);
+    };
+
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+        setMostrarConfirmacao(true);
+    };
+
+    const handleJustificativa = () => {
+        if (!maquinaSelecionada || !justificativa.trim()) return;
+
+        const novaJustificativa = {
+            id: currentForm.justificativas.length + 1,
+            maquina: maquinaSelecionada,
+            justificativa: justificativa,
+            funcionarios: []
+        };
+
+        updateCurrentForm('justificativas', [...currentForm.justificativas, novaJustificativa]);
+
+        setJustificativa('');
+        setMaquinaTexto('');
+        setMaquinaSelecionada(null);
+    };
+
+    const removerJustificativa = (id) => {
+        updateCurrentForm('justificativas', currentForm.justificativas.filter(j => j.id !== id));
+    };
+
     function checkDateOrder(inicio, fim) {
         const ms = new Date(fim) - new Date(inicio);
+
         if (ms <= 0) {
             return (
                 <p className="mt-2 text-[11px] text-red-600 bg-red-50 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
@@ -80,9 +142,20 @@ export default function FormView({
                 </p>
             );
         }
+
         const totalMin = Math.round(ms / 60000);
         const h = Math.floor(totalMin / 60);
         const m = totalMin % 60;
+        const maiorQueLimite = totalMin > (limiteHora * 60);
+
+        if (maiorQueLimite) {
+            return (
+                <p className="mt-2 text-[11px] text-red-600 bg-red-50 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                    <Info size={12} /> Duração máxima permitida é de {limiteHora} horas.
+                </p>
+            );
+        }
+
         return (
             <div className="mt-2 flex items-center gap-1.5 text-[11px] text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg w-fit">
                 <Clock size={12} />
@@ -93,19 +166,21 @@ export default function FormView({
         );
     }
 
-    const primeiroCardPreenchido = currentForm.motivoMacro && currentForm.departamento && currentForm.motivoDetalhado && currentForm.planta;
-    const liberarTerceiroCard = currentForm.inicio && currentForm.fim && currentForm.turno && primeiroCardPreenchido;
-    const tudoPreenchido = currentForm.funcionarios.length > 0 && liberarTerceiroCard;
+    const horasDeDiferenca = currentForm.inicio && currentForm.fim
+        ? dayjs(currentForm.fim).diff(dayjs(currentForm.inicio), 'hour', true)
+        : 0;
 
-    const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
+    const primeiroCardPreenchido = currentForm.motivoMacro && currentForm.departamento && currentForm.justificativas.length > 0 && currentForm.planta;
+    const liberarTerceiroCard = currentForm.inicio && currentForm.fim && currentForm.turno && primeiroCardPreenchido && horasDeDiferenca > 0 && horasDeDiferenca <= limiteHora && currentForm.justificativas.length > 0;
+    const funcionariosAdicionados = currentForm.justificativas.every(justificativa => justificativa.funcionarios.length > 0);
+    const listaComFuncionarios = currentForm.justificativas.find(justificativa => justificativa.funcionarios.length > 0);
+    const tudoPreenchido = currentForm.justificativas.length > 0 && liberarTerceiroCard && funcionariosAdicionados;
 
-    const handleFormSubmit = (e) => {
-        e.preventDefault();
-        setMostrarConfirmacao(true);
-    };
+    const formSemFuncionarios = (f) => f.justificativas.every(j => j.funcionarios.length === 0);
 
     return (
-        <main className="h-full overflow-auto flex flex-col gap-2 items-center animate-fade-in">
+        <main className="h-full overflow-auto relative flex flex-col gap-2 items-center animate-fade-in">
+
             {forms.length > 1 && (
                 <header className="w-full bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3">
                     <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-3 overflow-x-auto no-scrollbar">
@@ -137,23 +212,25 @@ export default function FormView({
                 </header>
             )}
 
-            <form onSubmit={handleFormSubmit} className="grid grid-cols-1 w-full max-w-7xl h-full items-center justify-center gap-4 lg:gap-0 p-3 lg:p-0 md:gap-3 md:p-6">
+            <form onSubmit={handleFormSubmit} className="grid grid-cols-1 w-full max-w-7xl h-max items-center justify-center md:gap-y-2 md:p-6 lg:p-2 xl:p-0">
+                <div className="grid grid-cols-1 lg:grid-cols-3 w-[100%] gap-4 lg:p-2">
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 w-[100%] gap-4 lg:p-5">
-                    {/* Card 1: Motivos e Local */}
-                    <div className={`bg-white w-full rounded-2xl shadow-sm border border-gray-200 transition-all flex flex-col`}>
-                        <div className={`bg-slate-50 px-6 py-4 border-b rounded-t-2xl border-slate-200 flex items-center relative gap-2 text-slate-700 font-semibold`}>
-                            <FileText size={18} className={`${primeiroCardPreenchido ? 'text-green-500' : 'text-blue-600'}`} />
-                            <h2>Detalhes</h2>
-                            {primeiroCardPreenchido && (
-                                <CheckCircle2 size={20} className="text-green-500 absolute right-5 animate-fade-in" />
-                            )}
+                    {/* --- CARD 1: DETALHES E LOCAL --- */}
+                    <div className="bg-white w-full rounded-2xl shadow-sm border border-gray-200 transition-all flex flex-col">
+                        <div className="bg-slate-50 px-6 py-4 border-b rounded-t-2xl border-slate-200 flex items-center justify-between relative gap-2 text-slate-700 font-semibold">
+                            <div className='flex items-center gap-1'>
+                                <FileText size={18} className={`${primeiroCardPreenchido ? 'text-green-500' : 'text-blue-600'}`} />
+                                <h2>Detalhes</h2>
+                            </div>
+
+                            {primeiroCardPreenchido && <CheckCircle2 size={20} className="text-green-500 absolute right-5 animate-fade-in" />}
                         </div>
-                        <div className="flex flex-col w-full p-6 flex-1 gap-2">
 
+                        <div className="flex flex-col w-full p-4 flex-1 gap-2">
+                            {/* Planta */}
                             <div className="flex flex-col gap-2">
                                 <label className="text-sm font-semibold text-slate-700">Planta</label>
-                                <nav className="w-full grid grid-cols-3 gap-2 w-full">
+                                <nav className="w-full grid grid-cols-3 gap-2">
                                     {plantas.map((planta) => {
                                         const isSelected = currentForm.planta === planta.name;
                                         return (
@@ -161,30 +238,23 @@ export default function FormView({
                                                 key={planta.id}
                                                 type="button"
                                                 onClick={() => handlePlantaChange(planta)}
-                                                disabled={currentForm.funcionarios.length > 0}
-                                                className={`flex cursor-pointer justify-between gap-2 p-3 rounded-xl border-2 ${isSelected
-                                                    ? 'border-blue-500 bg-blue-50 text-blue-700 disabled:bg-amber-50 disabled:text-amber-600 disabled:border-amber-200'
-                                                    : 'border-slate-50 bg-slate-50 text-slate-500 hover:border-slate-200'
-                                                    }  disabled:cursor-not-allowed transition-all`}
+                                                disabled={!funcionariosAdicionados || currentForm.departamento}
+                                                className={`flex cursor-pointer justify-between gap-2 p-3 rounded-xl border-2 ${isSelected ? 'border-blue-500 bg-blue-50 text-blue-700 disabled:bg-amber-50 disabled:text-amber-600 disabled:border-amber-200' : 'border-slate-50 bg-slate-50 text-slate-500 hover:border-slate-200'
+                                                    } disabled:cursor-not-allowed transition-all`}
                                             >
                                                 <span className="font-bold text-xs">{planta.name}</span>
                                                 {isSelected ? <CheckCircle2 size={16} /> : <div className="w-4 h-4 rounded-full border-2 border-slate-200" />}
                                             </button>
                                         );
                                     })}
-
-                                    <button
-                                        key={"VINHEDO"}
-                                        type="button"
-                                        className={`flex cursor-not-allowed justify-between gap-2 p-3 rounded-xl border-2 border-slate-50 opacity-40 bg-slate-50 text-slate-500`}
-                                    >
+                                    <button type="button" className="flex cursor-not-allowed justify-between gap-2 p-3 rounded-xl border-2 border-slate-50 opacity-40 bg-slate-50 text-slate-500">
                                         <span className="font-bold text-xs">MMB</span>
                                         <div className="w-4 h-4 rounded-full border-2 border-slate-200" />
                                     </button>
                                 </nav>
                             </div>
 
-
+                            {/* Motivo Macro */}
                             <div className="flex flex-col w-full gap-2">
                                 <label className="text-sm font-semibold text-slate-700">Motivo Macro</label>
                                 <Search
@@ -193,15 +263,13 @@ export default function FormView({
                                     onChange={setMotivoTexto}
                                     onSelect={(item) => {
                                         setMotivoTexto(item?.name ?? '');
-                                        updateCurrentForm({
-                                            motivoMacro: item?.name ?? '',
-                                            motivoMacroId: item?.id ?? ''
-                                        });
+                                        updateCurrentForm({ motivoMacro: item?.name ?? '', motivoMacroId: item?.id ?? '' });
                                     }}
                                     placeholder="Selecione o motivo"
                                 />
                             </div>
 
+                            {/* Departamento */}
                             <div className="flex flex-col w-full">
                                 <label className="text-sm font-semibold text-slate-700">Departamento</label>
                                 <Search
@@ -212,74 +280,149 @@ export default function FormView({
                                         const nome = item?.name ?? '';
                                         const idDept = item?.id ?? 0;
                                         setDepartamentoInput(nome);
-                                        updateCurrentForm({
-                                            departamento: nome,
-                                            idDepartamento: idDept
-                                        });
+                                        updateCurrentForm({ departamento: nome, idDepartamento: idDept });
                                     }}
-                                    disabled={
-                                        currentForm.funcionarios.length > 0 ||
-                                        !currentForm.planta
-                                    }
+                                    disabled={!funcionariosAdicionados || !currentForm.planta || listaComFuncionarios}
                                     placeholder="Selecione o setor"
                                 />
-                                {!currentForm.planta && (
-                                    <div className="flex items-center gap-1.5 mt-2 animate-fade-in bg-amber-50 p-2 rounded-lg text-amber-600">
-                                        <Info size={14} className="" />
-                                        <p className="text-[10px]">
-                                            Selecione a planta antes de escolher o departamento.
-                                        </p>
-                                    </div>
-                                )}
                             </div>
 
-                            <div className=" pt-2">
-                                <div className="flex justify-between items-end">
-                                    <label className="text-sm font-semibold text-slate-700">Justificativa</label>
-                                    <span className={`text-[10px] font-mono ${currentForm.motivoDetalhado.length >= MAX_CHARS ? 'text-red-500 font-bold' : 'text-slate-400'}`}>
-                                        {currentForm.motivoDetalhado.length}/{MAX_CHARS}
-                                    </span>
+                            {/* Justificativa */}
+                            <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-3">
+
+                                {/* Local ou Máquina */}
+                                <div className="flex flex-col gap-2">
+                                    <Search
+                                        value={maquinaTexto}
+                                        opcoes={maquinas.filter(m =>
+                                            !currentForm.justificativas.some(j =>
+                                                j.maquina.id === m.id
+                                            )
+                                        )}
+                                        onChange={setMaquinaTexto}
+                                        disabled={!currentForm.departamento}
+                                        onSelect={(m) => { setMaquinaTexto(m?.name ?? ''); setMaquinaSelecionada(m); }}
+                                        placeholder="Selecionar Máquina"
+                                    />
                                 </div>
-                                <textarea
-                                    maxLength={MAX_CHARS}
-                                    className="w-full min-h-[100px] rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none text-sm"
-                                    placeholder="Explique o motivo detalhadamente..."
-                                    value={currentForm.motivoDetalhado}
-                                    onChange={(e) => updateCurrentForm('motivoDetalhado', e.target.value)}
-                                />
+
+                                {/* Justificativa */}
+                                <div className={`flex flex-col gap-2 rounded-xl border p-3 transition-all ${maquinaSelecionada ? 'border-blue-200 bg-white shadow-sm' : 'border-slate-200 bg-slate-100/60 opacity-25'}`}>
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-2">
+                                            <FileText size={14} className={maquinaSelecionada ? 'text-blue-500' : 'text-slate-400'} />
+                                            <label className={`text-sm font-semibold ${maquinaSelecionada ? 'text-slate-700' : 'text-slate-400'}`}>
+                                                Justificativa
+                                            </label>
+                                        </div>
+                                        <span className={`text-[10px] font-mono ${justificativa.length >= MAX_CHARS ? 'text-red-500 font-bold' : 'text-slate-400'}`}>
+                                            {justificativa.length}/{MAX_CHARS}
+                                        </span>
+                                    </div>
+
+                                    <textarea
+                                        maxLength={MAX_CHARS}
+                                        className={`w-full min-h-[70px] rounded-xl border-slate-200 bg-slate-50 border p-3.5 text-slate-800 outline-none focus:ring-2
+                focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none text-sm
+                ${maquinaSelecionada ? '' : 'opacity-60 cursor-not-allowed'}
+            `}
+                                        placeholder={maquinaSelecionada ? 'Explique o motivo detalhadamente...' : 'Selecione uma máquina primeiro'}
+                                        disabled={!maquinaSelecionada}
+                                        value={justificativa}
+                                        onChange={(e) => setJustificativa(e.target.value)}
+                                    />
+
+                                    <button
+                                        type="button"
+                                        disabled={!maquinaSelecionada || !justificativa.trim()}
+                                        onClick={handleJustificativa}
+                                        className="self-end flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold
+                hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all shadow-sm"
+                                    >
+                                        <Plus size={14} /> Adicionar
+                                    </button>
+                                </div>
                             </div>
-                            {currentForm.funcionarios.length > 0 && (
-                                <div className="flex items-center gap-1.5 mt-2 animate-fade-in bg-amber-50 p-2 rounded-lg text-amber-600">
-                                    <Info size={14} className="" />
-                                    <p className="text-[10px]">
-                                        Não é possível trocar o departamento ou a planta enquanto houver funcionários adicionados.
-                                    </p>
-                                </div>
-                            )}
+
+                            <div className="space-y-3">
+                                {currentForm.justificativas.length > 0 && (
+                                    <>
+                                        <div className="relative flex flex-col gap-1">
+                                            <div className="overflow-hidden" ref={emblaRef}>
+                                                <div className="flex gap-2">
+                                                    {currentForm.justificativas.map((item, index) => (
+                                                        <article
+                                                            key={item.id || index}
+                                                            className="group flex items-center justify-between gap-3 bg-white border border-slate-200 p-3 rounded-xl
+                                                             hover:border-blue-300 hover:shadow-md hover:shadow-blue-500/5 transition-all shrink-0 basis-[10%] sm:basis-[90%]"
+                                                        >
+                                                            <div className="flex flex-col gap-0.5 overflow-hidden">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-[10px] font-black text-blue-600 w-40 truncate bg-blue-50 px-1.5 py-0.5 rounded uppercase tracking-wider border border-blue-100">
+                                                                        {item.maquina?.name?.split('_')[0] || 'MÁQUINA'}
+                                                                    </span>
+                                                                    <span className={`text-[9px] font-medium ${item.funcionarios?.length ? 'text-slate-400' : 'text-red-300'}`}>
+                                                                        • {item.funcionarios?.length || 0} colaborador(es)
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-[9px] text-slate-600 font-medium leading-relaxed line-clamp-2 italic">
+                                                                    "{item.justificativa}"
+                                                                </p>
+                                                            </div>
+
+                                                            <button
+                                                                onClick={() => removerJustificativa(item.id)}
+                                                                className="shrink-0 p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                                title="Remover máquina"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </article>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Setas de navegação */}
+                                            {currentForm.justificativas.length > 1 && (
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => emblaApi?.scrollPrev()}
+                                                        className="absolute -left-3 top-1/2 -translate-y-1/2 bg-white border border-slate-200 rounded-full p-1 shadow-md hover:bg-slate-50"
+                                                    >
+                                                        <ChevronLeft size={14} />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => emblaApi?.scrollNext()}
+                                                        className="absolute -right-3 top-1/2 -translate-y-1/2 bg-white border border-slate-200 rounded-full p-1 shadow-md hover:bg-slate-50"
+                                                    >
+                                                        <ChevronRight size={14} />
+                                                    </button>
+                                                </>
+                                            )}
+                                            <span className="bg-slate-100 font-semibold self-center text-slate-700 text-[8px] px-[5px] py-[1px] rounded-full border border-slate-200">
+                                                {currentForm.justificativas.length}
+                                            </span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
 
-                    {/* Card 2: Horários */}
-                    <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden transition-all
-                            ${primeiroCardPreenchido
-                            ? ''
-                            : 'opacity-40 bg-slate-50'
-                        }`}>
-
+                    {/* --- CARD 2: PLANEJAMENTO (HORÁRIOS) --- */}
+                    <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden transition-all ${primeiroCardPreenchido ? '' : 'opacity-40 bg-slate-50'}`}>
                         <div className="bg-slate-50 px-6 py-4 relative border-b border-slate-200 flex items-center gap-2 text-slate-700 font-semibold">
                             <Clock size={18} className={`${liberarTerceiroCard ? "text-green-600" : primeiroCardPreenchido ? "text-blue-400" : "text-slate-400"}`} />
                             <h2 className={!primeiroCardPreenchido ? "text-slate-400" : ""}>Planejamento</h2>
-                            {liberarTerceiroCard && (
-                                <CheckCircle2 size={20} className="text-green-500 absolute right-5 animate-fade-in" />
-                            )}
+                            {liberarTerceiroCard && <CheckCircle2 size={20} className="text-green-500 absolute right-5 animate-fade-in" />}
                         </div>
 
-                        <div className={`p-6 space-y-6 flex flex-col flex-1 ${!primeiroCardPreenchido ? 'pointer-events-none select-none' : ''}`}>
-
+                        <div className={`p-4 space-y-6 flex flex-col flex-1 ${!primeiroCardPreenchido ? 'pointer-events-none select-none' : ''}`}>
+                            {/* Turno */}
                             <div className="space-y-3">
-                                <label className={`text-sm font-semibold ${primeiroCardPreenchido ? 'text-slate-700' : 'text-slate-400'}`}>
-                                    Turno da HE
-                                </label>
+                                <label className={`text-sm font-semibold ${primeiroCardPreenchido ? 'text-slate-700' : 'text-slate-400'}`}>Turno da HE</label>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2">
                                     {Shifts.map((shift) => {
                                         const isSelected = currentForm.turno === shift.name;
@@ -288,10 +431,8 @@ export default function FormView({
                                                 key={shift.id}
                                                 type="button"
                                                 disabled={!primeiroCardPreenchido}
-                                                onClick={() => handleTurnoChange(shift.name)}
-                                                className={`flex cursor-pointer items-center justify-between p-3 rounded-xl border-2 transition-all ${isSelected
-                                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                                    : 'border-slate-50 bg-slate-50 text-slate-500 hover:border-slate-200'
+                                                onClick={() => handleTurnoChange(shift)}
+                                                className={`flex cursor-pointer items-center justify-between p-3 rounded-xl border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-50 bg-slate-50 text-slate-500 hover:border-slate-200'
                                                     } ${!primeiroCardPreenchido ? 'opacity-50' : ''}`}
                                             >
                                                 <span className="font-bold text-xs">{shift.name}</span>
@@ -302,151 +443,206 @@ export default function FormView({
                                 </div>
                             </div>
 
-                            <div className="pt-4">
-                                <label className={`text-xs font-bold uppercase ${primeiroCardPreenchido ? 'text-slate-500' : 'text-slate-400'} mb-2 block`}>
-                                    Período da HE
-                                </label>
+                            {/* Tipo Solicitação */}
+                            <div className='flex flex-col'>
+                                <label className={`text-sm font-semibold ${primeiroCardPreenchido ? 'text-slate-700' : 'text-slate-400'}`}>Tipo de Solicitação</label>
+                                <div className='grid grid-cols-2 gap-3'>
+                                    {tiposSolicitacao.map((type) => {
+                                        const selected = currentForm.tipo === type.tipo_solicitacao;
+                                        return (
+                                            <button
+                                                key={type.id}
+                                                onClick={() => handleTipoChange(type)}
+                                                type="button"
+                                                className={`flex cursor-pointer justify-between gap-2 p-3 rounded-xl border-2 ${selected ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-50 bg-slate-50 text-slate-500 hover:border-slate-200'} transition-all`}
+                                            >
+                                                <span className="font-bold text-xs">{type.tipo_solicitacao}</span>
+                                                {selected ? <CheckCircle2 className='w-4 h-4 text-blue-600' /> : <div className="w-4 h-4 rounded-full border-2 border-slate-200" />}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
 
-                                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 ">
+                            {/* Período (Datas) */}
+                            <div className={` flex flex-col w-full`}>
+                                <label className={`text-xs font-bold uppercase ${primeiroCardPreenchido ? 'text-slate-500' : 'text-slate-400'} mb-2 block`}>Período da HE</label>
+                                <div className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-2 w-full justify-self-center">
 
-                                    <div className={`relative rounded-lg border transition-all
-                                            ${currentForm.inicio ? 'border-blue-200 bg-white' : 'border-slate-200 bg-white'}
-                                        `}>
-                                        <div className="flex items-center gap-3 px-3 py-2.5">
-                                            <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center
-                                                    ${currentForm.inicio ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400'}
-                                                `}>
-                                                <Calendar size={15} />
+                                    {/* Início */}
+                                    <div className={`relative w-full rounded-lg border transition-all min-w-[150px] 
+                                        ${currentForm.inicio ? 'border-blue-200 bg-white shadow-sm' : !currentForm.tipo ? 'border-slate-100 bg-slate-100 cursor-not-allowed' : 'border-slate-200 bg-white'} 
+                                        ${!primeiroCardPreenchido ? 'opacity-60' : 'hover:border-blue-300'}`}
+                                    >
+                                        <div className="flex w-full items-center gap-2 px-2.5 py-1.5">
+                                            <div className={`hidden md:flex shrink-0 w-6 h-6 rounded-md flex items-center justify-center ${currentForm.inicio ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
+                                                <Calendar size={12} />
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <span className="block text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                                                    Início
-                                                </span>
-                                                <input
-                                                    type="datetime-local"
-                                                    min={hoje}
-                                                    disabled={!primeiroCardPreenchido}
-                                                    value={currentForm.inicio}
-                                                    onChange={(e) => updateCurrentForm('inicio', e.target.value)}
-                                                    className="w-full bg-transparent text-slate-800 text-sm font-medium outline-none disabled:cursor-not-allowed p-0 border-0"
-                                                />
+                                            <div className="flex-1 px-2 py-1">
+                                                <span className="block text-[9px] font-bold uppercase text-slate-400 flex items-center gap-1"> <Calendar className={`md:hidden ${currentForm.inicio ? 'text-blue-400' : 'text-gray-400'}`} size={10} />Início </span>
+                                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
+                                                    <DateTimePicker
+                                                        value={currentForm.inicio ? dayjs(currentForm.inicio) : null}
+                                                        onChange={(value) => {
+                                                            updateCurrentForm('inicio', value ? value.format('YYYY-MM-DDTHH:mm') : '');
+                                                            updateCurrentForm('fim', '');
+                                                        }}
+                                                        minDate={dayjs()}
+                                                        disabled={!primeiroCardPreenchido || !currentForm.tipo}
+                                                        format="DD/MM/YYYY HH:mm"
+                                                        slotProps={{
+                                                            textField: {
+                                                                variant: 'standard',
+                                                                fullWidth: true,
+                                                                InputProps: { disableUnderline: true },
+                                                                sx: {
+                                                                    width: '100%',
+                                                                    '& .MuiInputBase-root': { width: '100%' },
+                                                                    '& .MuiInputBase-input': {
+                                                                        width: '100%',
+                                                                        padding: 0,
+                                                                        fontSize: '0.75rem',
+                                                                        fontWeight: 500,
+                                                                        color: '#1e293b'
+                                                                    }
+                                                                }
+                                                            }
+                                                        }}
+                                                    />
+                                                </LocalizationProvider>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-2 pl-4">
-                                        <div className="w-px h-3 bg-slate-300 ml-3.5" />
-                                    </div>
+                                    <div className={`border-l-0 h-3 mx-5 ${currentForm.inicio ? 'border-blue-500 border-l-4 animate-cascata-profile' : 'border-gray-400'}`}></div>
 
-                                    <div className={`relative rounded-lg border transition-all
-                                            ${currentForm.fim ? 'border-blue-200 bg-white' : 'border-slate-200 bg-white'}
-                                        `}>
-                                        <div className="flex items-center gap-3 px-3 py-2.5">
-                                            <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center
-                                                    ${currentForm.fim ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400'}
-                                                `}>
-                                                <Calendar size={15} />
+                                    {/* Fim */}
+                                    <div className={`relative rounded-lg border transition-all min-w-[150px] ${!currentForm.inicio ? 'border-slate-100 bg-slate-100 cursor-not-allowed' : currentForm.fim ? 'border-blue-200 bg-white shadow-sm' : 'border-slate-200 bg-white'}`}>
+                                        <div className="flex w-full items-center gap-2 px-2.5 py-1.5">
+                                            <div className={`hidden md:flex shrink-0 w-6 h-6 rounded-md items-center justify-center ${currentForm.fim ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
+                                                <Calendar size={12} />
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <span className="block text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                                                    Fim
-                                                </span>
-                                                <input
-                                                    type="datetime-local"
-                                                    min={hoje}
-                                                    disabled={!primeiroCardPreenchido}
-                                                    value={currentForm.fim}
-                                                    onChange={(e) => updateCurrentForm('fim', e.target.value)}
-                                                    className="w-full bg-transparent text-slate-800 text-sm font-medium outline-none disabled:cursor-not-allowed p-0 border-0"
-                                                />
+                                            <div className="flex-1 px-2 py-1">
+                                                <span className="block text-[9px] font-bold uppercase text-slate-400 flex items-center gap-1"> <Calendar className={`md:hidden ${currentForm.fim ? 'text-blue-400' : 'text-gray-400'}`} size={10} />Fim </span>
+                                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pt-br">
+                                                    <DateTimePicker
+                                                        value={currentForm.fim ? dayjs(currentForm.fim) : null}
+                                                        onChange={(value) => updateCurrentForm('fim', value ? value.format('YYYY-MM-DDTHH:mm') : '')}
+                                                        minDate={currentForm.inicio ? dayjs(currentForm.inicio) : dayjs()}
+                                                        maxDate={currentForm.inicio ? dayjs(currentForm.inicio).add(10, 'hour') : undefined}
+                                                        disabled={!primeiroCardPreenchido || !currentForm.inicio || !currentForm.tipo}
+                                                        format="DD/MM/YYYY HH:mm"
+                                                        slotProps={{
+                                                            textField: {
+                                                                variant: 'standard',
+                                                                fullWidth: true,
+                                                                InputProps: { disableUnderline: true },
+                                                                sx: {
+                                                                    width: '100%',
+                                                                    '& .MuiInputBase-root': { width: '100%' },
+                                                                    '& .MuiInputBase-input': {
+                                                                        width: '100%',
+                                                                        padding: 0,
+                                                                        fontSize: '0.75rem',
+                                                                        fontWeight: 500,
+                                                                        color: '#1e293b'
+                                                                    }
+                                                                }
+                                                            }
+                                                        }}
+                                                    />
+                                                </LocalizationProvider>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                {currentForm.inicio && currentForm.fim && (
-                                    checkDateOrder(currentForm.inicio, currentForm.fim)
+                                {currentForm.inicio && currentForm.fim && checkDateOrder(currentForm.inicio, currentForm.fim)}
+                                {!currentForm.tipo && primeiroCardPreenchido && (
+                                    <div className="flex items-center gap-1.5 mt-2 animate-fade-in bg-amber-50 p-1 rounded-lg text-amber-600">
+                                        <Info width={14} />
+                                        <p className="text-[9px]">Selecione o tipo para habilitar o período.</p>
+                                    </div>
                                 )}
-
                             </div>
                         </div>
                     </div>
 
-                    {/* Card 3: Equipe */}
-                    <div className={`bg-white rounded-2xl border-slate-200 shadow-sm border transition-all flex flex-col lg:col-span-1 overflow-hidden 
-                            ${liberarTerceiroCard
-                            ? ''
-                            : ' opacity-40 bg-slate-50'}`}>
-
+                    {/* --- CARD 3: EQUIPE (PESSOAS) --- */}
+                    <div className={`bg-white rounded-2xl border-slate-200 shadow-sm border transition-all flex flex-col lg:col-span-1 overflow-hidden ${liberarTerceiroCard ? '' : ' opacity-40 bg-slate-50'}`}>
                         <div className="bg-slate-50 px-6 py-4 relative border-b border-slate-200 flex items-center gap-2 text-slate-700 font-semibold">
-                            <UserPlus size={18} className={currentForm.funcionarios.length > 0 ? "text-green-600" : liberarTerceiroCard ? "text-blue-600" : "text-slate-400"} />
+                            <UserPlus size={18} className={tudoPreenchido ? "text-green-600" : liberarTerceiroCard ? "text-blue-600" : "text-slate-400"} />
                             <h2 className={!liberarTerceiroCard ? "text-slate-400" : ""}>Pessoas</h2>
-                            {currentForm.funcionarios.length > 0 && (
-                                <CheckCircle2 size={20} className="text-green-500 absolute right-5 animate-fade-in" />
-                            )}
+                            {tudoPreenchido && <CheckCircle2 size={20} className="text-green-500 absolute right-5 animate-fade-in" />}
                         </div>
 
-                        <div className={`p-6 space-y-4 flex-1 ${!liberarTerceiroCard ? 'pointer-events-none select-none' : ''}`}>
-
+                        <div className={`p-4 space-y-4 flex-1 ${!liberarTerceiroCard ? 'pointer-events-none select-none' : ''}`}>
                             <div className="bg-slate-50 p-2 rounded-2xl border border-slate-200 space-y-4">
                                 <div className="space-y-3">
                                     <Search
                                         filterLocal={false}
                                         value={funcionarioTexto}
-                                        opcoes={opcoesFuncionarios.filter(
-                                            (f) => !currentForm.funcionarios.some((ff) => ff.id === f.id)
+                                        opcoes={opcoesFuncionarios.filter(f =>
+                                            !currentForm.justificativas.some(j =>
+                                                j.funcionarios.some(ff => ff.id === f.id)
+                                            )
                                         )}
                                         onChange={setFuncionarioTexto}
-                                        onSelect={(f) => {
-                                            setFuncionarioTexto(f?.name ?? '');
-                                            setFuncionarioSelecionado(f);
-                                        }}
+                                        onSelect={(f) => { setFuncionarioTexto(f?.name ?? ''); setFuncionarioSelecionado(f); }}
                                         placeholder="Buscar Funcionário..."
                                         disabled={!liberarTerceiroCard}
                                     />
-                                    <Search
-                                        value={maquinaTexto}
-                                        opcoes={maquinas}
-                                        onChange={setMaquinaTexto}
-                                        disabled={!currentForm.departamento || !liberarTerceiroCard}
-                                        onSelect={(m) => {
-                                            setMaquinaTexto(m?.name ?? '');
-                                            setMaquinaSelecionada(m);
-                                        }}
-                                        placeholder="Selecionar Máquina"
-                                    />
-                                </div>
 
+
+                                    <Search
+                                        value={vinculoTexto}
+                                        opcoes={currentForm.justificativas.map((justificativa) => ({
+                                            idJustificativa: justificativa.id,
+                                            ...justificativa.maquina
+                                        }))}
+                                        onChange={setVinculoTexto}
+                                        onSelect={(v) => { setVinculoTexto(v?.name ?? ''); setVinculoJust(v); }}
+                                        placeholder="Vincular Justificativas..."
+                                        disabled={!liberarTerceiroCard}
+                                    />
+
+                                </div>
                                 <button
                                     type="button"
-                                    disabled={!funcionarioSelecionado || !maquinaSelecionada || !liberarTerceiroCard}
-                                    onClick={adicionarFuncionario}
+                                    disabled={!funcionarioSelecionado || !vinculoJust || !liberarTerceiroCard}
+                                    onClick={() => adicionarFuncionario(vinculoJust)}
                                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white text-sm py-1 rounded-xl transition-all flex justify-center items-center gap-2 shadow-md shadow-blue-100"
                                 >
                                     <Plus size={15} /> Adicionar na Lista
                                 </button>
                             </div>
 
-                            <div className=" bg-slate-50 p-1 rounded-2xl h-[200px] [&::-webkit-scrollbar-button]:hidden overflow-y-auto pr-1 custom-scrollbar">
-                                {currentForm.funcionarios.length > 0 ? (
-                                    currentForm.funcionarios.map((funcionario) => (
-                                        <div key={funcionario.id} className="group relative bg-white border border-slate-200 p-2.5 rounded-xl flex flex-col shadow-sm">
-                                            <span className="text-slate-700 font-bold text-xs pr-6 truncate">{funcionario.name}</span>
-                                            <span className="text-blue-500 text-[10px] font-bold uppercase tracking-wider">{funcionario.maquina.nome}</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => removerFuncionario(funcionario.id)}
-                                                className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors"
-                                            >
-                                                <X size={16} />
-                                            </button>
-                                        </div>
-                                    ))
+                            {/* Lista de Funcionários */}
+                            <div className="bg-slate-50 p-1 rounded-2xl h-[65%] overflow-y-auto pr-1 custom-scrollbar">
+                                {listaComFuncionarios ? (
+                                    currentForm.justificativas.map((justificativa) =>
+                                        justificativa.funcionarios.map((funcionario) => (
+                                            <div key={`${justificativa.id}-${funcionario.id}`} className="group relative bg-white border border-slate-200 p-2.5 rounded-xl flex flex-col shadow-sm mb-2">
+                                                <span className="text-slate-700 font-bold text-xs pr-6 truncate">
+                                                    {funcionario.name}
+                                                </span>
+
+                                                <span className="text-blue-500 text-[10px] font-bold uppercase">
+                                                    {justificativa.maquina?.name}
+                                                </span>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removerFuncionario(justificativa.id, funcionario.id)}
+                                                    className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors"
+                                                >
+                                                    <X size={16} />
+                                                </button>
+                                            </div>
+                                        ))
+                                    )
                                 ) : (
                                     <div className="py-8 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-xs italic">
-                                        {!liberarTerceiroCard
-                                            ? "Complete os detalhes e horários primeiro."
-                                            : "Nenhum funcionário adicionado."}
+                                        {!liberarTerceiroCard ? "Complete os detalhes e horários primeiro." : "Nenhum funcionário adicionado."}
                                     </div>
                                 )}
                             </div>
@@ -454,153 +650,83 @@ export default function FormView({
                     </div>
                 </div>
 
+                {/* --- FOOTER: AÇÕES E STATUS --- */}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                    <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                    <button
+                        type="button"
+                        onClick={adicionarForm}
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-dashed border-blue-200 text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-all text-sm"
+                    >
+                        <Plus size={18} /> Nova Solicitação
+                    </button>
 
-                        <button
-                            type="button"
-                            onClick={adicionarForm}
-                            className="flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-dashed border-blue-200 text-blue-600 font-bold rounded-xl hover:bg-blue-50 hover:border-blue-400 transition-all text-sm"
-                        >
-                            <Plus size={18} />
-                            Nova Solicitação
-                        </button>
+                    {/* Stepper de Progresso */}
+                    <div className="flex items-center group select-none">
+                        {[primeiroCardPreenchido, liberarTerceiroCard, tudoPreenchido].map((step, i) => (
+                            <div key={i} className="flex items-center">
+                                <div className={`w-10 h-10 flex items-center justify-center rounded-full border-2 transition-all duration-500 shadow-sm ${step ? 'bg-green-500 border-green-500 text-white' : (i === 0 || (i === 1 && primeiroCardPreenchido) || (i === 2 && liberarTerceiroCard) ? 'bg-blue-600 border-blue-600 text-white animate-pulse' : 'bg-white border-slate-200 text-slate-300')
+                                    }`}>
+                                    {step ? <Check size={20} strokeWidth={3} /> : <span className="font-bold">{i + 1}</span>}
+                                </div>
+                                {i < 2 && <div className={`w-8 md:w-12 h-1.5 transition-all duration-500 ${step ? 'bg-green-500' : 'bg-slate-200'}`} />}
+                            </div>
+                        ))}
                     </div>
 
-                    <div className="flex items-center gap-0 group select-none">
-                        {/* Passo 1: Detalhes */}
-                        <div className="flex items-center">
-                            <div className={`w-10 h-10 flex items-center justify-center rounded-full border-2 transition-all duration-500 shadow-sm
-            ${primeiroCardPreenchido
-                                    ? 'bg-green-500 border-green-500 text-white shadow-green-100'
-                                    : 'bg-blue-600 border-blue-600 text-white animate-pulse'}`}
-                            >
-                                {primeiroCardPreenchido ? <Check size={20} strokeWidth={3} /> : <span className="font-bold">1</span>}
-                            </div>
-                            <div className={`w-8 md:w-12 h-1.5 transition-all duration-500
-            ${primeiroCardPreenchido ? 'bg-green-500' : 'bg-slate-200'}`}
-                            />
-                        </div>
-
-                        {/* Passo 2: Planejamento */}
-                        <div className="flex items-center">
-                            <div className={`w-10 h-10 flex items-center justify-center rounded-full border-2 transition-all duration-500 shadow-sm
-            ${liberarTerceiroCard
-                                    ? 'bg-green-500 border-green-500 text-white shadow-green-100'
-                                    : primeiroCardPreenchido
-                                        ? 'bg-blue-400 border-blue-400 text-white animate-pulse'
-                                        : 'bg-white border-slate-200 text-slate-300'}`}
-                            >
-                                {liberarTerceiroCard ? <Check size={20} strokeWidth={3} /> : <span className="font-bold">2</span>}
-                            </div>
-                            <div className={`w-8 md:w-12 h-1.5 transition-all duration-500
-            ${liberarTerceiroCard ? 'bg-green-500' : 'bg-slate-200'}`}
-                            />
-                        </div>
-
-                        {/* Passo 3: Equipe */}
-                        <div className="flex items-center">
-                            <div className={`w-10 h-10 flex items-center justify-center rounded-full border-2 transition-all duration-500 shadow-sm
-            ${tudoPreenchido
-                                    ? 'bg-green-500 border-green-500 text-white shadow-green-100'
-                                    : liberarTerceiroCard
-                                        ? 'bg-blue-400 border-blue-400 text-white animate-pulse'
-                                        : 'bg-white border-slate-200 text-slate-300'}`}
-                            >
-                                {tudoPreenchido ? <Check size={20} strokeWidth={3} /> : <span className="font-bold">3</span>}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center justify-center">
-                        {forms.length > 1 && (
-                            <p className='text-gray-400 font-semibold'>({forms.length})</p>
-                        )}
+                    {/* Botão Enviar */}
+                    <div className="flex flex-col md:flex-row gap-3 items-center">
+                        {forms.length > 1 && <p className='text-gray-400 font-semibold'>({forms.length})</p>}
                         <nav className="flex flex-col items-center">
                             <button
                                 type="submit"
-                                disabled={loading || forms.some(f => f.funcionarios.length === 0)}
-                                className="w-full md:w-auto max-w-[200px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-2xl transition-all shadow-xl shadow-blue-100 flex justify-center items-center gap-3 
-                                disabled:bg-gray-300 disabled:shadow-none"
+                                disabled={loading || !tudoPreenchido || forms.some(formSemFuncionarios)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-2xl transition-all shadow-xl disabled:bg-gray-300 flex items-center gap-3"
                             >
-                                {loading ? <Loader2 className='animate-spin' /> : (
-                                    <>
-
-                                        <Send size={18} />
-                                        <span>Enviar {forms.length > 1 ? 'Solicitações' : 'Solicitação'}</span>
-                                    </>
-                                )}
+                                {loading ? <Loader2 className='animate-spin' /> : <><Send size={18} /><span>Enviar {forms.length > 1 ? 'Solicitações' : 'Solicitação'}</span></>}
                             </button>
-                            {loading || forms.some(f => f.funcionarios.length === 0) && (
-                                <p className="text-[10px] text-red-600 flex items-center gap-1">
-                                    Preencha todos os campos das solicitações.
-                                </p>
+                            {(loading || !tudoPreenchido || forms.some(formSemFuncionarios)) && (
+                                <p className="text-[10px] text-red-600 mt-1">Preencha todos os campos das solicitações.</p>
                             )}
                         </nav>
-                        {mostrarConfirmacao && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                                <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+                    </div>
+                </div>
 
-                                    <div className="p-6">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <div className="w-11 h-11 rounded-full bg-blue-50 flex items-center justify-center">
-                                                <Send size={20} className="text-blue-600" />
-                                            </div>
-
-                                            <div>
-                                                <h2 className="text-lg font-bold text-slate-800">
-                                                    Confirmar envio
-                                                </h2>
-
-                                                <p className="text-xs text-slate-500">
-                                                    Revise as informações antes de continuar.
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                                            <p className="text-sm text-slate-600">
-                                                Você está prestes a enviar{' '}
-                                                <span className="font-bold text-slate-800">
-                                                    {forms.length} {forms.length === 1 ? 'solicitação' : 'solicitações'}
-                                                </span>.
-                                            </p>
-
-                                            <p className="text-sm text-slate-500 mt-2">
-                                                Deseja realmente continuar?
-                                            </p>
-                                        </div>
+                {/* --- MODAL DE CONFIRMAÇÃO --- */}
+                {mostrarConfirmacao && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                        <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+                            <div className="p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-11 h-11 rounded-full bg-blue-50 flex items-center justify-center">
+                                        <Send size={20} className="text-blue-600" />
                                     </div>
-
-                                    <div className="flex gap-3 justify-end p-4 bg-slate-50 border-t border-slate-200">
-                                        <button
-                                            type="button"
-                                            onClick={() => setMostrarConfirmacao(false)}
-                                            className="px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 font-semibold text-sm hover:bg-slate-100 transition-all"
-                                        >
-                                            Cancelar
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={(event) => {
-                                                setMostrarConfirmacao(false);
-                                                handleSubmit(event);
-                                            }}
-                                            className="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-all flex items-center gap-2"
-                                        >
-                                            <Check size={16} />
-                                            Confirmar envio
-                                        </button>
+                                    <div>
+                                        <h2 className="text-lg font-bold text-slate-800">Confirmar envio</h2>
+                                        <p className="text-xs text-slate-500">Revise as informações antes de continuar.</p>
                                     </div>
-
+                                </div>
+                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                                    <p className="text-sm text-slate-600">
+                                        Você está prestes a enviar <span className="font-bold text-slate-800">{forms.length} {forms.length === 1 ? 'solicitação' : 'solicitações'}</span>.
+                                    </p>
+                                    <p className="text-sm text-slate-500 mt-2">Deseja realmente continuar?</p>
                                 </div>
                             </div>
-                        )}
-
+                            <div className="flex gap-3 justify-end p-4 bg-slate-50 border-t border-slate-200">
+                                <button type="button" onClick={() => setMostrarConfirmacao(false)} className="px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 font-semibold text-sm hover:bg-slate-100">
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={(event) => { setMostrarConfirmacao(false); handleSubmit(event); }}
+                                    className="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 flex items-center gap-2"
+                                >
+                                    <Check size={16} /> Confirmar envio
+                                </button>
+                            </div>
+                        </div>
                     </div>
-
-                </div>
+                )}
             </form>
         </main>
     );

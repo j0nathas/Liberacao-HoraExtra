@@ -29,8 +29,17 @@ public class DocsRequestDTO {
     @JsonProperty("signature_order_active")
     private boolean signatureOrderActive;
 
+    @JsonProperty("one_click_active")
+    private boolean oneClickActive;
+
+    @JsonProperty("require_signature")
+    private boolean requireSignature;
+
     @JsonProperty("has_simplified_signature")
     private boolean hasSimplifiedSignature;
+
+    @JsonProperty("allow_refuse_signature")
+    private boolean allowRefuseSignature;
 
     @JsonProperty("created_by")
     private String createdBy;

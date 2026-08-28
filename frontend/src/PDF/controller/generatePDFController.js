@@ -25,53 +25,75 @@ export async function generatePDFController(dados) {
     let tempoGeralMili = 0;
 
     dados.forEach((solicitacao) => {
-        const tempo =
+        const tempoSolicitacao =
             new Date(solicitacao.fim).getTime() -
             new Date(solicitacao.inicio).getTime();
 
-        const tempoTotal = tempo * solicitacao.funcionarios.length;
+        let totalFuncionariosNaSolicitacao = 0;
 
-        solicitacao.totalHoras = transformarHoras(tempoTotal);
+        solicitacao.justificativas.forEach((just) => {
+            if (just.funcionarios && Array.isArray(just.funcionarios)) {
+                totalFuncionariosNaSolicitacao += just.funcionarios.length;
 
-        quantidadePessoas += solicitacao.funcionarios.length;
+                just.funcionarios.forEach((funcionario) => {
+                    listaTempo.push({
+                        centroCusto: funcionario.codigoCentroCusto,
+                        tempo: tempoSolicitacao
+                    });
+                });
+            }
+        });
 
-        const temposFuncionarios = solicitacao.funcionarios.map((funcionario) => ({
-            centroCusto: funcionario.codigoCentroCusto,
-            tempo
-        }));
+        const tempoTotalSolicitacaoMili = tempoSolicitacao * totalFuncionariosNaSolicitacao;
+        solicitacao.totalHoras = transformarHoras(tempoTotalSolicitacaoMili);
 
-        listaTempo.push(temposFuncionarios);
-
-        tempoGeralMili += tempoTotal;
+        quantidadePessoas += totalFuncionariosNaSolicitacao;
+        tempoGeralMili += tempoTotalSolicitacaoMili;
     });
 
-    const listaTempoPlana = listaTempo.flat();
-
-    const tempoPorCC = Object.entries(
-        listaTempoPlana.reduce((acc, item) => {
-            acc[item.centroCusto] =
-                (acc[item.centroCusto] || 0) + item.tempo;
-
+    // Agrupamento por Centro de Custo
+    const entradasCC = Object.entries(
+        listaTempo.reduce((acc, item) => {
+            acc[item.centroCusto] = (acc[item.centroCusto] || 0) + item.tempo;
             return acc;
         }, {})
-    ).map(([centroCusto, tempo]) => ({
-        centroCusto,
-        tempo: transformarHoras(tempo)
-    }));
+    );
+
+    // 2. Usamos Promise.all com map ASYNC
+    const tempoPorCC = await Promise.all(
+        entradasCC.map(async ([centroCusto, tempo]) => {
+            try {
+                const { data } = await api.get(`/query/nomeCC`, {
+                    params: { codCC: centroCusto }
+                });
+
+                return {
+                    centroCusto,
+                    nomeCC: data,
+                    tempo: transformarHoras(tempo)
+                };
+            } catch (error) {
+                console.error("Erro na busca do CC:", error);
+                return {
+                    centroCusto,
+                    nomeCC: "C.C. não encontrado",
+                    tempo: transformarHoras(tempo)
+                };
+            }
+        })
+    );
 
     let { id, nome, sobrenome, email } = await dadosResponsavel();
-
 
     return {
         idResp: id,
         data: new Date(),
-        planta: dados.planta,
         nomeResp: nome,
         sobrenomeResp: sobrenome,
         emailResp: email,
         totalPessoas: quantidadePessoas,
         horasTotais: transformarHoras(tempoGeralMili),
-        porCentroCusto: tempoPorCC,
+        porCentroCusto: tempoPorCC, // Agora este array conterá os dados da API
         solicitacoes: dados
     };
 }

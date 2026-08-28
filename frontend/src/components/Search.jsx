@@ -76,7 +76,7 @@ export default function Search({
                     }}
                     onFocus={() => setAberto(true)}
                     className={`w-full bg-slate-50 border border-slate-200 text-slate-700 py-2.5 pl-10 pr-10 rounded-xl outline-none transition-all
-                        ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-100' : 'hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10'}
+                        ${disabled ? 'opacity-25 cursor-not-allowed bg-slate-100' : 'hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10'}
                     `}
                 />
 
