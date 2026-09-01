@@ -20,6 +20,7 @@ export default function SentForms() {
             try {
                 const { data } = await api.get("/query/solicitacoes");
                 setDados(data);
+                console.log(data)
             } catch (error) {
                 console.error(error);
             }
@@ -34,6 +35,9 @@ export default function SentForms() {
         if (filtro === 'recusado') return dados.filter((d) => d.status === 'recusado');
         return dados;
     }, [dados, filtro]);
+
+    console.log(dados)
+    console.log(dadosFiltrados)
 
     const counts = useMemo(() => ({
         todas: dados.length,

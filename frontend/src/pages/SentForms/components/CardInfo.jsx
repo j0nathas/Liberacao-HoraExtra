@@ -1,17 +1,14 @@
 import { motion, AnimatePresence } from "framer-motion";
-import SentIcon from '../../../../img/sent-date.svg?react'
 import api from '../../../services/api.js'
 import { useEffect, useState } from "react";
 import { CircleCheckBig, Clock, CircleSlash, CircleX, X, ArrowRight, HardHat, Info } from 'lucide-react';
-import { totalAccHours, totalHours, formatDate } from "../Utils/SentUtils";
+import { totalHours, formatDate } from "../Utils/SentUtils";
 
 export default function CardInfo({ dados, closeInfo }) {
-    // Estado para controlar qual justificativa (máquina) está selecionada
     const [activeJustIndex, setActiveJustIndex] = useState(0);
     const [dadosZapSign, setDadosZapSign] = useState(null);
     const [loadingSigners, setLoadingSigners] = useState(true);
 
-    // Simplificando acesso aos dados (considerando a primeira solicitação do array)
     const solicitacao = dados.solicitacoes?.[0] || {};
     const justificativaAtiva = solicitacao.justificativas?.[activeJustIndex] || {};
 
@@ -46,7 +43,7 @@ export default function CardInfo({ dados, closeInfo }) {
     return (
         <AnimatePresence>
             <motion.div
-                className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm"
+                className={`fixed inset-0 z-50 flex items-end justify-center bg-black/30 backdrop-blur-sm`}
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={closeInfo}
             >
@@ -55,15 +52,22 @@ export default function CardInfo({ dados, closeInfo }) {
                     className={`w-full lg:w-[50%] max-h-[95vh] rounded-t-[32px] p-2 pb-0 ${tone.frame} shadow-2xl overflow-hidden flex flex-col`}
                     initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    drag="y"
+                    dragDirectionLock
+                    dragConstraints={{ top: 0, bottom: 0 }}
+                    dragElastic={0.6}
+                    onDragEnd={(event, info) => {
+                        if (info.offset.y > 120 || info.velocity.y > 600) {
+                            closeInfo();
+                        }
+                    }}
                 >
-                    {/* Handle de fechar */}
                     <div className="flex justify-center py-3 cursor-grab active:cursor-grabbing">
-                        <div className="h-1.5 w-12 rounded-full bg-white/60" />
+                        <div className={`h-1.5 w-12 rounded-full ${tone.solid}`} />
                     </div>
 
                     <div className="bg-white rounded-t-[24px] flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
 
-                        {/* Header Principal */}
                         <header className="flex justify-between items-start mb-6">
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
@@ -74,19 +78,18 @@ export default function CardInfo({ dados, closeInfo }) {
                                         Criado por {dados.usuario}
                                     </span>
                                 </div>
-                                <h2 className="text-2xl font-black text-gray-800 leading-tight">
+                                <h2 className="text-2xl font-bold text-gray-800 leading-tight">
                                     {solicitacao.motivoMacro}
                                 </h2>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                                <p className="text-xs font-semi-bold text-gray-400 uppercase tracking-widest">
                                     {solicitacao.departamento} • {solicitacao.planta}
                                 </p>
                             </div>
-                            <button onClick={closeInfo} className="p-2 rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100">
+                            <button onClick={closeInfo} className="p-2 rounded-full bg-gray-50 cursor-pointer text-gray-400 hover:bg-gray-100">
                                 <X size={20} />
                             </button>
                         </header>
 
-                        {/* Signatários */}
                         <div className="mb-6">
                             {loadingSigners ? (
                                 <div className="flex gap-2"><div className="h-6 w-24 bg-gray-100 animate-pulse rounded-lg" /></div>
@@ -104,7 +107,6 @@ export default function CardInfo({ dados, closeInfo }) {
                             )}
                         </div>
 
-                        {/* Timeline de Horário */}
                         <section className="bg-gray-50 rounded-3xl p-5 mb-6 border border-gray-100">
                             <div className="flex items-center justify-between">
                                 <div className="text-center md:text-left">
@@ -135,34 +137,30 @@ export default function CardInfo({ dados, closeInfo }) {
                             </div>
                         </section>
 
-                        {/* SELETOR DE JUSTIFICATIVAS (TABS) */}
                         <div className="mb-4">
-                            <p className="text-[10px] uppercase font-black text-gray-400 mb-3 ml-1 tracking-widest">Justificativas por Posto ({solicitacao.justificativas?.length})</p>
-                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                            <p className="text-[10px] uppercase font-semibold text-gray-400 mb-3 ml-1 tracking-widest">Justificativas por Posto ({solicitacao.justificativas?.length})</p>
+                            <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 scrollbar-hide">
                                 {solicitacao.justificativas?.map((just, index) => (
                                     <button
                                         key={index}
                                         onClick={() => setActiveJustIndex(index)}
-                                        className={`shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-2xl transition-all duration-300 border-2 ${activeJustIndex === index
-                                            ? `${tone.ink} border-current bg-white shadow-md`
-                                            : "bg-gray-50 border-transparent text-gray-400 hover:bg-gray-100"
+                                        className={`flex items-center gap-2 px-4 py-3 rounded-lg transition-all duration-300 ${activeJustIndex === index
+                                            ? `${tone.pill} shadow-md`
+                                            : "bg-gray-50 border-transparent text-gray-400 cursor-pointer hover:bg-gray-100"
                                             }`}
                                     >
-                                        <HardHat size={14} />
                                         <span className="text-xs font-bold whitespace-nowrap">{just.maquina}</span>
                                     </button>
                                 ))}
                             </div>
                         </div>
 
-                        {/* CONTEÚDO DINÂMICO DA JUSTIFICATIVA ATIVA */}
                         <motion.div
                             key={activeJustIndex}
                             initial={{ opacity: 0, x: 10 }}
                             animate={{ opacity: 1, x: 0 }}
                             className="space-y-4"
                         >
-                            {/* Card da Justificativa */}
                             <div className="bg-gray-50 rounded-2xl p-4 text-gray-700 shadow-lg relative overflow-hidden">
                                 <div className="relative z-10">
                                     <div className="flex items-center gap-2 mb-2 opacity-60 text-[10px] font-bold uppercase">
@@ -175,10 +173,9 @@ export default function CardInfo({ dados, closeInfo }) {
                                 <div className={`absolute -right-4 -bottom-4 w-24 h-24 rounded-full opacity-10 ${tone.solid}`} />
                             </div>
 
-                            {/* Lista de Funcionários da Máquina */}
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center ml-1">
-                                    <p className="text-[10px] uppercase font-black text-gray-400 tracking-widest">Colaboradores Alocados</p>
+                                    <p className="text-[10px] uppercase font-semibold text-gray-400 tracking-widest">Colaboradores Alocados</p>
                                     <span className="text-[10px] font-bold bg-gray-100 px-2 py-0.5 rounded-md text-gray-500">
                                         {justificativaAtiva.funcionarios?.length} pessoas
                                     </span>
@@ -199,7 +196,6 @@ export default function CardInfo({ dados, closeInfo }) {
                         </motion.div>
                     </div>
 
-                    {/* Footer / Botão de Fechar */}
                     <div className="p-4 bg-white border-t border-gray-50 flex justify-center">
                         <button
                             onClick={closeInfo}
@@ -210,6 +206,6 @@ export default function CardInfo({ dados, closeInfo }) {
                     </div>
                 </motion.div>
             </motion.div>
-        </AnimatePresence>
+        </AnimatePresence >
     );
 }

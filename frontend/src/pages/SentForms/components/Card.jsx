@@ -1,12 +1,9 @@
-import { useState } from 'react'
-import { getISOWeek, formatDate, totalHours, totalAccHours } from '../Utils/SentUtils'
+import { getISOWeek, formatDate } from '../Utils/SentUtils'
 import SentIcon from '../../../../img/sent-date.svg?react'
 import { CircleCheckBig, Clock, CircleSlash, CircleX } from 'lucide-react';
 
 
 export default function Card({ dados, openInfo }) {
-    const [viewCard, setViewCard] = useState(false);
-    console.log(dados)
     const status = dados.status === "pending" ? "pendente" : dados.status === "signed" ? "aprovado" : dados.status === "recusado" ? "recusado" : "Não Enviado";
     const tone = {
         pendente: {

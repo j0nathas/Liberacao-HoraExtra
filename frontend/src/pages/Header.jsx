@@ -30,34 +30,46 @@ const btnMenu = [
 export default function Header() {
     const [hamburguer, setHamburguer] = useState(false);
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, setUser } = useAuth();
     const location = useLocation();
     const [profileOpen, setProfileOpen] = useState(false);
     const [exportData, setExportData] = useState(false);
     const initials = `${user.nome[0]}${user.sobrenome[0]}`;
 
 
-    const logout = async (e) => {
+    const logout = async () => {
         try {
-            const nome = user.nome;
             await api.post("/auth/logout");
-            navigate("/login");
+
             toast.custom(() => (
-                <div className='bg-white p-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl'>
-                    <img className="animate-bye text-yellow-600 text-8xl " width={35} height={35} src="../img/bye.png" alt="" />
-                    <nav className='flex flex-col border-l-2 pl-3 border-gray-200'>
-                        <p className='text-[1rem] font-normal text-gray-700'>Tchau, {user.nome}!</p>
-                        <p className='text-[0.8rem] font-normal text-gray-500'>Nos vemos em breve.</p>
+                <div className="bg-white p-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl">
+                    <img
+                        className="animate-bye text-yellow-600 text-8xl"
+                        width={35}
+                        height={35}
+                        src="../img/bye.png"
+                        alt=""
+                    />
+
+                    <nav className="flex flex-col border-l-2 pl-3 border-gray-200">
+                        <p className="text-[1rem] font-normal text-gray-700">
+                            Tchau, {user?.nome}!
+                        </p>
+
+                        <p className="text-[0.8rem] font-normal text-gray-500">
+                            Nos vemos em breve.
+                        </p>
                     </nav>
                 </div>
             ));
 
-        }
-        catch (err) {
+            setUser(null);
+
+            navigate("/login");
+        } catch (err) {
             console.log(err);
         }
-
-    }
+    };
 
     const btnSettings = [
         { name: "Configurações", icon: ConfigIcon, function: null },
@@ -126,7 +138,7 @@ export default function Header() {
         fim: null
     });
 
-    useEffect(() => {
+    /* useEffect(() => {
         async function carregarPeriodo() {
 
             try {
@@ -149,7 +161,7 @@ export default function Header() {
         }
 
         carregarPeriodo();
-    }, [exportData]);
+    }, [exportData]); */
 
 
 

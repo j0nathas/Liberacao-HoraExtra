@@ -1,8 +1,10 @@
 import axios from "axios";
 
+const importEnv = import.meta.env.VITE_IP_BACK_END;
+
 const api = axios.create({
-  baseURL: "http://10.109.133.166:3005",
+  baseURL: importEnv,
   withCredentials: true
 });
 
-export default api;
+export default api; 

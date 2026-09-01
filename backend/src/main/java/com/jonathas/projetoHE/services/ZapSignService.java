@@ -26,6 +26,9 @@ public class ZapSignService {
     @Value("${zapsign.token}")
     private String token;
 
+    @Value("${zapsign.tests.enabled}")
+    private boolean testSignersEnabled;
+
     public DocumentResponseDTO criarDocumento(DocumentDTO dto) {
 
         List<String> departamentos = dto.getDepartamentos().stream()
@@ -57,26 +60,37 @@ public class ZapSignService {
                 .collect(Collectors.toCollection(ArrayList::new));
 
 
-//        signatarios.add(
-//                SignerRequestDTO.builder()
-//                        .name("Jonathan Veloso")
-//                        .email("jonathan.veloso@magna.com")
-//                        .authMode("assinaturaTela")
-//                        .sendAutomaticEmail(true)
-//                        .orderGroup(signatarios.size() + 1)
-//                        .build()
-//        );
-//
-//        signatarios.add(
-//                SignerRequestDTO.builder()
-//                        .name("Leandro Almeida")
-//                        .email("leandro.almeida@magna.com")
-//                        .authMode("assinaturaTela")
-//                        .sendAutomaticEmail(true)
-//                        .orderGroup(signatarios.size() + 1)
-//                        .build()
-//        );
+        if(!testSignersEnabled){
+            signatarios.add(
+                    SignerRequestDTO.builder()
+                            .name("Ederson Quesada")
+                            .email("ederson.quesada@magna.com")
+                            .authMode("assinaturaTela")
+                            .sendAutomaticEmail(true)
+                            .orderGroup(signatarios.size() + 1)
+                            .build()
+            );
 
+            signatarios.add(
+                    SignerRequestDTO.builder()
+                            .name("Alessandro Bosica")
+                            .email("alessandro.bosica@magna.com")
+                            .authMode("assinaturaTela")
+                            .sendAutomaticEmail(true)
+                            .orderGroup(signatarios.size() + 1)
+                            .build()
+            );
+
+            signatarios.add(
+                    SignerRequestDTO.builder()
+                            .name("Agnaldo Cervone")
+                            .email("agnaldo.cervone@magna.com")
+                            .authMode("assinaturaTela")
+                            .sendAutomaticEmail(true)
+                            .orderGroup(signatarios.size() + 1)
+                            .build()
+            );
+        }
 
         DocsRequestDTO request =
                 DocsRequestDTO.builder()
@@ -91,52 +105,7 @@ public class ZapSignService {
 //                        .requireSignature(false)
                         .createdBy(dto.getEmailResp())
                         .hasSimplifiedSignature(true)
-                        .signers(signatarios
-
-//                                SignerRequestDTO.builder()
-//                                        .name("Ederson Quesada")
-//                                        .email("ederson.quesada@magna.com")
-//                                        .authMode("assinaturaTela")
-//                                        .sendAutomaticEmail(true)
-//                                        .build(),
-//
-//                                SignerRequestDTO.builder()
-//                                        .name("Eduardo Araujo")
-//                                        .email("eduardo.araujo@magna.com")
-//                                        .authMode("assinaturaTela")
-//                                        .sendAutomaticEmail(true)
-//                                        .build(),
-//
-//                                SignerRequestDTO.builder()
-//                                        .name("Agnaldo Cervone")
-//                                        .email("agnaldo.cervone@magna.com")
-//                                        .authMode("assinaturaTela")
-//                                        .sendAutomaticEmail(true)
-//                                        .build(),
-//
-//                                SignerRequestDTO.builder()
-//                                        .name("Vanessa Giraldi")
-//                                        .email("vanessa.giraldi@magna.com")
-//                                        .authMode("assinaturaTela")
-//                                        .sendAutomaticEmail(true)
-//                                        .build()
-
-//                                SignerRequestDTO.builder()
-//                                        .name("Fabricio Fonseca")
-//                                        .email("FABRICIO.FONSECA@magna.com")
-//                                        .authMode("assinaturaTela")
-//                                        .sendAutomaticEmail(true)
-//                                        .build()
-
-                                /*
-                                SignerRequestDTO.builder()
-                                        .name(dto.getNomeResp() + " " + dto.getSobrenomeResp())
-                                        .email(dto.getEmailResp())
-                                        .authMode("assinaturaTela")
-                                        .sendAutomaticEmail(true)
-                                        .build() */
-
-                        )
+                        .signers(signatarios)
                         .build();
 
 

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import toast from 'react-hot-toast';
 import api from '../../../services/api.js';
-import { Navigate, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { novoForm, validarFormularios } from '../models/formModel.js';
 import { generatePDFController } from '../../../PDF/controller/generatePDFController.js'
 import { gerarPDFBase64 } from '../../../PDF/controller/base64Controller.js'
@@ -180,10 +180,6 @@ export function useFormController() {
         if (!valid) return toast.error(msg);
 
         const dadosConsolidados = await generatePDFController(forms);
-
-        console.log(forms);
-        console.log(dadosConsolidados);
-
 
         const pdfBase64 = await gerarPDFBase64(dadosConsolidados);
 
