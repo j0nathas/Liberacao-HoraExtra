@@ -4,15 +4,13 @@ import com.jonathas.projetoHE.dto.zapsign.DocInfoResponseDTO;
 import com.jonathas.projetoHE.dto.zapsign.DocRedirectDTO;
 import com.jonathas.projetoHE.dto.zapsign.SignedBodyDTO;
 import com.jonathas.projetoHE.model.*;
-import com.jonathas.projetoHE.repositories.RespHeRepository;
-import com.jonathas.projetoHE.repositories.SolicitacaoFuncionariosRepository;
-import com.jonathas.projetoHE.repositories.SolicitacoesRepository;
-import com.jonathas.projetoHE.repositories.SolicitacaoRepository;
+import com.jonathas.projetoHE.repositories.*;
 import com.jonathas.projetoHE.services.CorpoEmailService;
 import com.jonathas.projetoHE.services.SentEmailService;
 import com.jonathas.projetoHE.services.ZapSignService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +35,10 @@ public class WebhookController {
     private final SolicitacaoFuncionariosRepository solicitacaoFuncionariosRepository;
     private final RespHeRepository respHeRepository;
     private final ZapSignService  zapSignService;
+    private final RecipientsRepository recipientsRepository;
+
+    @Value("${zapsign.tests.enabled}")
+    private boolean testSignersEnabled;
 
     @Transactional
     @PostMapping("/zapsign")
@@ -73,11 +75,27 @@ public class WebhookController {
                         .distinct()
                         .toList();
 
+                List<Long> idPlantas = solicitacoesFilhas.stream()
+                        .map(Solicitacoes::getPlanta)
+                        .filter(Objects::nonNull)
+                        .map(Plantas::getId)
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .toList();
+
+                List<String> destinatariosFinal =
+                        recipientsRepository.findEmailsByPlantas(idPlantas);
+
                 RespHE solicitante = solicitacaoPai.getUsuario();
 
                 String[] destinatarios = Stream.concat(
-                                responsaveisDepto.stream().map(RespHE::getEmail),
-                                Stream.of(solicitante.getEmail())
+                                Stream.concat(
+                                        responsaveisDepto.stream().map(RespHE::getEmail),
+                                        Stream.of(solicitante.getEmail())
+                                ),
+                                !testSignersEnabled
+                                        ? destinatariosFinal.stream()
+                                        : Stream.empty()
                         )
                         .filter(Objects::nonNull)
                         .distinct()

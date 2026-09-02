@@ -266,6 +266,14 @@ export function useFormController() {
         setVinculoJust(null);
     }
 
+    function removerFuncionario(id) {
+        const novasJustificativas = currentForm.justificativas.map(justificativa => ({
+            ...justificativa,
+            funcionarios: justificativa.funcionarios.filter(f => f.id !== id)
+        }));
+        updateCurrentForm('justificativas', novasJustificativas);
+    }
+
     return {
         forms,
         currentForm,
@@ -294,7 +302,7 @@ export function useFormController() {
         vinculoJust,
         setVinculoJust,
         adicionarFuncionario,
-        removerFuncionario: (id) => updateCurrentForm('funcionarios', currentForm.funcionarios.filter(f => f.id !== id)),
+        removerFuncionario,
         adicionarForm,
         removerForm,
         loading,

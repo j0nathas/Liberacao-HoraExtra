@@ -72,8 +72,11 @@ public class SolicitacaoService {
                 log.error("Falha ao criar documento no ZapSign para o usuário {}: {}", dto.id_user(), e.getMessage());
             }
 
+            ZonedDateTime data = dto.data()
+                    .withZoneSameInstant(ZoneId.of("America/Sao_Paulo"));
+
             Solicitacao solicitacaoPai = new Solicitacao();
-            solicitacaoPai.setData(ZonedDateTime.now(dto.data().getZone()));
+            solicitacaoPai.setData(data);
             solicitacaoPai.setUsuario(usuario);
             solicitacaoPai.setStatus(status);
             solicitacaoPai.setToken(token);

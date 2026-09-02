@@ -346,66 +346,64 @@ export default function FormView({
 
                             <div className="space-y-3">
                                 {currentForm.justificativas.length > 0 && (
-                                    <>
-                                        <div className="relative flex flex-col gap-1">
-                                            <div className="overflow-hidden" ref={emblaRef}>
-                                                <div className="flex gap-2">
-                                                    {currentForm.justificativas.map((item, index) => (
-                                                        <article
-                                                            key={item.id || index}
-                                                            className="group flex items-center justify-between gap-3 bg-white border border-slate-200 p-3 rounded-xl
+                                    <div className="relative flex flex-col gap-1">
+                                        <div className="overflow-hidden" ref={emblaRef}>
+                                            <div className="flex gap-2">
+                                                {currentForm.justificativas.map((item, index) => (
+                                                    <article
+                                                        key={item.id || index}
+                                                        className="group flex items-center justify-between gap-3 bg-white border border-slate-200 p-3 rounded-xl
                                                              hover:border-blue-300 hover:shadow-md hover:shadow-blue-500/5 transition-all shrink-0 basis-[10%] sm:basis-[90%]"
-                                                        >
-                                                            <div className="flex flex-col gap-0.5 overflow-hidden">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="text-[10px] font-black text-blue-600 w-40 truncate bg-blue-50 px-1.5 py-0.5 rounded uppercase tracking-wider border border-blue-100">
-                                                                        {item.maquina?.name?.split('_')[0] || 'MÁQUINA'}
-                                                                    </span>
-                                                                    <span className={`text-[9px] font-medium ${item.funcionarios?.length ? 'text-slate-400' : 'text-red-300'}`}>
-                                                                        • {item.funcionarios?.length || 0} colaborador(es)
-                                                                    </span>
-                                                                </div>
-                                                                <p className="text-[9px] text-slate-600 font-medium leading-relaxed line-clamp-2 italic">
-                                                                    "{item.justificativa}"
-                                                                </p>
+                                                    >
+                                                        <div className="flex flex-col gap-0.5 overflow-hidden">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] font-black text-blue-600 w-40 truncate bg-blue-50 px-1.5 py-0.5 rounded uppercase tracking-wider border border-blue-100">
+                                                                    {item.maquina?.name?.split('_')[0] || 'MÁQUINA'}
+                                                                </span>
+                                                                <span className={`text-[9px] font-medium ${item.funcionarios?.length ? 'text-slate-400' : 'text-red-300'}`}>
+                                                                    • {item.funcionarios?.length || 0} colaborador(es)
+                                                                </span>
                                                             </div>
+                                                            <p className="text-[9px] text-slate-600 font-medium leading-relaxed line-clamp-2 italic">
+                                                                "{item.justificativa}"
+                                                            </p>
+                                                        </div>
 
-                                                            <button
-                                                                onClick={() => removerJustificativa(item.id)}
-                                                                className="shrink-0 p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                                title="Remover máquina"
-                                                            >
-                                                                <Trash2 size={16} />
-                                                            </button>
-                                                        </article>
-                                                    ))}
-                                                </div>
+                                                        <button
+                                                            onClick={() => removerJustificativa(item.id)}
+                                                            className="shrink-0 p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                            title="Remover máquina"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </article>
+                                                ))}
                                             </div>
-
-                                            {/* Setas de navegação */}
-                                            {currentForm.justificativas.length > 1 && (
-                                                <>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => emblaApi?.scrollPrev()}
-                                                        className="absolute -left-3 top-1/2 -translate-y-1/2 bg-white border border-slate-200 rounded-full p-1 shadow-md hover:bg-slate-50"
-                                                    >
-                                                        <ChevronLeft size={14} />
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => emblaApi?.scrollNext()}
-                                                        className="absolute -right-3 top-1/2 -translate-y-1/2 bg-white border border-slate-200 rounded-full p-1 shadow-md hover:bg-slate-50"
-                                                    >
-                                                        <ChevronRight size={14} />
-                                                    </button>
-                                                </>
-                                            )}
-                                            <span className="bg-slate-100 font-semibold self-center text-slate-700 text-[8px] px-[5px] py-[1px] rounded-full border border-slate-200">
-                                                {currentForm.justificativas.length}
-                                            </span>
                                         </div>
-                                    </>
+
+                                        {/* Setas de navegação */}
+                                        {currentForm.justificativas.length > 1 && (
+                                            <>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => emblaApi?.scrollPrev()}
+                                                    className="absolute -left-3 top-1/2 -translate-y-1/2 bg-white border border-slate-200 rounded-full p-1 shadow-md hover:bg-slate-50"
+                                                >
+                                                    <ChevronLeft size={14} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => emblaApi?.scrollNext()}
+                                                    className="absolute -right-3 top-1/2 -translate-y-1/2 bg-white border border-slate-200 rounded-full p-1 shadow-md hover:bg-slate-50"
+                                                >
+                                                    <ChevronRight size={14} />
+                                                </button>
+                                            </>
+                                        )}
+                                        <span className="bg-slate-100 font-semibold self-center text-slate-700 text-[8px] px-[5px] py-[1px] rounded-full border border-slate-200">
+                                            {currentForm.justificativas.length}
+                                        </span>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -632,7 +630,7 @@ export default function FormView({
 
                                                 <button
                                                     type="button"
-                                                    onClick={() => removerFuncionario(justificativa.id, funcionario.id)}
+                                                    onClick={() => removerFuncionario(funcionario.id)}
                                                     className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors"
                                                 >
                                                     <X size={16} />
