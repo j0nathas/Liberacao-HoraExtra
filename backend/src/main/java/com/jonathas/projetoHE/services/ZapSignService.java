@@ -63,17 +63,6 @@ public class ZapSignService {
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
 
-
-        signatarios.add(
-                SignerRequestDTO.builder()
-                        .name("Eliel Silva")
-                        .email("eliel.silva@partner.magna.com")
-                        .authMode("assinaturaTela")
-                        .sendAutomaticEmail(true)
-                        .orderGroup(signatarios.size() + 1)
-                        .build()
-        );
-
         if(!testSignersEnabled){
             signatarios.add(
                     SignerRequestDTO.builder()
