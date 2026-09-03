@@ -4,6 +4,7 @@ import api from './services/api';
 import { EyeOff, Eye, Loader2 } from 'lucide-react';
 import { useAuth } from "./context/AuthContext";
 import toast, { Toaster } from 'react-hot-toast';
+import logo from '../img/logo.png';
 
 export default function LoginScreen() {
     const [username, setUsername] = useState('');
@@ -57,7 +58,7 @@ export default function LoginScreen() {
 
             <section className='w-full  flex flex-col h-full gap-10 bg-white p-7 md:w-[75%] md:h-[75%] md:rounded-3xl shadow-2xl lg:w-[40%]'>
                 <header className="flex flex-col gap-5">
-                    <img className='' src="/img/logo.png" width={75} alt="" />
+                    <img className='' src={logo} width={75} alt="Logo" />
                     <div>
                         <h2 className="text-3xl f font-light text-blue-300 leading-tight">
                             Bem-vindo de volta

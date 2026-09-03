@@ -118,7 +118,7 @@ public class QueryController {
         RespHE usuario = respHeRepository.findByLogin(login)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
 
-        List<Solicitacao> entidades = solicitacaoRepository.findAllByUsuarioIdOrderByIdDesc(usuario.getId());
+        List<Solicitacao> entidades = solicitacaoRepository.findAllByUsuarioIdAndStatusNotOrderByIdDesc(usuario.getId(), "deleted");
 
         List<SolicitacaoDTO> dtos = entidades.stream()
                 .map(solicitacaoMapper::toDTO)

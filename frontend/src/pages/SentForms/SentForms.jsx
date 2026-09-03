@@ -14,16 +14,16 @@ export default function SentForms() {
     const handleInfoOpen = (dados) => setSolicitacaoSelecionada(dados);
     const handleInfoClose = () => setSolicitacaoSelecionada(null);
 
+    const carregarDados = async () => {
+        try {
+            const { data } = await api.get("/query/solicitacoes");
+            setDados(data);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     useEffect(() => {
-        const carregarDados = async () => {
-            try {
-                const { data } = await api.get("/query/solicitacoes");
-                setDados(data);
-            } catch (error) {
-                console.error(error);
-            }
-        };
         carregarDados();
     }, []);
 
@@ -91,7 +91,7 @@ export default function SentForms() {
             </div>
 
             {solicitacaoSelecionada && (
-                <CardInfo dados={solicitacaoSelecionada} closeInfo={handleInfoClose} />
+                <CardInfo dados={solicitacaoSelecionada} closeInfo={handleInfoClose} carregarDados={carregarDados} />
             )}
         </main>
     )

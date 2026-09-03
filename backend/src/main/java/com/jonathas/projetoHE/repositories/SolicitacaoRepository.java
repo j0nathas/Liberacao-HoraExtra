@@ -35,5 +35,8 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
             "solicitacoes.justificativas.funcionarios",
             "solicitacoes.justificativas.funcionarios.funcionario"
     })
-    List<Solicitacao> findAllByUsuarioIdOrderByIdDesc(Long usuarioId);
+    List<Solicitacao> findAllByUsuarioIdAndStatusNotOrderByIdDesc(
+            Long usuarioId,
+            String status
+    );
 }

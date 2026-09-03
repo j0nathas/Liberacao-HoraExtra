@@ -2,6 +2,7 @@ import { useAuth } from '../context/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useState } from 'react'
 import api from '../services/api';
+import bye from '../../img/bye.png'
 import { DatabaseArrowDown, Database, Download, LoaderCircle, Calendar, X, Menu } from 'lucide-react';
 
 
@@ -41,7 +42,7 @@ export default function Header() {
                         className="animate-bye text-yellow-600 text-8xl"
                         width={35}
                         height={35}
-                        src="/img/bye.png"
+                        src={bye}
                         alt=""
                     />
 

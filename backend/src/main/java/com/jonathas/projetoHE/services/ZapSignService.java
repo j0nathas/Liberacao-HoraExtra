@@ -3,10 +3,13 @@ package com.jonathas.projetoHE.services;
 import com.jonathas.projetoHE.dto.zapsign.*;
 import com.jonathas.projetoHE.model.DeptResp;
 import com.jonathas.projetoHE.model.RespHE;
+import com.jonathas.projetoHE.model.Solicitacao;
 import com.jonathas.projetoHE.repositories.RespHeRepository;
+import com.jonathas.projetoHE.repositories.SolicitacaoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
@@ -22,6 +25,7 @@ import java.util.stream.IntStream;
 public class ZapSignService {
     private final RestClient restClient;
     private final RespHeRepository respHeRepository;
+    private final SolicitacaoRepository solicitacaoRepository;
 
     @Value("${zapsign.token}")
     private String token;
@@ -59,6 +63,16 @@ public class ZapSignService {
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
 
+
+        signatarios.add(
+                SignerRequestDTO.builder()
+                        .name("Eliel Silva")
+                        .email("eliel.silva@partner.magna.com")
+                        .authMode("assinaturaTela")
+                        .sendAutomaticEmail(true)
+                        .orderGroup(signatarios.size() + 1)
+                        .build()
+        );
 
         if(!testSignersEnabled){
             signatarios.add(
@@ -168,6 +182,49 @@ public class ZapSignService {
 
             throw new RuntimeException(
                     "Erro ao consultar documento na ZapSign.",
+                    e
+            );
+        }
+    }
+
+    public DocInfoResponseDTO deletarDocumento(String documentToken) {
+        try {
+            Solicitacao solicitacaoPai = solicitacaoRepository.findByToken(documentToken)
+                    .orElse(null);
+
+            if (solicitacaoPai == null) {
+                throw new RuntimeException(
+                        "Solicitação não encontrada para o token: " + documentToken
+                );
+            }
+
+            DocInfoResponseDTO response = restClient.delete()
+                    .uri("/docs/" + documentToken)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + token)
+                    .retrieve()
+                    .body(DocInfoResponseDTO.class);
+
+            if (response == null) {
+                throw new RuntimeException(
+                        "ZapSign retornou uma resposta vazia."
+                );
+            }
+
+            solicitacaoRepository.atualizarStatusPorToken(
+                    documentToken,
+                    "deleted"
+            );
+
+            return response;
+
+        } catch (RestClientResponseException e) {
+
+            System.out.println("Status: " + e.getStatusCode());
+            System.out.println("Body: " + e.getResponseBodyAsString());
+
+            throw new RuntimeException(
+                    "Erro ao deletar documento na ZapSign.",
                     e
             );
         }

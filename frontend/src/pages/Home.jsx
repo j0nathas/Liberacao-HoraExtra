@@ -12,9 +12,10 @@ import {
   Mail
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
-  // Dados fictícios para o Dashboard
+  const { user } = useAuth();
   const stats = [
     { label: 'Pendentes de Assinatura', value: '12', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-100' },
     { label: 'Concluídas (Assinadas)', value: '148', icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-100' },
@@ -32,13 +33,12 @@ export default function Home() {
 
   return (
     <main className="flex-1 overflow-auto bg-slate-50 animate-fade-in">
-      {/* Header de Boas-vindas */}
       <header className="bg-white border-b border-slate-200 px-8 py-10">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-slate-900">Gestão de Horas Extra</h1>
-              <p className="text-slate-500 mt-1">Bem-vindo, Administrador. O que deseja fazer hoje?</p>
+              <p className="text-slate-500 mt-1">Bem-vindo, <strong>{user?.nome || 'Usuário'}</strong>. O que deseja fazer hoje?</p>
             </div>
             <button onClick={() => navigate("/form")}
               className="flex items-center cursor-pointer justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200">

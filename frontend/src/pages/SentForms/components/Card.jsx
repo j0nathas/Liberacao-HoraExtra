@@ -37,11 +37,13 @@ export default function Card({ dados, openInfo }) {
             <div className="bg-white rounded-[17px] p-4 flex flex-col gap-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
 
                 <section className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                        <span className={`flex items-center justify-center w-max p-2 h-6 rounded-full ${tone.pill}`}>
+                    <div className="flex items-center gap-1">
+                        <span className={`flex items-center items-center font-stretch-50% text-[10px] gap-1 justify-center w-max p-2 h-6 rounded-full ${tone.pill}`}>
                             {tone.icon}
+                            {status}
                         </span>
-                        <span className="text-xs font-semibold text-gray-400">#{dados.id}</span>
+                        <span className="text-[10px] font-semibold text-gray-400">#{dados.id}</span>
+
                     </div>
                 </section>
 
@@ -57,16 +59,22 @@ export default function Card({ dados, openInfo }) {
                     </h3>
                     <div>
 
-                        <div className='flex items-center gap-1'>
-                            {dados.solicitacoes.map((solicitacao) => (
-                                <p key={solicitacao.id} className="text-sm text-gray-500">
+                        <div className='flex flex-row items-center gap-1'>
+                            {dados.solicitacoes.slice(0, 2).map((solicitacao, index) => (
+                                <p
+                                    key={solicitacao.id}
+                                    className="text-sm text-gray-500 truncate bg-gray-50 rounded-sm px-2 p-1"
+                                >
                                     {solicitacao.motivoMacro}
                                 </p>
                             ))}
 
-                            <span className={`px-1 py-1 rounded-lg ${tone.pill} text-[8px] font-semibold uppercase tracking-wide first-letter:uppercase`}>
-                                {status}
-                            </span>
+                            {dados.solicitacoes.length > 2 && (
+                                <p className="text-[10px] text-gray-500 font-semibold bg-gray-50 rounded-sm px-2 p-1">
+                                    +{dados.solicitacoes.length - 2}
+                                </p>
+                            )}
+
                         </div>
 
                     </div>
