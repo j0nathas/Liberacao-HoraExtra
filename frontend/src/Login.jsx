@@ -30,7 +30,7 @@ export default function LoginScreen() {
             const usuario = await loadUser();
 
             toast.success(`Bem vindo de volta, ${usuario.nome}!`);
-            navigate("/form");
+            navigate("/home");
 
         } catch (err) {
             if (err.response?.status === 401) {

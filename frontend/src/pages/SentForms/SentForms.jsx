@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Inbox } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../../services/api'
 import Card from './components/Card'
 import Header from './components/Header'
@@ -10,6 +11,9 @@ export default function SentForms() {
     const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState(null);
     const [dados, setDados] = useState([]);
     const [filtro, setFiltro] = useState('todas');
+
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const handleInfoOpen = (dados) => setSolicitacaoSelecionada(dados);
     const handleInfoClose = () => setSolicitacaoSelecionada(null);
@@ -26,6 +30,18 @@ export default function SentForms() {
     useEffect(() => {
         carregarDados();
     }, []);
+
+    useEffect(() => {
+        const openId = location.state?.openId;
+        if (!openId || dados.length === 0) return;
+
+        const alvo = dados.find((d) => d.id === openId);
+        if (alvo) {
+            setSolicitacaoSelecionada(alvo);
+        }
+
+        navigate(location.pathname, { replace: true, state: {} });
+    }, [dados, location.state, navigate, location.pathname]);
 
     const dadosFiltrados = useMemo(() => {
         if (filtro === 'todas') return dados;

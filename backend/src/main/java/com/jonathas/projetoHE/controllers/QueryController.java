@@ -1,7 +1,10 @@
 package com.jonathas.projetoHE.controllers;
 
+import com.jonathas.projetoHE.dto.query.HomeCountDTO;
+import com.jonathas.projetoHE.dto.query.HomeInfoDTO;
 import com.jonathas.projetoHE.dto.query.PeriodoSolicitacoesDTO;
 import com.jonathas.projetoHE.dto.query.SolicitacaoDTO;
+import com.jonathas.projetoHE.dto.query.mapper.HomeMapper;
 import com.jonathas.projetoHE.dto.query.mapper.SolicitacaoMapper;
 import com.jonathas.projetoHE.dto.zapsign.DocInfoResponseDTO;
 import com.jonathas.projetoHE.model.*;
@@ -10,19 +13,13 @@ import com.jonathas.projetoHE.services.TextUtils;
 import com.jonathas.projetoHE.services.ZapSignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
+import org.springframework.data.domain.PageRequest;
 import java.util.List;
-
-import static com.jonathas.projetoHE.services.TextUtils.escapeCsv;
-import static com.jonathas.projetoHE.services.TextUtils.formatarHora;
 
 @RestController
 @RequestMapping("/query")
@@ -59,6 +56,8 @@ public class QueryController {
 
     @Autowired
     private SolicitacaoMapper solicitacaoMapper;
+
+    @Autowired HomeMapper homeMapper;
 
     @GetMapping("/plantas")
     public ResponseEntity<List<Plantas>> listarPlantas() {
@@ -123,6 +122,34 @@ public class QueryController {
         List<SolicitacaoDTO> dtos = entidades.stream()
                 .map(solicitacaoMapper::toDTO)
                 .toList();
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/homeInfo")
+    public ResponseEntity<List<HomeInfoDTO>> infoHome(Authentication authentication) {
+        String login = authentication.getName();
+
+        RespHE usuario = respHeRepository.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        List<Solicitacao> entidades = solicitacaoRepository.findAllParaAcompanhamento(usuario.getId(), "deleted", PageRequest.of(0, 3));
+
+        List<HomeInfoDTO> dtos = entidades.stream()
+                .map(homeMapper::toDTO)
+                .toList();
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/homeCount")
+    public ResponseEntity<List<HomeCountDTO>> countHome(Authentication authentication) {
+        String login = authentication.getName();
+
+        RespHE usuario = respHeRepository.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        List<HomeCountDTO> dtos = solicitacaoRepository.homeCount(usuario.getId());
 
         return ResponseEntity.ok(dtos);
     }
