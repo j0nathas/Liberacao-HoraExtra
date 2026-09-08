@@ -63,6 +63,7 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
             SELECT s.status, COUNT(s.status) AS contagem
             FROM Solicitacao s
             WHERE s.status <> 'deleted'
+                AND s.usuario.id = :usuarioId
             GROUP BY s.status
     """)
     List<HomeCountDTO> homeCount(
