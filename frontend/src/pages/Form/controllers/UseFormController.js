@@ -312,6 +312,7 @@ export function useFormController() {
             try {
                 await EnviarCriarDoc(forms);
             } catch (err) {
+                toast.error("Erro ao enviar formulário. Tente novamente.");
                 console.log(err);
             }
 

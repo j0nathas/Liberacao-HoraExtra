@@ -87,6 +87,30 @@ const styles = StyleSheet.create({
     kpiLabel: { fontSize: 7, color: "#64748B", fontWeight: "bold" },
     kpiValue: { fontSize: 16, color: "#0F172A", fontWeight: "bold" },
 
+    // Alerta de limite excedido
+    alertBox: {
+        flexDirection: "row",
+        backgroundColor: "#FEF2F2",
+        border: "1 solid #FCA5A5",
+        borderLeft: "4 solid #DC2626",
+        borderRadius: 6,
+        padding: 10,
+        marginBottom: 16,
+    },
+    alertIconWrap: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: "#DC2626",
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: 10,
+    },
+    alertIconText: { color: "#FFFFFF", fontSize: 11, fontWeight: "bold" },
+    alertTitle: { color: "#991B1B", fontSize: 9, fontWeight: "bold", marginBottom: 3, textTransform: "uppercase" },
+    alertText: { color: "#7F1D1D", fontSize: 8, marginBottom: 2 },
+    alertItem: { color: "#7F1D1D", fontSize: 7.5, marginTop: 2 },
+
     // Tabelas
     table: { marginTop: 4, border: "1 solid #E2E8F0", borderRadius: 4, overflow: "hidden" },
     tableHeader: { flexDirection: "row", backgroundColor: "#F1F5F9", padding: 5 },
@@ -150,10 +174,61 @@ const formatDuracao = (hhmmss) => {
     return m === 0 ? `${h}h` : `${h}h ${m}m`;
 };
 
+// Limite máximo permitido por tipo de solicitação
+const LIMITE_HORAS = {
+    "dia trabalhado": 2,
+    default: 10,
+};
+
+function getLimiteParaTipo(tipo) {
+    return LIMITE_HORAS[tipo?.toLowerCase()] ?? LIMITE_HORAS.default;
+}
+
+function excedeLimite(solicitacao) {
+    const maximo = getLimiteParaTipo(solicitacao.tipo);
+    const [horas, minutos] = solicitacao.totalHoras.split(":").map(Number);
+    return horas > maximo || (horas === maximo && minutos > 0);
+}
+
+// Retorna apenas as solicitações que estouraram o limite de hora extra
+function getSolicitacoesExcedentes(solicitacoes) {
+    return (solicitacoes || []).filter(excedeLimite);
+}
+
 // ============================================================
 // COMPONENTES
 // ============================================================
+function AlertaLimiteExcedido({ excedentes }) {
+    if (!excedentes.length) return null;
+
+    return (
+        <View style={styles.alertBox} wrap={false}>
+            <View style={styles.alertIconWrap}>
+                <Text style={styles.alertIconText}>!</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+                <Text style={styles.alertTitle}>Atenção: limite de hora extra excedido</Text>
+                <Text style={styles.alertText}>
+                    {excedentes.length === 1
+                        ? "A solicitação abaixo ultrapassa o limite diário de hora extra permitido. Revise antes de assinar."
+                        : `${excedentes.length} solicitações abaixo ultrapassam o limite diário de hora extra permitido. Revise antes de assinar.`}
+                </Text>
+                {excedentes.map((sol) => {
+                    const maximo = getLimiteParaTipo(sol.tipo);
+                    return (
+                        <Text key={sol.id} style={styles.alertItem}>
+                            • Solicitação #{sol.id} ({sol.tipo}) — {formatDuracao(sol.totalHoras)} solicitadas, limite de {maximo}h
+                        </Text>
+                    );
+                })}
+            </View>
+        </View>
+    );
+}
+
 function ResumoConsolidado({ dados }) {
+    const excedentes = getSolicitacoesExcedentes(dados.solicitacoes);
+
     return (
         <View wrap={false}>
             <View style={styles.kpiRow}>
@@ -166,6 +241,8 @@ function ResumoConsolidado({ dados }) {
                     <Text style={styles.kpiValue}>{formatDuracao(dados.horasTotais)}</Text>
                 </View>
             </View>
+
+            <AlertaLimiteExcedido excedentes={excedentes} />
 
             <View style={styles.card}>
                 <Text style={styles.sectionTitle}>Distribuição por Centro de Custo</Text>
@@ -190,6 +267,7 @@ function ResumoConsolidado({ dados }) {
 
 function SolicitacaoBloco({ solicitacao, index }) {
     const cor = PALETA[index % PALETA.length];
+    const excedeuLimite = excedeLimite(solicitacao);
 
     return (
         <View style={styles.solicitacaoWrapper} wrap={false}>
@@ -202,6 +280,11 @@ function SolicitacaoBloco({ solicitacao, index }) {
                     <Text style={{ fontSize: 7, color: '#64748B' }}>SOLICITAÇÃO #{solicitacao.id} • {solicitacao.tipo}</Text>
                     <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#0F172A' }}>{solicitacao.motivoMacro}</Text>
                 </View>
+                {excedeuLimite && (
+                    <View style={[styles.badge, { backgroundColor: "#FEE2E2" }]}>
+                        <Text style={{ color: "#B91C1C", fontSize: 7, fontWeight: 'bold' }}>LIMITE EXCEDIDO</Text>
+                    </View>
+                )}
                 <View style={[styles.badge, { backgroundColor: cor.badgeBg }]}>
                     <Text style={{ color: cor.badgeText, fontSize: 9, fontWeight: 'bold' }}>{formatDuracao(solicitacao.totalHoras)}</Text>
                 </View>

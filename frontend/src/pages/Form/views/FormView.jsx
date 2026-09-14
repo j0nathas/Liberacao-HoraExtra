@@ -132,6 +132,22 @@ export default function FormView({
         updateCurrentForm('justificativas', currentForm.justificativas.filter(j => j.id !== id));
     };
 
+    function AlertConfirm(inicio, fim) {
+        const ms = new Date(fim) - new Date(inicio);
+        const totalMin = Math.round(ms / 60000);
+        const h = Math.floor(totalMin / 60);
+        const m = totalMin % 60;
+        const maiorQueLimite = totalMin > (limiteHora * 60);
+
+        if (maiorQueLimite) {
+            return (
+                <p className="text-sm mb-2 text-amber-600 bg-amber-50 px-3 py-2.5 rounded-lg flex items-center gap-1.5">
+                    <Info size={12} /> <strong>CUIDADO!</strong> Duração máxima permitida é de {limiteHora} horas.
+                </p>
+            );
+        }
+    }
+
     function checkDateOrder(inicio, fim) {
         const ms = new Date(fim) - new Date(inicio);
 
@@ -150,8 +166,8 @@ export default function FormView({
 
         if (maiorQueLimite) {
             return (
-                <p className="mt-2 text-[11px] text-red-600 bg-red-50 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                    <Info size={12} /> Duração máxima permitida é de {limiteHora} horas.
+                <p className="mt-2 text-[11px] text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                    <Info size={12} /> <strong>CUIDADO!</strong> Duração máxima permitida é de {limiteHora} horas.
                 </p>
             );
         }
@@ -171,7 +187,7 @@ export default function FormView({
         : 0;
 
     const primeiroCardPreenchido = currentForm.motivoMacro && currentForm.departamento && currentForm.justificativas.length > 0 && currentForm.planta;
-    const liberarTerceiroCard = currentForm.inicio && currentForm.fim && currentForm.turno && primeiroCardPreenchido && horasDeDiferenca > 0 && horasDeDiferenca <= limiteHora && currentForm.justificativas.length > 0;
+    const liberarTerceiroCard = currentForm.inicio && currentForm.fim && currentForm.turno && primeiroCardPreenchido && horasDeDiferenca > 0 && currentForm.justificativas.length > 0;
     const funcionariosAdicionados = currentForm.justificativas.every(justificativa => justificativa.funcionarios.length > 0);
     const listaComFuncionarios = currentForm.justificativas.find(justificativa => justificativa.funcionarios.length > 0);
     const tudoPreenchido = currentForm.justificativas.length > 0 && liberarTerceiroCard && funcionariosAdicionados;
@@ -703,6 +719,8 @@ export default function FormView({
                                         <p className="text-xs text-slate-500">Revise as informações antes de continuar.</p>
                                     </div>
                                 </div>
+
+                                {AlertConfirm(currentForm.inicio, currentForm.fim)}
                                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                                     <p className="text-sm text-slate-600">
                                         Você está prestes a enviar <span className="font-bold text-slate-800">{forms.length} {forms.length === 1 ? 'solicitação' : 'solicitações'}</span>.

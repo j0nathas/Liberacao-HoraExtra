@@ -53,6 +53,15 @@ public class SolicitacaoService {
 
             LocalDateTime agora = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
 
+            for (var sDto : dto.solicitacoes()) {
+                if (sDto.inicio().isBefore(agora)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Início não pode ser no passado.");
+                }
+                if (!sDto.fim().isAfter(sDto.inicio())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fim deve ser após o início.");
+                }
+            }
+
             String token = null;
             String status = "error";
 
@@ -85,13 +94,6 @@ public class SolicitacaoService {
             List<Solicitacoes> solicitacoesSalvas = new ArrayList<>();
 
             for (var sDto : dto.solicitacoes()) {
-                if (sDto.inicio().isBefore(agora)) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Início não pode ser no passado.");
-                }
-                if (!sDto.fim().isAfter(sDto.inicio())) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fim deve ser após o início.");
-                }
-
                 MotivosMacro motivo = motivosMacroRepository.findById((long) sDto.id_motivo_macro())
                         .orElseThrow(() -> new RuntimeException("Motivo não encontrado"));
                 TipoSolicitacao tipo = tipoSolicitacaoRepository.findById((long) sDto.id_tipo())
