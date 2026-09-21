@@ -2,7 +2,8 @@ import { useAuth } from '../context/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useState } from 'react'
 import api from '../services/api';
-import bye from '../../img/bye.png'
+import bye from '../../img/bye.png';
+import logo from '../../img/logo.png';
 import { DatabaseArrowDown, Database, Download, LoaderCircle, Calendar, X, Menu } from 'lucide-react';
 
 
@@ -219,7 +220,7 @@ export default function Header() {
                 </div>
             )}
 
-            <div className='self-center justify-self-center lg:justify-self-start'> <img src="/img/logo.png" width={50} alt="" /> </div>
+            <div className='self-center justify-self-center lg:justify-self-start'> <img src={logo} width={50} alt="" /> </div>
 
             <nav className="hidden lg:flex justify-self-center items-center gap-2">
                 {btnMenu.map((btn) => (

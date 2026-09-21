@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -162,6 +163,23 @@ public class QueryController {
         return ResponseEntity.ok(
                 zapSignService.infoDocumento(tokenDoc)
         );
+    }
+
+    @GetMapping("/todasSolicitacoes")
+    @PreAuthorize("hasAuthority('VISUALIZAR_TODAS_SOLICITACOES')")
+    public ResponseEntity<List<SolicitacaoDTO>> TodasSolicitacoes(Authentication authentication) {
+        String login = authentication.getName();
+
+        RespHE usuario = respHeRepository.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        List<Solicitacao> entidades = solicitacaoRepository.findAllByStatusNotOrderByIdDesc("deleted");
+
+        List<SolicitacaoDTO> dtos = entidades.stream()
+                .map(solicitacaoMapper::toDTO)
+                .toList();
+
+        return ResponseEntity.ok(dtos);
     }
 
 //    @GetMapping(

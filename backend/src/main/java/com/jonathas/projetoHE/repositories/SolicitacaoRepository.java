@@ -42,6 +42,24 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
             String status
     );
 
+
+    @EntityGraph(attributePaths = {
+            "usuario",
+            "solicitacoes",
+            "solicitacoes.motivosMacro",
+            "solicitacoes.tipo",
+            "solicitacoes.departamento",
+            "solicitacoes.turno",
+            "solicitacoes.planta",
+            "solicitacoes.justificativas",
+            "solicitacoes.justificativas.maquina",
+            "solicitacoes.justificativas.funcionarios",
+            "solicitacoes.justificativas.funcionarios.funcionario"
+    })
+    List<Solicitacao> findAllByStatusNotOrderByIdDesc(
+            String status
+    );
+
     @EntityGraph(attributePaths = {
             "usuario",
             "solicitacoes",
