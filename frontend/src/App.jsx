@@ -6,11 +6,13 @@ import Home from './pages/Home.jsx'
 import NotFound from './pages/NotFound.jsx'
 import DocumentView from './PDF/DocumentView.jsx'
 import SentForms from './pages/SentForms/SentForms.jsx';
+import Charts from './pages/Charts/Charts.jsx';
 
 const btnMenu = [
   { path: "/home", element: Home },
   { path: "/form", element: Form },
   { path: "/sent", element: SentForms },
+  { path: "/charts", element: Charts },
   { path: "/document", element: DocumentView },
 ]
 

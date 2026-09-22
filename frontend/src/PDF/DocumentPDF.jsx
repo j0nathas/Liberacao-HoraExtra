@@ -186,11 +186,18 @@ function getLimiteParaTipo(tipo) {
 
 function excedeLimite(solicitacao) {
     const maximo = getLimiteParaTipo(solicitacao.tipo);
-    const [horas, minutos] = solicitacao.totalHoras.split(":").map(Number);
-    return horas > maximo || (horas === maximo && minutos > 0);
+
+    const inicio = new Date(solicitacao.inicio);
+    const fim = new Date(solicitacao.fim);
+
+    const diferencaMs = fim - inicio;
+    const diferencaMinutos = diferencaMs / (1000 * 60);
+
+    const maximoEmMinutos = maximo * 60;
+
+    return diferencaMinutos > maximoEmMinutos;
 }
 
-// Retorna apenas as solicitações que estouraram o limite de hora extra
 function getSolicitacoesExcedentes(solicitacoes) {
     return (solicitacoes || []).filter(excedeLimite);
 }

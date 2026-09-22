@@ -4,22 +4,20 @@ import { useState } from 'react'
 import api from '../services/api';
 import bye from '../../img/bye.png';
 import logo from '../../img/logo.png';
-import { DatabaseArrowDown, Database, Download, LoaderCircle, Calendar, X, Menu } from 'lucide-react';
+import { DatabaseArrowDown, Database, Download, LoaderCircle, Calendar, X, Menu, ChartNoAxesColumn, Shredder, ClipboardPen, House } from 'lucide-react';
 
 
 //ICONES
-import HomeIcon from '../../img/home.svg?react'
-import FormIcon from '../../img/form.svg?react'
 import LogoutIcon from '../../img/logout.svg?react'
 import ConfigIcon from '../../img/config.svg?react'
-import SentIcon from '../../img/sent-date.svg?react'
 
 import toast from 'react-hot-toast';
 
 const btnMenu = [
-    { name: "Home", path: "/home", icon: HomeIcon },
-    { name: "Form", path: "/form", icon: FormIcon },
-    { name: "Enviados", path: "/sent", icon: SentIcon },
+    { name: "Home", path: "/home", icon: House },
+    { name: "Form", path: "/form", icon: ClipboardPen },
+    { name: "Enviados", path: "/sent", icon: Shredder },
+    { name: "Gráficos", path: "/charts", icon: ChartNoAxesColumn }
 ];
 
 
