@@ -12,7 +12,7 @@ public interface FuncionariosRepository extends JpaRepository<Funcionarios, Long
 
 
 
-    @Query("SELECT f FROM Funcionarios f WHERE f.codigoEmpresa = :codEmpresa AND " +
+    @Query("SELECT f FROM Funcionarios f WHERE f.codigoEmpresa in (:codEmpresa) AND " +
             "(LOWER(f.name) LIKE LOWER(:pesquisa) OR " +
             "LOWER(f.re) LIKE LOWER(:pesquisa))")
     List<Funcionarios> pesquisarComFiltro(@Param("pesquisa") String pesquisa, @Param("codEmpresa") String codEmpresa, Pageable pageable);

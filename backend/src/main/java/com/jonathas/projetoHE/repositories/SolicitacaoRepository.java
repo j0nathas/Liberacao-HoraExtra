@@ -1,6 +1,7 @@
 package com.jonathas.projetoHE.repositories;
 
 import com.jonathas.projetoHE.dto.query.HomeCountDTO;
+import com.jonathas.projetoHE.dto.query.SolicitacaoExportDTO;
 import com.jonathas.projetoHE.model.Solicitacao;
 import com.jonathas.projetoHE.model.Solicitacoes;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -10,6 +11,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -86,6 +90,40 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
     """)
     List<HomeCountDTO> homeCount(
             Long usuarioId
+    );
+
+    @Query("""
+    SELECT new com.jonathas.projetoHE.dto.query.SolicitacaoExportDTO(
+        sq.inicio,
+        sq.fim,
+        d.departamento,
+        f.empresa,
+        j.maquina.maquina,
+        f.re ,
+        f.name,
+        t.turno,
+        mm.descricao,
+        j.justificativa,
+        CAST(NULL AS string),
+        s.status
+    )
+    FROM Solicitacao s
+        JOIN s.solicitacoes sq
+        JOIN sq.departamento d
+        JOIN sq.turno t
+        JOIN sq.motivosMacro mm
+        JOIN sq.planta p
+        JOIN sq.justificativas j
+        JOIN j.funcionarios sf
+        JOIN sf.funcionario f
+    WHERE s.status <> 'deleted'
+      AND sq.inicio >= :inicio
+      AND sq.fim <= :fim
+    ORDER BY sq.inicio
+""")
+    List<SolicitacaoExportDTO> buscarSolicitacoesParaExportacao(
+            ZonedDateTime inicio,
+            ZonedDateTime fim
     );
 
 }

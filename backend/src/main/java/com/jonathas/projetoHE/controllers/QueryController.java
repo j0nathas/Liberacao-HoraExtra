@@ -100,7 +100,7 @@ public class QueryController {
 
         String termoParaBusca = TextUtils.formatarParaLike(pesquisa);
 
-        String codEmpresa = "MLB".equals(planta) ? "710" : "720";
+        String codEmpresa = "MLB".equals(planta) ? "710, 702" : "720";
 
         List<Funcionarios> resultados = funcionariosRepository.pesquisarComFiltro(
                 termoParaBusca,
@@ -181,92 +181,5 @@ public class QueryController {
 
         return ResponseEntity.ok(dtos);
     }
-
-//    @GetMapping(
-//            value = "/exportar",
-//            produces = "text/csv"
-//    )
-//    @PreAuthorize("hasAuthority('EXTRAIR_SOLICITACOES')")
-//    public ResponseEntity<byte[]> exportarCSV(
-//            @RequestParam LocalDate inicio,
-//            @RequestParam LocalDate fim
-//    ) {
-//
-//        if (inicio.isAfter(fim)) {
-//            return ResponseEntity.badRequest().build();
-//        }
-//
-//        PeriodoSolicitacoesProjection periodo =
-//                solicitacoesRepository.buscarPeriodoSolicitacoes();
-//
-//        if (inicio.isBefore(periodo.getDataMinima())
-//                || fim.isAfter(periodo.getDataMaxima())) {
-//
-//            return ResponseEntity.badRequest().build();
-//        }
-//
-//        List<SolicitacaoExportProjection> dados =
-//                solicitacaoFuncionariosRepository
-//                        .buscarSolicitacoesParaExportacao(inicio, fim);
-//
-//        StringBuilder csv = new StringBuilder();
-//
-//
-//        csv.append('\uFEFF');
-//
-//        csv.append("Data;Departamento;Empresa;Local da Hora Extra;")
-//                .append("CHAPA;NOME;Turno;Hora Início;Hora Término;")
-//                .append("Tempo Gasto total;Motivo Macro;Justificativa;")
-//                .append("Transporte;Autorizado?\n");
-//
-//        for (SolicitacaoExportProjection item : dados) {
-//
-//            csv.append(escapeCsv(item.getData())).append(";")
-//                    .append(escapeCsv(item.getDepartamento())).append(";")
-//                    .append(escapeCsv(item.getEmpresa())).append(";")
-//                    .append(escapeCsv(item.getLocalDaHoraExtra())).append(";")
-//                    .append(escapeCsv(item.getChapa())).append(";")
-//                    .append(escapeCsv(item.getNome())).append(";")
-//                    .append(escapeCsv(item.getTurno())).append(";")
-//                    .append(escapeCsv(formatarHora(item.getHoraInicio()))).append(";")
-//                    .append(escapeCsv(formatarHora(item.getHoraTermino()))).append(";")
-//                    .append(escapeCsv(item.getTempoGastoTotal())).append(";")
-//                    .append(escapeCsv(item.getMotivoMacro())).append(";")
-//                    .append(escapeCsv(item.getJustificativa())).append(";")
-//                    .append(escapeCsv(item.getTransporte())).append(";")
-//                    .append(escapeCsv(item.getAutorizado())).append("\n");
-//        }
-//
-//        byte[] arquivo = csv
-//                .toString()
-//                .getBytes(StandardCharsets.UTF_8);
-//
-//        return ResponseEntity.ok()
-//                .header(
-//                        HttpHeaders.CONTENT_DISPOSITION,
-//                        "attachment; filename=\"solicitacoes.csv\""
-//                )
-//                .contentType(
-//                        MediaType.parseMediaType(
-//                                "text/csv; charset=UTF-8"
-//                        )
-//                )
-//                .body(arquivo);
-//    }
-
-//    @GetMapping("/periodo")
-//    @PreAuthorize("hasAuthority('EXTRAIR_SOLICITACOES')")
-//    public ResponseEntity<PeriodoSolicitacoesDTO> buscarPeriodo() {
-//
-//        PeriodoSolicitacoesProjection periodo =
-//                solicitacoesRepository.buscarPeriodoSolicitacoes();
-//
-//        return ResponseEntity.ok(
-//                new PeriodoSolicitacoesDTO(
-//                        periodo.getDataMinima(),
-//                        periodo.getDataMaxima()
-//                )
-//        );
-//    }
 
 }

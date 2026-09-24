@@ -31,7 +31,7 @@ export default function D3BarChart() {
             .scaleBand()
             .domain(data.map((d) => d.month))
             .range([margin.left, width - margin.right])
-            .padding(0.35);
+            .padding(0.2);
 
         const y = d3
             .scaleLinear()
@@ -79,7 +79,7 @@ export default function D3BarChart() {
     }, []);
 
     return (
-        <div ref={wrapRef} style={{ width: "100%", maxWidth: 600 }}>
+        <div ref={wrapRef} style={{ width: "100%", maxWidth: "600px", height: "300px" }}>
             <svg ref={svgRef} />
         </div>
     );
