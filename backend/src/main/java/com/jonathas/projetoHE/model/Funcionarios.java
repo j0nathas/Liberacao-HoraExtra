@@ -7,7 +7,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "Cadastros_HE")
-@SQLRestriction("Situacao_Descricao = 'ATIVO'")
+@SQLRestriction("Situacao_Descricao IN ('ATIVO', 'FERIAS')")
 @Getter
 @Setter
 public class Funcionarios {
