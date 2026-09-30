@@ -262,8 +262,6 @@ export function useFormController() {
 
         setFuncionarioTexto('');
         setFuncionarioSelecionado(null);
-        setVinculoTexto('');
-        setVinculoJust(null);
     }
 
     function removerFuncionario(id) {
@@ -272,6 +270,26 @@ export function useFormController() {
             funcionarios: justificativa.funcionarios.filter(f => f.id !== id)
         }));
         updateCurrentForm('justificativas', novasJustificativas);
+    }
+
+    function copiarSolicitacaoAnterior(idSoli) {
+        const form = forms[idSoli];
+
+        const justificativasCopiadas = form.justificativas.map((justificativa, index) => ({
+            ...justificativa,
+            funcionarios: currentForm.justificativas[index]?.funcionarios ?? []
+        }));
+        setMotivoTexto(form.motivoMacro);
+        updateCurrentForm({
+            ...form,
+            id: currentForm.id,
+            inicio: currentForm.inicio,
+            fim: currentForm.fim,
+            turno: currentForm.turno,
+            idTurno: currentForm.idTurno,
+
+            justificativas: justificativasCopiadas
+        });
     }
 
     return {
@@ -305,6 +323,7 @@ export function useFormController() {
         removerFuncionario,
         adicionarForm,
         removerForm,
+        copiarSolicitacaoAnterior,
         loading,
         handleSubmit: async (e) => {
             e.preventDefault();

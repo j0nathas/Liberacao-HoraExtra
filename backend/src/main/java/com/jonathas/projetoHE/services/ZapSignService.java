@@ -33,6 +33,8 @@ public class ZapSignService {
     @Value("${zapsign.tests.enabled}")
     private boolean testSignersEnabled;
 
+    ArrayList<String> respAssinatura = new ArrayList<>(List.of("ederson.quesada@magna.com", "alessandro.bosica@magna.com", "agnaldo.cervone@magna.com", "jonathas.oliveira@magna.com"));
+
     public DocumentResponseDTO criarDocumento(DocumentDTO dto) {
 
         List<String> departamentos = dto.getDepartamentos().stream()
@@ -49,7 +51,9 @@ public class ZapSignService {
                         )))
                 .toList();
 
+
         List<SignerRequestDTO> signatarios = IntStream.range(0, responsaveis.size())
+                .filter(i -> !respAssinatura.contains(responsaveis.get(i).getEmail()))
                 .mapToObj(i -> {
                     RespHE resp = responsaveis.get(i);
 

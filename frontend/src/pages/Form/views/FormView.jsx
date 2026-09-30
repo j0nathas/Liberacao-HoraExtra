@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, use } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -7,12 +7,12 @@ import 'dayjs/locale/pt-br';
 import useEmblaCarousel from 'embla-carousel-react';
 // Componentes e Ícones
 import Search from '../../../components/Search.jsx';
-import { hoje } from '../models/formModel.js';
 import { Shifts } from '../components/dadosFake.js';
 import {
     Loader2, Plus, Trash2, Clock, UserPlus, X, FileText,
-    Info, CheckCircle2, Send, Calendar, ArrowRight, Check, Hash, ChevronLeft, ChevronRight
+    Info, CheckCircle2, Send, Calendar, Check, ChevronLeft, ChevronRight
 } from 'lucide-react';
+import CopyInfo from '../components/copyInfo.jsx';
 
 export default function FormView({
     forms,
@@ -47,6 +47,7 @@ export default function FormView({
     removerForm,
     handleSubmit,
     carregarDepartamentos,
+    copiarSolicitacaoAnterior
 }) {
     // --- ESTADOS E CONSTANTES ---
     const MAX_CHARS = 200;
@@ -54,6 +55,7 @@ export default function FormView({
     const [limiteHora, setLimiteHora] = useState(null);
     const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
     const [justificativa, setJustificativa] = useState('');
+    const [isMinimized, setIsMinimized] = useState(false);
     const [emblaRef, emblaApi] = useEmblaCarousel({ align: 'center', dragFree: true });
 
 
@@ -228,7 +230,7 @@ export default function FormView({
                 </header>
             )}
 
-            <form onSubmit={handleFormSubmit} className="grid grid-cols-1 w-full max-w-7xl h-max items-center justify-center md:gap-y-2 md:p-6 lg:p-2 xl:p-0">
+            <form onSubmit={handleFormSubmit} className="w-full max-w-7xl flex flex-col flex-1 min-h-0 md:gap-y-2 md:p-6 lg:p-2 xl:p-0">
                 <div className="grid grid-cols-1 lg:grid-cols-3 w-[100%] gap-4 lg:p-2">
 
                     {/* --- CARD 1: DETALHES E LOCAL --- */}
@@ -239,7 +241,9 @@ export default function FormView({
                                 <h2>Detalhes</h2>
                             </div>
 
-                            {primeiroCardPreenchido && <CheckCircle2 size={20} className="text-green-500 absolute right-5 animate-fade-in" />}
+
+
+                            {primeiroCardPreenchido ? (<CheckCircle2 size={20} className="text-green-500 absolute right-5 animate-fade-in" />) : currentFormIndex !== 0 ? <CopyInfo isMinimized={isMinimized} setIsMinimized={setIsMinimized} onCopy={copiarSolicitacaoAnterior} currentForm={currentFormIndex - 1} /> : ''}
                         </div>
 
                         <div className="flex flex-col w-full p-4 flex-1 gap-2">
@@ -582,14 +586,16 @@ export default function FormView({
                     </div>
 
                     {/* --- CARD 3: EQUIPE (PESSOAS) --- */}
-                    <div className={`bg-white rounded-2xl border-slate-200 shadow-sm border transition-all flex flex-col lg:col-span-1 overflow-hidden ${liberarTerceiroCard ? '' : ' opacity-40 bg-slate-50'}`}>
+                    <div className={`bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all flex flex-col min-h-0 h-full lg:col-span-1
+                            ${liberarTerceiroCard ? '' : 'opacity-40 bg-slate-50'}
+                        `}>
                         <div className="bg-slate-50 px-6 py-4 relative border-b border-slate-200 flex items-center gap-2 text-slate-700 font-semibold">
                             <UserPlus size={18} className={tudoPreenchido ? "text-green-600" : liberarTerceiroCard ? "text-blue-600" : "text-slate-400"} />
                             <h2 className={!liberarTerceiroCard ? "text-slate-400" : ""}>Pessoas</h2>
                             {tudoPreenchido && <CheckCircle2 size={20} className="text-green-500 absolute right-5 animate-fade-in" />}
                         </div>
 
-                        <div className={`p-4 space-y-4 flex-1 ${!liberarTerceiroCard ? 'pointer-events-none select-none' : ''}`}>
+                        <div className={`p-4 space-y-4 flex flex-col h-full flex-1 ${!liberarTerceiroCard ? 'pointer-events-none select-none' : ''}`}>
                             <div className="bg-slate-50 p-2 rounded-2xl border border-slate-200 space-y-4">
                                 <div className="space-y-3">
                                     <Search
@@ -631,7 +637,7 @@ export default function FormView({
                             </div>
 
                             {/* Lista de Funcionários */}
-                            <div className="bg-slate-50 p-1 rounded-2xl h-[65%] overflow-y-auto pr-1 custom-scrollbar">
+                            <div className="bg-slate-50 p-1 rounded-2xl pr-1 custom-scrollbar flex flex-col flex-1 max-h-90 min-h-0 overflow-y-auto">
                                 {listaComFuncionarios ? (
                                     currentForm.justificativas.map((justificativa) =>
                                         justificativa.funcionarios.map((funcionario) => (

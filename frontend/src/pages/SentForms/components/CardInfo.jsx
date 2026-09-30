@@ -294,20 +294,23 @@ export default function CardInfo({ dados, closeInfo, carregarDados }) {
                         </motion.div>
                     </div>
 
-                    <div className="p-4 bg-white border-t border-gray-50 grid grid-cols-2">
-                        <button
-                            onClick={() => setDeletingState(true)}
-                            className={`w-[50%] flex items-center justify-center gap-2 p-2 rounded-2xl text-red-600 font-extrabold cursor-pointer bg-red-100 text-[11px] uppercase tracking-[0.2em] hover:bg-red-200 transition-colors`}
-                        >
-                            <Trash2 />
+                    <div className="p-4 bg-white border-t border-gray-50 min-h-20 flex relative justify-between w-full items-end">
+                        {(status === "pendente" || status === "error") && (
+                            <button
+                                onClick={() => setDeletingState(true)}
+                                className="w-[30%] h-12 flex items-center justify-center gap-2 p-2 rounded-2xl text-red-600 font-extrabold cursor-pointer bg-red-100 text-[11px] uppercase tracking-[0.2em] hover:bg-red-200 transition-colors"
+                            >
+                                <Trash2 />
 
-                            <p className="hidden md:block">Deletar</p>
-                        </button>
+                                <p className="hidden md:block">Deletar</p>
+                            </button>
+                        )}
+
                         <button
                             onClick={closeInfo}
-                            className={`w-[50%] self-end justify-self-end cursor-pointer py-4 rounded-2xl text-gray-500 bg-gray-100 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-gray-200 transition-colors`}
+                            className="w-[30%] absolute h-12 self-end right-4 justify-self-end cursor-pointer py-4 rounded-2xl text-gray-500 bg-gray-100 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-gray-200 transition-colors"
                         >
-                            <p className="">
+                            <p>
                                 <span className="md:hidden">Fechar</span>
                                 <span className="hidden md:inline">Fechar Detalhes</span>
                             </p>

@@ -34,7 +34,7 @@ const empresas = [
 const styles = StyleSheet.create({
     page: {
         paddingTop: 80,
-        paddingBottom: 60,
+        paddingBottom: 70,
         paddingHorizontal: 40,
         backgroundColor: "#FFFFFF",
         fontSize: 9,
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
 
     // Colunas Centro de Custo
     colCCode: { width: "15%" },
-    colCCName: { width: "65%" },
+    colCName: { width: "65%" },
     colCCTime: { width: "20%", textAlign: "right" },
 
     // Colunas Funcionários
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
         marginVertical: 4,
     },
     justificativaLabel: { fontSize: 6, color: "#64748B", textTransform: "uppercase", marginBottom: 2 },
-    justificativaText: { fontSize: 8, italic: true, color: "#475569" },
+    justificativaText: { fontSize: 8, fontStyle: "italic", color: "#475569" },
 
     solicitacaoWrapper: { marginBottom: 20 },
     solicitacaoBody: { padding: 10, borderRadius: 6, border: "1 solid #E2E8F0", borderLeftWidth: 3 },
@@ -237,8 +237,9 @@ function ResumoConsolidado({ dados }) {
     const excedentes = getSolicitacoesExcedentes(dados.solicitacoes);
 
     return (
-        <View wrap={false}>
-            <View style={styles.kpiRow}>
+        <View>
+            {/* KPIs: pequenos, não quebram */}
+            <View style={styles.kpiRow} wrap={false}>
                 <View style={styles.kpiBox}>
                     <Text style={styles.kpiLabel}>Total Pessoas</Text>
                     <Text style={styles.kpiValue}>{dados.totalPessoas}</Text>
@@ -251,18 +252,25 @@ function ResumoConsolidado({ dados }) {
 
             <AlertaLimiteExcedido excedentes={excedentes} />
 
+            {/* Tabela de centros de custo: pode quebrar entre páginas */}
             <View style={styles.card}>
-                <Text style={styles.sectionTitle}>Distribuição por Centro de Custo</Text>
+                <Text style={styles.sectionTitle} minPresenceAhead={60}>
+                    Distribuição por Centro de Custo
+                </Text>
                 <View style={styles.table}>
-                    <View style={styles.tableHeader}>
+                    <View style={styles.tableHeader} wrap={false} minPresenceAhead={30}>
                         <Text style={[styles.tableHeaderText, styles.colCCode]}>Código</Text>
-                        <Text style={[styles.tableHeaderText, styles.colCCName]}>Nome do Centro de Custo</Text>
+                        <Text style={[styles.tableHeaderText, styles.colCName]}>Nome do Centro de Custo</Text>
                         <Text style={[styles.tableHeaderText, styles.colCCTime]}>Tempo</Text>
                     </View>
                     {dados.porCentroCusto?.map((cc, i) => (
-                        <View key={i} style={i % 2 === 0 ? styles.tableRow : styles.tableRowAlternate}>
+                        <View
+                            key={i}
+                            wrap={false}
+                            style={i % 2 === 0 ? styles.tableRow : styles.tableRowAlternate}
+                        >
                             <Text style={[{ fontSize: 8, fontWeight: 'bold' }, styles.colCCode]}>{cc.centroCusto}</Text>
-                            <Text style={[{ fontSize: 8 }, styles.colCCName]}>{cc.nomeCC}</Text>
+                            <Text style={[{ fontSize: 8 }, styles.colCName]}>{cc.nomeCC}</Text>
                             <Text style={[{ fontSize: 8, textAlign: 'right' }, styles.colCCTime]}>{formatDuracao(cc.tempo)}</Text>
                         </View>
                     ))}
@@ -277,9 +285,14 @@ function SolicitacaoBloco({ solicitacao, index }) {
     const excedeuLimite = excedeLimite(solicitacao);
 
     return (
-        <View style={styles.solicitacaoWrapper} wrap={false}>
-            {/* Header da Solicitação */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
+        // Sem wrap={false}: o bloco pode quebrar livremente entre páginas
+        <View style={styles.solicitacaoWrapper}>
+            {/* Header da Solicitação: não quebra e "gruda" no conteúdo seguinte */}
+            <View
+                wrap={false}
+                minPresenceAhead={80}
+                style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}
+            >
                 <View style={{ backgroundColor: cor.accent, padding: 4, borderRadius: 3, marginRight: 8 }}>
                     <Text style={{ color: '#FFF', fontSize: 10, fontWeight: 'bold' }}>{index + 1}</Text>
                 </View>
@@ -298,27 +311,45 @@ function SolicitacaoBloco({ solicitacao, index }) {
             </View>
 
             <View style={[styles.solicitacaoBody, { backgroundColor: cor.bg, borderLeftColor: cor.accent }]}>
-                {/* Meta Dados */}
-                <View style={{ flexDirection: 'row', marginBottom: 10 }}>
-                    <View style={{ flex: 1 }}><Text style={styles.justificativaLabel}>Planta</Text><Text style={{ fontSize: 9, fontWeight: 'bold' }}>{solicitacao.planta}</Text></View>
-                    <View style={{ flex: 1 }}><Text style={styles.justificativaLabel}>Departamento</Text><Text style={{ fontSize: 9, fontWeight: 'bold' }}>{solicitacao.departamento}</Text></View>
-                    <View style={{ flex: 1 }}><Text style={styles.justificativaLabel}>Período</Text><Text style={{ fontSize: 8 }}>{formatDateTime(solicitacao.inicio)} - {formatDateTime(solicitacao.fim)}</Text></View>
+                {/* Meta Dados: não quebra */}
+                <View wrap={false} style={{ flexDirection: 'row', marginBottom: 10 }}>
+                    <View style={{ flex: 1 }}>
+                        <Text style={styles.justificativaLabel}>Planta</Text>
+                        <Text style={{ fontSize: 9, fontWeight: 'bold' }}>{solicitacao.planta}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                        <Text style={styles.justificativaLabel}>Departamento</Text>
+                        <Text style={{ fontSize: 9, fontWeight: 'bold' }}>{solicitacao.departamento}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                        <Text style={styles.justificativaLabel}>Período</Text>
+                        <Text style={{ fontSize: 8 }}>{formatDateTime(solicitacao.inicio)} - {formatDateTime(solicitacao.fim)}</Text>
+                    </View>
                 </View>
 
                 {/* Justificativas por Máquina */}
                 {solicitacao.justificativas?.map((just, jIdx) => (
                     <View key={jIdx} style={{ marginTop: 8 }}>
-                        <View style={styles.machineHeader}>
-                            <Text style={styles.machineName}>MÁQUINA: {just.maquina.name} ({just.maquina.id})</Text>
+                        {/* Título da máquina: garante espaço para o conteúdo seguinte,
+                            evitando ficar órfão no fim da página */}
+                        <View wrap={false} minPresenceAhead={70}>
+                            <View style={styles.machineHeader}>
+                                <Text style={styles.machineName}>
+                                    MÁQUINA: {just.maquina.name} ({just.maquina.id})
+                                </Text>
+                            </View>
                         </View>
 
+                        {/* Justificativa fora do wrap={false}: se for muito longa, pode quebrar */}
                         <View style={styles.justificativaBox}>
                             <Text style={styles.justificativaLabel}>Justificativa:</Text>
-                            <Text style={styles.justificativaText}>{just.justificativa || "Não informada."}</Text>
+                            <Text style={styles.justificativaText}>
+                                {just.justificativa || "Não informada."}
+                            </Text>
                         </View>
 
                         <View style={styles.table}>
-                            <View style={styles.tableHeader}>
+                            <View style={styles.tableHeader} wrap={false} minPresenceAhead={30}>
                                 <Text style={[styles.tableHeaderText, styles.colRE]}>RE</Text>
                                 <Text style={[styles.tableHeaderText, styles.colNome]}>Funcionário</Text>
                                 <Text style={[styles.tableHeaderText, styles.colFuncCC]}>CC</Text>
@@ -326,7 +357,12 @@ function SolicitacaoBloco({ solicitacao, index }) {
                                 <Text style={[styles.tableHeaderText, styles.colCargo]}>Cargo</Text>
                             </View>
                             {just.funcionarios?.map((f, fIdx) => (
-                                <View key={fIdx} style={fIdx % 2 === 0 ? styles.tableRow : styles.tableRowAlternate}>
+                                // Cada linha nunca é cortada ao meio
+                                <View
+                                    key={fIdx}
+                                    wrap={false}
+                                    style={fIdx % 2 === 0 ? styles.tableRow : styles.tableRowAlternate}
+                                >
                                     <Text style={[styles.colRE, { fontSize: 8 }]}>{f.re}</Text>
                                     <Text style={[styles.colNome, { fontSize: 8, fontWeight: 'bold' }]}>{f.name}</Text>
                                     <Text style={[styles.colFuncCC, { fontSize: 8 }]}>{f.codigoCentroCusto}</Text>
@@ -366,18 +402,20 @@ export default function DocumentPDF({ dadosConsolidados }) {
 
                 <ResumoConsolidado dados={dadosConsolidados} />
 
-                <Text style={[styles.sectionTitle, { marginTop: 10 }]}>
+                <Text style={[styles.sectionTitle, { marginTop: 10 }]} minPresenceAhead={100}>
                     Detalhamento por Posto de Trabalho ({dadosConsolidados.solicitacoes?.length})
                 </Text>
 
                 {dadosConsolidados.solicitacoes?.map((sol, i) => (
-                    <SolicitacaoBloco key={i} solicitacao={sol} index={i} />
+                    <SolicitacaoBloco key={sol.id ?? i} solicitacao={sol} index={i} />
                 ))}
 
                 <Text style={styles.footer} fixed>
                     Documento de uso restrito - Magna do Brasil
                 </Text>
-                <Text style={styles.pageNumber} fixed
+                <Text
+                    style={styles.pageNumber}
+                    fixed
                     render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
                 />
             </Page>
