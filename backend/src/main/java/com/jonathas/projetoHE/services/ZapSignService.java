@@ -97,6 +97,16 @@ public class ZapSignService {
                             .orderGroup(signatarios.size() + 1)
                             .build()
             );
+        } else {
+            signatarios.add(
+                    SignerRequestDTO.builder()
+                            .name("Jonathas Oliveira")
+                            .email("jonathas.oliveira@magna.com")
+                            .authMode("assinaturaTela")
+                            .sendAutomaticEmail(true)
+                            .orderGroup(signatarios.size() + 1)
+                            .build()
+            );
         }
 
         DocsRequestDTO request =
