@@ -6,7 +6,8 @@ import java.util.List;
 public record SolicitacaoDTO (
         Long id,
         ZonedDateTime data,
-        String usuario,
+        String nome,
+        String sobrenome,
         String status,
         String token,
         List<SolicitacoesDTO> solicitacoes

@@ -140,8 +140,9 @@ export default function CardInfo({ dados, closeInfo, carregarDados }) {
                                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${tone.pill}`}>
                                         Doc #{dados.id}
                                     </span>
-                                    <span className="text-[10px] text-gray-400 font-medium">
-                                        Criado por {dados.usuario}
+                                    <span className="flex items-center gap-1 text-[10px] text-gray-600 font-medium">
+                                        <p className="text-[10px] font-light">Criado por:</p>
+                                        {dados.nome} {dados.sobrenome}
                                     </span>
                                 </div>
                             </div>

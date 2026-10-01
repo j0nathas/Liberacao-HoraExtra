@@ -30,6 +30,8 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
 
     @EntityGraph(attributePaths = {
             "usuario",
+            "usuario.nome",
+            "usuario.sobrenome",
             "solicitacoes",
             "solicitacoes.motivosMacro",
             "solicitacoes.tipo",
@@ -49,6 +51,8 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
 
     @EntityGraph(attributePaths = {
             "usuario",
+            "usuario.nome",
+            "usuario.sobrenome",
             "solicitacoes",
             "solicitacoes.motivosMacro",
             "solicitacoes.tipo",

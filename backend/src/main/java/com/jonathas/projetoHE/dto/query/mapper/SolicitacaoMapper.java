@@ -19,6 +19,7 @@ public class SolicitacaoMapper {
                 entity.getId(),
                 entity.getData(),
                 entity.getUsuario() != null ? entity.getUsuario().getNome() : "N/A",
+                entity.getUsuario() != null ? entity.getUsuario().getSobrenome() : "N/A",
                 entity.getStatus(),
                 entity.getToken(),
                 entity.getSolicitacoes().stream().map(this::toSolicitacoesDTO).toList()
