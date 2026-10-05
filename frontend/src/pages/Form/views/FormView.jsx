@@ -16,6 +16,7 @@ import CopyInfo from '../components/copyInfo.jsx';
 
 export default function FormView({
     forms,
+    novoForm,
     currentForm,
     currentFormIndex,
     setCurrentFormIndex,
@@ -198,6 +199,13 @@ export default function FormView({
 
     return (
         <main className="h-full overflow-auto relative flex flex-col gap-2 items-center animate-fade-in">
+
+            {localStorage.getItem("forms") !== JSON.stringify(novoForm) && (
+                <div className="w-full bg-amber-50 border-b border-amber-200 px-4 py-2 text-[11px] text-amber-700 flex items-center justify-center gap-1">
+                    <Info size={14} />
+                    <span>Formulários salvos localmente. Continue de onde parou.</span>
+                </div>
+            )}
 
             {forms.length > 1 && (
                 <header className="w-full bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3">

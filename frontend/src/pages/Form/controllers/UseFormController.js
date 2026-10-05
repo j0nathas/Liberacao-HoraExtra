@@ -11,23 +11,51 @@ export function useFormController() {
     const navigate = useNavigate();
 
     //////////////////////////////// GESTÃO DOS FORMULÁRIOS ////////////////////////////////
-    const [forms, setForms] = useState([novoForm(1)]);
+    const [forms, setForms] = useState(() => {
+        const savedForms = localStorage.getItem("forms");
+
+        return savedForms
+            ? JSON.parse(savedForms)
+            : [novoForm(1)];
+    });
+
     const [currentFormIndex, setCurrentFormIndex] = useState(0);
-    const [nextId, setNextId] = useState(2);
+
+    const [nextId, setNextId] = useState(() => {
+        const savedForms = localStorage.getItem("forms");
+
+        if (!savedForms) return 2;
+
+        const parsedForms = JSON.parse(savedForms);
+
+        return Math.max(...parsedForms.map(form => form.id)) + 1;
+    });
+
     const currentForm = forms[currentFormIndex];
 
     const updateCurrentForm = useCallback((updates, value) => {
-        setForms((prev) =>
+        setForms(prev =>
             prev.map((form, idx) => {
                 if (idx !== currentFormIndex) return form;
 
-                if (typeof updates === 'string') {
-                    return { ...form, [updates]: value };
+                if (typeof updates === "string") {
+                    return {
+                        ...form,
+                        [updates]: value
+                    };
                 }
-                return { ...form, ...updates };
+
+                return {
+                    ...form,
+                    ...updates
+                };
             })
         );
     }, [currentFormIndex]);
+
+    useEffect(() => {
+        localStorage.setItem("forms", JSON.stringify(forms));
+    }, [forms]);
 
     function adicionarForm() {
         const { valid, toast: formToast } = validarFormularios(forms);
@@ -292,8 +320,17 @@ export function useFormController() {
         });
     }
 
+    function resgatarForms() {
+        const savedForms = localStorage.getItem("forms");
+        return savedForms ? JSON.parse(savedForms) : [novoForm(1)];
+    }
+
+
+
+
     return {
         forms,
+        novoForm,
         currentForm,
         currentFormIndex,
         departamentos: listaDepartamentos,
