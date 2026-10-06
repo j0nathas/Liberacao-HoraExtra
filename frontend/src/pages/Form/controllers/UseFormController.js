@@ -6,30 +6,71 @@ import { novoForm, validarFormularios } from '../models/formModel.js';
 import { generatePDFController } from '../../../PDF/controller/generatePDFController.js'
 import { gerarPDFBase64 } from '../../../PDF/controller/base64Controller.js'
 
+const STORAGE_KEY = "forms";
+
+function lerFormsSalvos() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        return Array.isArray(saved) && saved.length > 0 ? saved : null;
+    } catch {
+        return null;
+    }
+}
+
+function temConteudoSalvo(saved) {
+    if (!saved) return false;
+
+    if (saved.length > 1) return true;
+
+    const { id, ...salvo } = saved[0];
+    const { id: _ignorado, ...vazio } = novoForm(id);
+
+    return JSON.stringify(salvo) !== JSON.stringify(vazio);
+}
+
+function scrollPage(value) {
+    window.scrollTo({
+        top: value,
+        behavior: "smooth",
+    });
+}
+
 export function useFormController() {
 
     const navigate = useNavigate();
 
     //////////////////////////////// GESTÃO DOS FORMULÁRIOS ////////////////////////////////
-    const [forms, setForms] = useState(() => {
-        const savedForms = localStorage.getItem("forms");
+    const [forms, setForms] = useState([novoForm(1)]);
 
-        return savedForms
-            ? JSON.parse(savedForms)
-            : [novoForm(1)];
-    });
+    function resgatarForms() {
+        const saved = lerFormsSalvos();
+
+        if (saved) {
+            setForms(saved);
+            setCurrentFormIndex(0);
+            setMotivoTexto(saved[0].motivoMacro || '');
+            if (saved[0].planta) carregarDepartamentos(saved[0].planta);
+        }
+
+        setAvisoSalvoLocal(false);
+    }
+
+    function descartarSalvos() {
+        localStorage.removeItem(STORAGE_KEY);
+        setAvisoSalvoLocal(false);
+    }
 
     const [currentFormIndex, setCurrentFormIndex] = useState(0);
 
     const [nextId, setNextId] = useState(() => {
-        const savedForms = localStorage.getItem("forms");
-
-        if (!savedForms) return 2;
-
-        const parsedForms = JSON.parse(savedForms);
-
-        return Math.max(...parsedForms.map(form => form.id)) + 1;
+        const saved = lerFormsSalvos();
+        if (!saved) return 2;
+        return Math.max(...saved.map(form => form.id)) + 1;
     });
+
+    const [avisoSalvoLocal, setAvisoSalvoLocal] = useState(
+        () => temConteudoSalvo(lerFormsSalvos())
+    );
 
     const currentForm = forms[currentFormIndex];
 
@@ -39,23 +80,32 @@ export function useFormController() {
                 if (idx !== currentFormIndex) return form;
 
                 if (typeof updates === "string") {
-                    return {
-                        ...form,
-                        [updates]: value
-                    };
+                    return { ...form, [updates]: value };
                 }
 
-                return {
-                    ...form,
-                    ...updates
-                };
+                return { ...form, ...updates };
             })
         );
     }, [currentFormIndex]);
 
+    const temJustificativa = forms.some(f => f.justificativas?.length > 0);
+
     useEffect(() => {
-        localStorage.setItem("forms", JSON.stringify(forms));
-    }, [forms]);
+        if (avisoSalvoLocal) return;
+
+        if (temJustificativa) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(forms));
+        } else {
+            localStorage.removeItem(STORAGE_KEY);
+        }
+    }, [forms, avisoSalvoLocal, temJustificativa]);
+
+    function scrollPage(value) {
+        window.scrollTo({
+            top: value,
+            behavior: "smooth",
+        });
+    }
 
     function adicionarForm() {
         const { valid, toast: formToast } = validarFormularios(forms);
@@ -64,6 +114,8 @@ export function useFormController() {
         setForms((prev) => [...prev, novoForm(nextId)]);
         setNextId((prev) => prev + 1);
         setCurrentFormIndex(forms.length);
+        setVinculoTexto('');
+        setVinculoTexto(null);
         scrollPage(0);
         toast.success("Nova solicitação adicionada!");
     }
@@ -71,7 +123,7 @@ export function useFormController() {
     function removerForm(index) {
         if (forms.length === 1) return;
         setForms((prev) => prev.filter((_, i) => i !== index));
-        setCurrentFormIndex((prev) => Math.max(0, prev === index ? prev - 1 : prev > index ? prev - 1 : prev));
+        setCurrentFormIndex((prev) => (prev >= index ? Math.max(0, prev - 1) : prev));
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -92,10 +144,15 @@ export function useFormController() {
             }
             setLoadingFunc(true);
             try {
-                const { data } = await api.get(`/query/funcionarios`, { params: { pesquisa: funcionarioTexto, planta: currentForm.planta } });
+                const { data } = await api.get(`/query/funcionarios`, {
+                    params: { pesquisa: funcionarioTexto, planta: currentForm.planta }
+                });
                 setOpcoesFuncionarios(data);
-            } catch (error) { console.error(error); }
-            finally { setLoadingFunc(false); }
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoadingFunc(false);
+            }
         };
         const timeoutId = setTimeout(buscarFuncionarios, 300);
         return () => clearTimeout(timeoutId);
@@ -105,6 +162,7 @@ export function useFormController() {
 
 
     ////////////////////// GESTÃO DE DEPARTAMENTOS //////////////////////
+
     const [listaDepartamentos, setListaDepartamentos] = useState([]);
 
     async function carregarDepartamentos(plantaSelecionada) {
@@ -115,7 +173,6 @@ export function useFormController() {
     }
 
     ////////////////////////////////////////////////////////////////////
-
 
 
     ////////////////////// GESTÃO DE MÁQUINAS //////////////////////////
@@ -151,6 +208,7 @@ export function useFormController() {
 
     //////////////////////////////////////////////////////////////////
 
+
     //////////////////////// PLANTAS ////////////////////////////
 
     const [plantas, setPlantas] = useState([]);
@@ -165,8 +223,8 @@ export function useFormController() {
         carregarPlantas();
     }, []);
 
-
     //////////////////////////////////////////////////////////////////
+
 
     ////////////////////// MOTIVOS MACRO ////////////////////////////
 
@@ -185,7 +243,8 @@ export function useFormController() {
 
     //////////////////////////////////////////////////////////////
 
-    //////////////////////TIPOS DE SOLICITACAO//////////////////
+
+    ////////////////////// TIPOS DE SOLICITAÇÃO //////////////////
 
     const [tiposSolicitacao, setTiposSolicitacao] = useState([]);
 
@@ -201,7 +260,8 @@ export function useFormController() {
 
     //////////////////////////////////////////////////////////////
 
-    ////////////////////ENVIAR FORMS E CRIAR O DOC///////////////
+
+    //////////////////// ENVIAR FORMS E CRIAR O DOC ///////////////
 
     async function EnviarCriarDoc(forms) {
         const { valid, toast: msg } = validarFormularios(forms);
@@ -226,7 +286,6 @@ export function useFormController() {
                     id_funcionario: funcionario.id
                 }))
             })),
-
         }));
 
         const formBody = {
@@ -236,29 +295,17 @@ export function useFormController() {
             solicitacoes: solicitacoesParaEnvio
         };
 
-
         await api.post("/solicitacoes/enviar", formBody);
-
 
         toast.success("PDF Criado com Sucesso!");
         navigate('/document', { state: { forms: dadosConsolidados } });
-
+        localStorage.removeItem(STORAGE_KEY);
         toast.success("Formulário enviado!");
     }
-
 
     ////////////////// SINCRONIZAÇÃO DE ABAS ////////////////////
 
     const [loading, setLoading] = useState(false);
-
-
-    function scrollPage(value) {
-        window.scrollTo({
-            top: value,
-            behavior: "smooth",
-        });
-    }
-
 
     useEffect(() => {
         setMotivoTexto(currentForm.motivoMacro || '');
@@ -315,23 +362,29 @@ export function useFormController() {
             fim: currentForm.fim,
             turno: currentForm.turno,
             idTurno: currentForm.idTurno,
-
             justificativas: justificativasCopiadas
         });
     }
 
-    function resgatarForms() {
-        const savedForms = localStorage.getItem("forms");
-        return savedForms ? JSON.parse(savedForms) : [novoForm(1)];
+    async function handleSubmit(e) {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            await EnviarCriarDoc(forms);
+        } catch (err) {
+            toast.error("Erro ao enviar formulário. Tente novamente.");
+            console.log(err);
+        } finally {
+            setLoading(false);
+        }
     }
-
-
-
 
     return {
         forms,
-        novoForm,
         currentForm,
+        descartarSalvos,
+        avisoSalvoLocal,
+        resgatarForms,
         currentFormIndex,
         departamentos: listaDepartamentos,
         maquinas: listaMaquinas,
@@ -339,7 +392,8 @@ export function useFormController() {
         motivosMacro,
         tiposSolicitacao,
         opcoesFuncionarios,
-        loading: loadingFunc,
+        loading,
+        loadingFunc,
         funcionarioTexto,
         maquinaTexto,
         motivoTexto,
@@ -361,23 +415,7 @@ export function useFormController() {
         adicionarForm,
         removerForm,
         copiarSolicitacaoAnterior,
-        loading,
-        handleSubmit: async (e) => {
-            e.preventDefault();
-            setLoading(true);
-            try {
-                await EnviarCriarDoc(forms);
-            } catch (err) {
-                toast.error("Erro ao enviar formulário. Tente novamente.");
-                console.log(err);
-            }
-
-            finally {
-                setLoading(false);
-            }
-
-
-        },
+        handleSubmit,
         carregarDepartamentos,
     };
 }

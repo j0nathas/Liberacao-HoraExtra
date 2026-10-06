@@ -30,7 +30,8 @@ export default function CopyInfo({ isMinimized, setIsMinimized, currentForm, onC
     return (
         <AnimatePresence mode="wait">
             {isMinimized ? (
-                <motion.nav
+                <motion.button
+                    type="button"
                     key="minimized"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -38,10 +39,11 @@ export default function CopyInfo({ isMinimized, setIsMinimized, currentForm, onC
                     transition={{ duration: 0.2, ease: "easeOut" }}
                     onClick={() => setIsMinimized(false)}
                     title="Copiar solicitação anterior"
+                    aria-label="Copiar solicitação anterior"
                     className="flex items-center gap-1.5 hover:text-blue-300 text-blue-600 rounded-full cursor-pointer group"
                 >
                     <Copy size={16} />
-                </motion.nav>
+                </motion.button>
             ) : (
                 <motion.aside
                     key="expanded"
@@ -66,20 +68,22 @@ export default function CopyInfo({ isMinimized, setIsMinimized, currentForm, onC
                     </div>
 
                     <div className="mt-2.5 flex justify-center gap-4">
-                        <nav
+                        <button
+                            type="button"
                             onClick={() => fecharGuia()}
-                            role="close"
+                            aria-label="Fechar guia de cópia"
                             className="p-1.5 text-red-500 bg-red-50 hover:bg-red-100 rounded-full transition-all hover:scale-110 shadow-xs cursor-pointer"
                         >
                             <X size={14} />
-                        </nav>
-                        <nav
+                        </button>
+                        <button
+                            type="button"
                             onClick={() => onCopy(currentForm)}
-                            role="copy"
+                            aria-label="Copiar solicitação anterior"
                             className="p-1.5 text-green-600 bg-green-50 hover:bg-green-100 rounded-full hover:scale-110 transition-all shadow-xs cursor-pointer"
                         >
                             <Check size={14} />
-                        </nav>
+                        </button>
                     </div>
 
                     {

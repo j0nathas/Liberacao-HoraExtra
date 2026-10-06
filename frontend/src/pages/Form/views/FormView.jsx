@@ -5,19 +5,133 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
 import useEmblaCarousel from 'embla-carousel-react';
-// Componentes e Ícones
 import Search from '../../../components/Search.jsx';
 import { Shifts } from '../components/dadosFake.js';
 import {
     Loader2, Plus, Trash2, Clock, UserPlus, X, FileText,
-    Info, CheckCircle2, Send, Calendar, Check, ChevronLeft, ChevronRight
+    Info, CheckCircle2, Send, Calendar, Check, ChevronLeft, ChevronRight,
+    History, AlertTriangle
 } from 'lucide-react';
 import CopyInfo from '../components/copyInfo.jsx';
 
+function formatarDuracao(totalMin) {
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    return `${h}h${m > 0 ? ` ${m}min` : ''}`;
+}
+
+function AlertConfirm({ forms }) {
+    const excedidas = forms.map((form, index) => {
+        const totalMin = Math.round(
+            (new Date(form.fim) - new Date(form.inicio)) / 60000
+        );
+
+        const limiteMin = (form.limiteHora || 0) * 60;
+
+        return {
+            form,
+            index,
+            totalMin,
+            limiteMin,
+            excessoMin: totalMin - limiteMin
+        };
+    }).filter(
+        ({ totalMin, limiteMin, excessoMin }) =>
+            limiteMin > 0 &&
+            totalMin > 0 &&
+            excessoMin > 0
+    );
+
+    if (excedidas.length === 0) {
+        return (
+            <div className="text-sm text-slate-600">
+                <p>
+                    Você está prestes a enviar{' '}
+                    <strong className="text-slate-800">
+                        {forms.length}{' '}
+                        {forms.length === 1 ? 'solicitação' : 'solicitações'}
+                    </strong>.
+                </p>
+
+                <p className="mt-1 text-xs text-slate-400">
+                    Deseja realmente continuar?
+                </p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-3">
+            <div className="flex items-center gap-2">
+                <AlertTriangle
+                    size={17}
+                    className="mt-0.5 shrink-0 text-amber-500"
+                />
+
+                <div>
+                    <p className="text-sm font-semibold text-slate-700">
+                        Atenção
+                    </p>
+
+                    <p className="text-xs text-slate-500">
+                        {excedidas.length === 1
+                            ? 'Uma solicitação ultrapassa o limite permitido.'
+                            : `${excedidas.length} de ${forms.length} solicitações ultrapassam o limite permitido.`}
+                    </p>
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                {excedidas.map(({ form, index, excessoMin }) => (
+                    <div
+                        key={form.id ?? index}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"
+                    >
+                        <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-blue-600">
+                                    #{index + 1}
+                                </span>
+
+                                <span className="truncate text-xs font-semibold text-slate-700">
+                                    {form.motivoMacro || 'Nova Solicitação'}
+                                </span>
+                            </div>
+
+                            <span className="text-[11px] text-slate-400">
+                                Duração: {formatarDuracao(
+                                    Math.round(
+                                        (new Date(form.fim) -
+                                            new Date(form.inicio)) / 60000
+                                    )
+                                )}{' '}
+                                · Limite: {form.limiteHora}h
+                            </span>
+                        </div>
+
+                        <span className="shrink-0 rounded-lg bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-600">
+                            +{formatarDuracao(excessoMin)}
+                        </span>
+                    </div>
+                ))}
+            </div>
+
+            <p className="text-[11px] text-slate-400">
+                Você ainda pode continuar com o envio.
+            </p>
+        </div>
+    );
+}
+
+
+
+
 export default function FormView({
     forms,
-    novoForm,
     currentForm,
+    descartarSalvos,
+    resgatarForms,
+    avisoSalvoLocal,
     currentFormIndex,
     setCurrentFormIndex,
     maquinas,
@@ -48,12 +162,11 @@ export default function FormView({
     removerForm,
     handleSubmit,
     carregarDepartamentos,
-    copiarSolicitacaoAnterior
+    copiarSolicitacaoAnterior,
 }) {
     // --- ESTADOS E CONSTANTES ---
     const MAX_CHARS = 200;
     const [departamentoInput, setDepartamentoInput] = useState(currentForm.departamento || "");
-    const [limiteHora, setLimiteHora] = useState(null);
     const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
     const [justificativa, setJustificativa] = useState('');
     const [isMinimized, setIsMinimized] = useState(false);
@@ -104,9 +217,12 @@ export default function FormView({
     const handleTipoChange = (type) => {
         updateCurrentForm({
             tipo: type.tipo_solicitacao,
-            idTipo: type.id
+            idTipo: type.id,
+            limiteHora: type.limite
         });
-        setLimiteHora(type.limite);
+
+
+        console.log(currentForm)
     };
 
     const handleFormSubmit = (e) => {
@@ -135,20 +251,10 @@ export default function FormView({
         updateCurrentForm('justificativas', currentForm.justificativas.filter(j => j.id !== id));
     };
 
-    function AlertConfirm(inicio, fim) {
-        const ms = new Date(fim) - new Date(inicio);
-        const totalMin = Math.round(ms / 60000);
-        const h = Math.floor(totalMin / 60);
-        const m = totalMin % 60;
-        const maiorQueLimite = totalMin > (limiteHora * 60);
-
-        if (maiorQueLimite) {
-            return (
-                <p className="text-sm mb-2 text-amber-600 bg-amber-50 px-3 py-2.5 rounded-lg flex items-center gap-1.5">
-                    <Info size={12} /> <strong>CUIDADO!</strong> Duração máxima permitida é de {limiteHora} horas.
-                </p>
-            );
-        }
+    function trocarAba(id) {
+        setCurrentFormIndex(id);
+        setVinculoTexto('');
+        setVinculoTexto(null);
     }
 
     function checkDateOrder(inicio, fim) {
@@ -165,12 +271,12 @@ export default function FormView({
         const totalMin = Math.round(ms / 60000);
         const h = Math.floor(totalMin / 60);
         const m = totalMin % 60;
-        const maiorQueLimite = totalMin > (limiteHora * 60);
+        const maiorQueLimite = totalMin > (currentForm.limiteHora * 60);
 
         if (maiorQueLimite) {
             return (
                 <p className="mt-2 text-[11px] text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                    <Info size={12} /> <strong>CUIDADO!</strong> Duração máxima permitida é de {limiteHora} horas.
+                    <Info size={12} /> <strong>CUIDADO!</strong> Duração máxima permitida é de {currentForm.limiteHora} horas.
                 </p>
             );
         }
@@ -196,16 +302,103 @@ export default function FormView({
     const tudoPreenchido = currentForm.justificativas.length > 0 && liberarTerceiroCard && funcionariosAdicionados;
 
     const formSemFuncionarios = (f) => f.justificativas.every(j => j.funcionarios.length === 0);
+    const [confirmandoDescarte, setConfirmandoDescarte] = useState(false);
+
 
     return (
         <main className="h-full overflow-auto relative flex flex-col gap-2 items-center animate-fade-in">
 
-            {localStorage.getItem("forms") !== JSON.stringify(novoForm) && (
-                <div className="w-full bg-amber-50 border-b border-amber-200 px-4 py-2 text-[11px] text-amber-700 flex items-center justify-center gap-1">
-                    <Info size={14} />
-                    <span>Formulários salvos localmente. Continue de onde parou.</span>
+
+            {avisoSalvoLocal && (
+                <div
+                    role="status"
+                    aria-live="polite"
+                    className="w-full md:max-w-2xl lg:max-w-7xl mt-2 px-2 motion-safe:animate-fade-in"
+                >
+                    <div className={`relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border
+                        rounded-2xl pl-6 pr-4 py-4 shadow-md  ${confirmandoDescarte ? 'bg-red-500 shadow-slate-100/60  border-red-200 ' : 'bg-blue-500 shadow-blue-100/60  border-blue-200 '}`}>
+
+                        <span aria-hidden className={`absolute inset-y-0 left-0 w-1.5 ${confirmandoDescarte ? 'bg-red-500' : 'bg-blue-500'}`} />
+                        <div className="flex items-start gap-3 min-w-0">
+                            <div className={`relative shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${confirmandoDescarte ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600 '}`}>
+                                {confirmandoDescarte ? (
+                                    <Trash2 size={20} strokeWidth={2.25} />
+                                ) : (
+                                    <History size={20} strokeWidth={2.25} />
+                                )}
+                                {!confirmandoDescarte && (
+                                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                        <span className='motion-safe:animate-ping absolute inline-flex h-full w-full rounded-full opacity-60 bg-blue-400' />
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500 border-2 border-white" />
+                                    </span>
+                                )}
+
+                            </div>
+
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-sm font-bold text-slate-800">
+                                    {confirmandoDescarte
+                                        ? 'Descartar o rascunho salvo?'
+                                        : 'Opa! Acho que isso é seu...'}
+                                </span>
+                                <span className="text-xs text-slate-500 mt-0.5">
+                                    {confirmandoDescarte
+                                        ? 'Essa ação não pode ser desfeita.'
+                                        : 'Deseja continuar a solicitação de onde parou?'}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Ações */}
+                        <div className="flex items-center gap-2 shrink-0 sm:ml-4">
+                            {!confirmandoDescarte ? (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={resgatarForms}
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold shadow-sm shadow-blue-200 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2"
+                                    >
+                                        Continuar
+                                        <ChevronRight size={15} />
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setConfirmandoDescarte(true)}
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+                                    >
+                                        <Trash2 size={14} />
+                                        Descartar
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            descartarSalvos();
+                                            setConfirmandoDescarte(false);
+                                        }}
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 active:scale-95 text-white text-xs font-bold transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2"
+                                    >
+                                        Sim, descartar
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setConfirmandoDescarte(false)}
+                                        className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+                                    >
+                                        Cancelar
+                                    </button>
+
+                                </>
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
+
 
             {forms.length > 1 && (
                 <header className="w-full bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3">
@@ -214,7 +407,7 @@ export default function FormView({
                             <div key={f.id} className="flex items-center group">
                                 <button
                                     type="button"
-                                    onClick={() => setCurrentFormIndex(idx)}
+                                    onClick={() => trocarAba(idx)}
                                     className={`flex w-full items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${idx === currentFormIndex
                                         ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
                                         : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
@@ -721,37 +914,48 @@ export default function FormView({
 
                 {/* --- MODAL DE CONFIRMAÇÃO --- */}
                 {mostrarConfirmacao && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                        <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                        <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+
                             <div className="p-6">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-11 h-11 rounded-full bg-blue-50 flex items-center justify-center">
-                                        <Send size={20} className="text-blue-600" />
+                                <div className="mb-5 flex items-center gap-3">
+                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                                        <Send size={18} />
                                     </div>
+
                                     <div>
-                                        <h2 className="text-lg font-bold text-slate-800">Confirmar envio</h2>
-                                        <p className="text-xs text-slate-500">Revise as informações antes de continuar.</p>
+                                        <h2 className="text-base font-bold text-slate-800">
+                                            Confirmar envio
+                                        </h2>
+
+                                        <p className="text-xs text-slate-500">
+                                            Revise antes de continuar.
+                                        </p>
                                     </div>
                                 </div>
 
-                                {AlertConfirm(currentForm.inicio, currentForm.fim)}
-                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                                    <p className="text-sm text-slate-600">
-                                        Você está prestes a enviar <span className="font-bold text-slate-800">{forms.length} {forms.length === 1 ? 'solicitação' : 'solicitações'}</span>.
-                                    </p>
-                                    <p className="text-sm text-slate-500 mt-2">Deseja realmente continuar?</p>
-                                </div>
+                                <AlertConfirm forms={forms} />
                             </div>
-                            <div className="flex gap-3 justify-end p-4 bg-slate-50 border-t border-slate-200">
-                                <button type="button" onClick={() => setMostrarConfirmacao(false)} className="px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 font-semibold text-sm hover:bg-slate-100">
-                                    Cancelar
-                                </button>
+
+                            <div className="flex justify-end gap-2 border-t border-slate-200 bg-slate-50 p-4">
                                 <button
                                     type="button"
-                                    onClick={(event) => { setMostrarConfirmacao(false); handleSubmit(event); }}
-                                    className="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 flex items-center gap-2"
+                                    onClick={() => setMostrarConfirmacao(false)}
+                                    className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
                                 >
-                                    <Check size={16} /> Confirmar envio
+                                    Cancelar
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={(event) => {
+                                        setMostrarConfirmacao(false);
+                                        handleSubmit(event);
+                                    }}
+                                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+                                >
+                                    <Check size={16} />
+                                    Confirmar envio
                                 </button>
                             </div>
                         </div>

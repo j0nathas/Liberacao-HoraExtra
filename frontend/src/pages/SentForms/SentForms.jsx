@@ -37,11 +37,11 @@ export default function SentForms() {
 
     const handleVerTodas = () => {
         setVerTodas(!verTodas);
-        carregarDados(verTodas);
+        void carregarDados(verTodas);
     }
 
     useEffect(() => {
-        carregarDados();
+        void carregarDados();
     }, []);
 
     useEffect(() => {
