@@ -16,8 +16,7 @@ import toast from 'react-hot-toast';
 const btnMenu = [
     { name: "Home", path: "/home", icon: House },
     { name: "Form", path: "/form", icon: ClipboardPen },
-    { name: "Enviados", path: "/sent", icon: Shredder },
-    { name: "Gráficos", path: "/charts", icon: ChartNoAxesColumn }
+    { name: "Enviados", path: "/sent", icon: Shredder }
 ];
 
 

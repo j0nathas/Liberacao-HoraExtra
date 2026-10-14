@@ -10,7 +10,7 @@ import { Shifts } from '../components/dadosFake.js';
 import {
     Loader2, Plus, Trash2, Clock, UserPlus, X, FileText,
     Info, CheckCircle2, Send, Calendar, Check, ChevronLeft, ChevronRight,
-    History, AlertTriangle
+    History, AlertTriangle, Copy
 } from 'lucide-react';
 import CopyInfo from '../components/copyInfo.jsx';
 
@@ -245,6 +245,14 @@ export default function FormView({
         setJustificativa('');
         setMaquinaTexto('');
         setMaquinaSelecionada(null);
+    };
+
+    const handleCopyJustificativa = () => {
+        if (!currentForm.justificativas?.length) return;
+
+        setJustificativa(
+            currentForm.justificativas[currentForm.justificativas.length - 1].justificativa
+        );
     };
 
     const removerJustificativa = (id) => {
@@ -553,15 +561,31 @@ export default function FormView({
                                         onChange={(e) => setJustificativa(e.target.value)}
                                     />
 
-                                    <button
-                                        type="button"
-                                        disabled={!maquinaSelecionada || !justificativa.trim()}
-                                        onClick={handleJustificativa}
-                                        className="self-end flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold
-                hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all shadow-sm"
-                                    >
-                                        <Plus size={14} /> Adicionar
-                                    </button>
+                                    <div className='flex items-center justify-end gap-2'>
+
+                                        {currentForm.justificativas.length >= 1 && (<button
+                                            type="button"
+                                            disabled={!maquinaSelecionada}
+                                            onClick={handleCopyJustificativa}
+                                            className="text-blue-500 cursor-pointer hover:scale-105"
+                                        >
+                                            <Copy size={14} />
+                                        </button>
+                                        )
+                                        }
+                                        <button
+                                            type="button"
+                                            disabled={!maquinaSelecionada || !justificativa.trim()}
+                                            onClick={handleJustificativa}
+                                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold
+                hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
+                                        >
+                                            <Plus size={14} /> Adicionar
+                                        </button>
+
+                                    </div>
+
+
                                 </div>
                             </div>
 
@@ -592,7 +616,7 @@ export default function FormView({
 
                                                         <button
                                                             onClick={() => removerJustificativa(item.id)}
-                                                            className="shrink-0 p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                            className="shrink-0 p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                                                             title="Remover máquina"
                                                         >
                                                             <Trash2 size={16} />

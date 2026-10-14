@@ -30,6 +30,7 @@ public class SolicitacaoMapper {
         return new SolicitacoesDTO(
                 item.getId(),
                 item.getMotivosMacro() != null ? item.getMotivosMacro().getDescricao() : null,
+                item.getMotivosMacro() != null ? item.getMotivosMacro().getId() : null,
                 item.getTipo() != null ? item.getTipo().getTipo_solicitacao() : null,
                 item.getDepartamento() != null ? item.getDepartamento().getDepartamento() : null,
                 item.getTurno() != null ? item.getTurno().getTurno() : null,
@@ -47,8 +48,12 @@ public class SolicitacaoMapper {
                 j.getMaquina().getMaquina(),
                 j.getFuncionarios().stream()
                         .map(f -> new SolicitacoesFuncionariosDTO(
+                                f.getFuncionario().getId(),
                                 f.getFuncionario().getName(),
-                                f.getFuncionario().getRe()
+                                f.getFuncionario().getRe(),
+                                f.getFuncionario().getCodigoCentroCusto(),
+                                f.getFuncionario().getEmpresa(),
+                                f.getFuncionario().getCargo()
                         ))
                         .toList()
         );

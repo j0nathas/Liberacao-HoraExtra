@@ -130,7 +130,7 @@ export default function Home() {
                             <nav className="flex flex-wrap items-center gap-1">
                               {departamentos.map((departamento, index) => {
                                 return (
-                                  <p key={index} className={`text-sm font-bold lowercase first-letter:uppercase text-slate-700`}>{departamento}</p>
+                                  <p key={index} className={`text-sm font-bold lowercase first-letter:uppercase text-slate-700`}>{departamento}{index === departamentos.length - 1 ? '' : ','}</p>
                                 )
                               })}
                             </nav>

@@ -5,10 +5,9 @@ import { useNavigate } from 'react-router-dom'
 import { novoForm, validarFormularios } from '../models/formModel.js';
 import { generatePDFController } from '../../../PDF/controller/generatePDFController.js'
 import { gerarPDFBase64 } from '../../../PDF/controller/base64Controller.js'
+import { useAuth } from '../../../context/AuthContext.jsx';
 
-const STORAGE_KEY = "forms";
-
-function lerFormsSalvos() {
+function lerFormsSalvos(STORAGE_KEY) {
     try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
         return Array.isArray(saved) && saved.length > 0 ? saved : null;
@@ -38,12 +37,13 @@ function scrollPage(value) {
 export function useFormController() {
 
     const navigate = useNavigate();
-
+    const { user } = useAuth();
+    const STORAGE_KEY = `forms_${user?.id}`;
     //////////////////////////////// GESTÃO DOS FORMULÁRIOS ////////////////////////////////
     const [forms, setForms] = useState([novoForm(1)]);
 
     function resgatarForms() {
-        const saved = lerFormsSalvos();
+        const saved = lerFormsSalvos(STORAGE_KEY);
 
         if (saved) {
             setForms(saved);
@@ -63,13 +63,13 @@ export function useFormController() {
     const [currentFormIndex, setCurrentFormIndex] = useState(0);
 
     const [nextId, setNextId] = useState(() => {
-        const saved = lerFormsSalvos();
+        const saved = lerFormsSalvos(STORAGE_KEY);
         if (!saved) return 2;
         return Math.max(...saved.map(form => form.id)) + 1;
     });
 
     const [avisoSalvoLocal, setAvisoSalvoLocal] = useState(
-        () => temConteudoSalvo(lerFormsSalvos())
+        () => temConteudoSalvo(lerFormsSalvos(STORAGE_KEY))
     );
 
     const currentForm = forms[currentFormIndex];

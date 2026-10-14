@@ -6,7 +6,8 @@ import java.util.List;
 
 public record SolicitacoesDTO(
         Long id,
-        String motivoMacro, // Alterado para padrão Java
+        String motivoMacro,
+        Long motivoMacroId,// Alterado para padrão Java
         String tipoSolicitacao,
         String departamento,
         String turno,

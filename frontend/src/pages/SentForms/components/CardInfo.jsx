@@ -3,8 +3,10 @@ import api from '../../../services/api.js'
 import { useEffect, useState } from "react";
 import { CircleCheckBig, Clock, CircleSlash, CircleX, X, ArrowRight, HardHat, Info, FileText, Trash2, Send, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { totalHours, formatDate } from "../Utils/SentUtils";
+import { totalHours, formatDate, adaptarSolicitacoesParaForms } from "../Utils/SentUtils";
 import Loading from "../../../components/Loading.jsx";
+import { useNavigate } from 'react-router-dom';
+import { generatePDFController } from '../../../PDF/controller/generatePDFController.js'
 
 export default function CardInfo({ dados, closeInfo, carregarDados }) {
     const [activeSolicIndex, setActiveSolicIndex] = useState(0);
@@ -69,6 +71,14 @@ export default function CardInfo({ dados, closeInfo, carregarDados }) {
     };
 
     const formatTime = (isoString) => isoString?.split('T')[1]?.slice(0, 5) ?? '--:--';
+
+    const navigate = useNavigate();
+
+    const handleDocumentoPDF = async () => {
+        const forms = adaptarSolicitacoesParaForms(dados.solicitacoes);
+        const dadosConsolidados = await generatePDFController(forms);
+        navigate('/document', { state: { forms: dadosConsolidados } });
+    };
 
     return (
         <AnimatePresence>
@@ -299,7 +309,7 @@ export default function CardInfo({ dados, closeInfo, carregarDados }) {
                         {(status === "pendente" || status === "error") && (
                             <button
                                 onClick={() => setDeletingState(true)}
-                                className="w-[30%] h-12 flex items-center justify-center gap-2 p-2 rounded-2xl text-red-600 font-extrabold cursor-pointer bg-red-100 text-[11px] uppercase tracking-[0.2em] hover:bg-red-200 transition-colors"
+                                className="w-[30%] h-12 flex items-center justify-center gap-2 p-2 rounded-2xl text-red-600 font-extrabold cursor-pointer bg-red-100 text-[11px] uppercase tracking-[0.2em] hover:scale-101 hover:bg-red-200 transition-colors"
                             >
                                 <Trash2 />
 
@@ -307,15 +317,25 @@ export default function CardInfo({ dados, closeInfo, carregarDados }) {
                             </button>
                         )}
 
-                        <button
-                            onClick={closeInfo}
-                            className="w-[30%] absolute h-12 self-end right-4 justify-self-end cursor-pointer py-4 rounded-2xl text-gray-500 bg-gray-100 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-gray-200 transition-colors"
-                        >
-                            <p>
-                                <span className="md:hidden">Fechar</span>
-                                <span className="hidden md:inline">Fechar Detalhes</span>
-                            </p>
-                        </button>
+                        <div className="absolute self-center right-4 flex h-full items-center gap-2">
+                            <button
+                                onClick={handleDocumentoPDF}
+                                className="cursor-pointer bg-slate-400 text-white h-10 w-10 rounded-2xl flex items-center justify-center hover:scale-105 transition-all"
+                            >
+                                <FileText size={20} />
+                            </button>
+                            <button
+                                onClick={closeInfo}
+                                className="cursor-pointer md:w-40 w-30 py-4  h-[60%] rounded-2xl text-gray-500 bg-gray-100 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-gray-200 hover:scale-101 transition-colors"
+                            >
+                                <p>
+                                    <span className="md:hidden">Fechar</span>
+                                    <span className="hidden md:inline">Fechar Detalhes</span>
+                                </p>
+                            </button>
+                        </div>
+
+
                     </div>
                 </motion.div>
             </motion.div>
