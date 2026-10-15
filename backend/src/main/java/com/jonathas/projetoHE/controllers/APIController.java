@@ -79,6 +79,7 @@ public class APIController {
 
         List<ExportBodyDTO> resposta = dados.stream()
                 .map(item -> new ExportBodyDTO(
+                        "MLB",
                         item.inicio(),
                         item.departamento(),
                         item.empresa(),
