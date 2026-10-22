@@ -22,10 +22,10 @@ import { formatDate } from './SentForms/Utils/SentUtils';
 export default function Home() {
   const { user } = useAuth();
   const stats = [
-    { id: 1, status: 'signed', label: 'Assinado', labelHead: 'Assinadas', icon: Clock, color: 'text-green-600', bg: 'bg-green-100', stateColor: 'bg-green-400' },
-    { id: 2, status: 'pending', label: 'Pendente', labelHead: 'Pendentes', icon: CheckCircle2, color: 'text-amber-600', bg: 'bg-amber-100', stateColor: 'bg-amber-400' },
-    { id: 3, status: 'recusado', label: 'Recusado', labelHead: 'Recusadas', icon: CircleX, color: 'text-red-600', bg: 'bg-red-100', stateColor: 'bg-red-400' },
-    { id: 4, status: 'error', label: 'Não enviado', labelHead: 'Não Enviadas', icon: GlobeX, color: 'text-gray-600', bg: 'bg-gray-100', stateColor: 'bg-gray-400' },
+    { id: 1, status: 'signed', label: 'Assinado', labelHead: 'Assinadas', icon: Clock, color: 'text-green-600 dark:text-green-300', bg: 'bg-green-100 dark:bg-green-500/20', stateColor: 'bg-green-400' },
+    { id: 2, status: 'pending', label: 'Pendente', labelHead: 'Pendentes', icon: CheckCircle2, color: 'text-amber-600 dark:text-amber-300', bg: 'bg-amber-100 dark:bg-amber-500/20', stateColor: 'bg-amber-400' },
+    { id: 3, status: 'recusado', label: 'Recusado', labelHead: 'Recusadas', icon: CircleX, color: 'text-red-600 dark:text-red-300', bg: 'bg-red-100 dark:bg-red-500/20', stateColor: 'bg-red-400' },
+    { id: 4, status: 'error', label: 'Não enviado', labelHead: 'Não Enviadas', icon: GlobeX, color: 'text-gray-600 dark:text-gray-300', bg: 'bg-gray-100 dark:bg-gray-500/20', stateColor: 'bg-gray-400' },
   ];
 
   const [dados, setDados] = useState([]);
@@ -54,16 +54,16 @@ export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <main className="flex-1 overflow-auto bg-slate-50 animate-fade-in">
-      <header className="bg-white border-b border-slate-200 px-8 py-10">
+    <main className="flex-1 overflow-auto bg-slate-50 dark:bg-gray-900 animate-fade-in transition-colors">
+      <header className="bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 px-8 py-10">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">Gestão de Horas Extra</h1>
-              <p className="text-slate-500 mt-1">Bem-vindo, <strong>{user?.nome || 'Usuário'}</strong>. O que deseja fazer hoje?</p>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-gray-100">Gestão de Horas Extra</h1>
+              <p className="text-slate-500 dark:text-gray-400 mt-1">Bem-vindo, <strong className="dark:text-gray-200">{user?.nome || 'Usuário'}</strong>. O que deseja fazer hoje?</p>
             </div>
             <button onClick={() => navigate("/form")}
-              className="flex items-center cursor-pointer justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200">
+              className="flex items-center cursor-pointer justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-200 dark:shadow-none">
               <PlusCircle size={20} />
               Nova Solicitação
             </button>
@@ -80,13 +80,13 @@ export default function Home() {
 
             return (
               <div key={stat.id}
-                className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm dark:shadow-none flex items-center gap-4">
                 <div className={`${stat.bg} ${stat.color} p-3 rounded-xl`}>
                   <stat.icon size={24} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-500">{stat.labelHead || stat.label}</p>
-                  <p className="text-2xl font-bold text-slate-900">{statInfo?.contagem ?? 0}</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-gray-400">{stat.labelHead || stat.label}</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-gray-100">{statInfo?.contagem ?? 0}</p>
                 </div>
               </div>
             )
@@ -100,12 +100,12 @@ export default function Home() {
 
             <aside className="grid lg:grid-cols-2 gap-5">
 
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                  <h3 className="font-bold text-slate-800">Atividades Recentes</h3>
-                  <button onClick={() => navigate("/sent")} className="text-blue-600 text-sm font-semibold hover:underline">Ver tudo</button>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm dark:shadow-none overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 dark:border-gray-700 flex justify-between items-center">
+                  <h3 className="font-bold text-slate-800 dark:text-gray-100">Atividades Recentes</h3>
+                  <button onClick={() => navigate("/sent")} className="text-blue-600 dark:text-blue-400 text-sm font-semibold hover:underline">Ver tudo</button>
                 </div>
-                <div className="divide-y divide-slate-50">
+                <div className="divide-y divide-slate-50 dark:divide-gray-700">
                   {dados.map((item) => {
 
                     const departamentos = [
@@ -122,26 +122,26 @@ export default function Home() {
                     return (
                       <button key={item.id}
                         onClick={() => navigate("/sent", { state: { openId: item.id } })}
-                        className="px-4 py-4 flex w-full items-center justify-between hover:bg-slate-50 transition-colors">
+                        className="px-4 py-4 flex w-full items-center justify-between hover:bg-slate-50 dark:hover:bg-gray-700/60 transition-colors">
                         <div className="flex items-center gap-2">
-                          <p className='font-semibold text-[10px] p-0 text-gray-300'>#{item.id}</p>
+                          <p className='font-semibold text-[10px] p-0 text-gray-300 dark:text-gray-500'>#{item.id}</p>
                           <div className={`w-2 h-2 rounded-full ${statusSoli.stateColor}`} />
                           <div className="flex flex-col items-start">
                             <nav className="flex flex-wrap items-center gap-1">
                               {departamentos.map((departamento, index) => {
                                 return (
-                                  <p key={index} className={`text-sm font-bold lowercase first-letter:uppercase text-slate-700`}>{departamento}{index === departamentos.length - 1 ? '' : ','}</p>
+                                  <p key={index} className={`text-sm font-bold lowercase first-letter:uppercase text-slate-700 dark:text-gray-200`}>{departamento}{index === departamentos.length - 1 ? '' : ','}</p>
                                 )
                               })}
                             </nav>
-                            <p className="text-[10px] text-slate-400 uppercase font-semibold">{formatDate(item.data)}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-gray-500 uppercase font-semibold">{formatDate(item.data)}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
                           <span className={`text-xs font-bold px-3 py-2 rounded-full ${statusSoli.bg} ${statusSoli.color}`}>
                             {statusSoli.label}
                           </span>
-                          <ArrowRight size={16} className="text-slate-300" />
+                          <ArrowRight size={16} className="text-slate-300 dark:text-gray-600" />
                         </div>
                       </button>
                     )
@@ -149,32 +149,32 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="h-full flex flex-col gap-5 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                  <FileCheck className="text-blue-600" /> Fluxo Inteligente
+              <div className="h-full flex flex-col gap-5 bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm dark:shadow-none p-6">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-gray-100 flex items-center gap-2">
+                  <FileCheck className="text-blue-600 dark:text-blue-400" /> Fluxo Inteligente
                 </h2>
 
                 <nav className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center h-full">
-                  <div className="flex flex-col justify-center bg-white p-6 rounded-2xl border h-full border-slate-100 shadow-sm relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+                  <div className="flex flex-col justify-center bg-white dark:bg-gray-900/50 p-6 rounded-2xl border h-full border-slate-100 dark:border-gray-700 shadow-sm dark:shadow-none relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-3 opacity-10 dark:text-white group-hover:scale-110 transition-transform">
                       <FileCheck size={60} />
                     </div>
-                    <h3 className="font-bold text-slate-800">1. Geração de PDF</h3>
-                    <p className="text-xs text-slate-500 mt-2">Documento gerado automaticamente com dados do formulário.</p>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-100">1. Geração de PDF</h3>
+                    <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">Documento gerado automaticamente com dados do formulário.</p>
                   </div>
-                  <div className="flex flex-col justify-center bg-white p-6 rounded-2xl border h-full border-slate-100 shadow-sm relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+                  <div className="flex flex-col justify-center bg-white dark:bg-gray-900/50 p-6 rounded-2xl border h-full border-slate-100 dark:border-gray-700 shadow-sm dark:shadow-none relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-3 opacity-10 dark:text-white group-hover:scale-110 transition-transform">
                       <Send size={60} />
                     </div>
-                    <h3 className="font-bold text-slate-800">2. ZapSign</h3>
-                    <p className="text-xs text-slate-500 mt-2">Envio direto para assinatura eletrônica do gestor e colaborador.</p>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-100">2. ZapSign</h3>
+                    <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">Envio direto para assinatura eletrônica do gestor e colaborador.</p>
                   </div>
-                  <div className="flex flex-col justify-center bg-white p-6 rounded-2xl border h-full border-slate-100 shadow-sm relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+                  <div className="flex flex-col justify-center bg-white dark:bg-gray-900/50 p-6 rounded-2xl border h-full border-slate-100 dark:border-gray-700 shadow-sm dark:shadow-none relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-3 opacity-10 dark:text-white group-hover:scale-110 transition-transform">
                       <Mail size={60} />
                     </div>
-                    <h3 className="font-bold text-slate-800">3. Finalização</h3>
-                    <p className="text-xs text-slate-500 mt-2">E-mail automático com o PDF assinado.</p>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-100">3. Finalização</h3>
+                    <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">E-mail automático com o PDF assinado.</p>
                   </div>
                 </nav>
 

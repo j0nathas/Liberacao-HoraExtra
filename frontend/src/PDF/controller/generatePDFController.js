@@ -93,7 +93,7 @@ export async function generatePDFController(dados) {
         emailResp: email,
         totalPessoas: quantidadePessoas,
         horasTotais: transformarHoras(tempoGeralMili),
-        porCentroCusto: tempoPorCC, // Agora este array conterá os dados da API
+        porCentroCusto: tempoPorCC,
         solicitacoes: dados
     };
 }

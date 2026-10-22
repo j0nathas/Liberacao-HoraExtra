@@ -40,7 +40,7 @@ export default function CopyInfo({ isMinimized, setIsMinimized, currentForm, onC
                     onClick={() => setIsMinimized(false)}
                     title="Copiar solicitação anterior"
                     aria-label="Copiar solicitação anterior"
-                    className="flex items-center gap-1.5 hover:text-blue-300 text-blue-600 rounded-full cursor-pointer group"
+                    className="flex items-center gap-1.5 hover:text-blue-300 text-blue-600 dark:text-blue-400 dark:hover:text-blue-200 rounded-full cursor-pointer group"
                 >
                     <Copy size={16} />
                 </motion.button>
@@ -51,17 +51,17 @@ export default function CopyInfo({ isMinimized, setIsMinimized, currentForm, onC
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute right-0 top-0 lg:right-[8%] lg:top-7 w-56 p-4 border shadow-2xl rounded-2xl lg:rounded-[0px_10px_10px_10px] lg:translate-x-[100%] z-10 bg-white border-gray-200"
+                    className="absolute right-0 top-0 lg:right-[8%] lg:top-7 w-56 p-4 border shadow-2xl rounded-2xl lg:rounded-[0px_10px_10px_10px] lg:translate-x-[100%] z-10 bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700"
                 >
                     <div className="flex gap-2.5 pr-1">
-                        <div className="bg-blue-50 text-blue-600 p-1.5 rounded-md h-fit shrink-0">
+                        <div className="bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300 p-1.5 rounded-md h-fit shrink-0">
                             <Copy size={14} />
                         </div>
                         <div>
-                            <h3 className="text-xs font-semibold text-gray-900 leading-tight">
+                            <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100 leading-tight">
                                 Copiar última solicitação?
                             </h3>
-                            <p className="text-[11px] hidden md:block text-gray-500 mt-0.5 leading-tight">
+                            <p className="text-[11px] hidden md:block text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
                                 Reutilize as informações da solicitação anterior.
                             </p>
                         </div>
@@ -72,7 +72,7 @@ export default function CopyInfo({ isMinimized, setIsMinimized, currentForm, onC
                             type="button"
                             onClick={() => fecharGuia()}
                             aria-label="Fechar guia de cópia"
-                            className="p-1.5 text-red-500 bg-red-50 hover:bg-red-100 rounded-full transition-all hover:scale-110 shadow-xs cursor-pointer"
+                            className="p-1.5 text-red-500 bg-red-50 hover:bg-red-100 dark:text-red-300 dark:bg-red-500/15 dark:hover:bg-red-500/25 rounded-full transition-all hover:scale-110 shadow-xs dark:shadow-none cursor-pointer"
                         >
                             <X size={14} />
                         </button>
@@ -80,7 +80,7 @@ export default function CopyInfo({ isMinimized, setIsMinimized, currentForm, onC
                             type="button"
                             onClick={() => onCopy(currentForm)}
                             aria-label="Copiar solicitação anterior"
-                            className="p-1.5 text-green-600 bg-green-50 hover:bg-green-100 rounded-full hover:scale-110 transition-all shadow-xs cursor-pointer"
+                            className="p-1.5 text-green-600 bg-green-50 hover:bg-green-100 dark:text-green-300 dark:bg-green-500/15 dark:hover:bg-green-500/25 rounded-full hover:scale-110 transition-all shadow-xs dark:shadow-none cursor-pointer"
                         >
                             <Check size={14} />
                         </button>
@@ -88,9 +88,9 @@ export default function CopyInfo({ isMinimized, setIsMinimized, currentForm, onC
 
                     {
                         barraVisivel && (
-                            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-[90%] h-1 rounded-full bg-gray-100 overflow-hidden">
+                            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-[90%] h-1 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                                 <div
-                                    className="h-full bg-blue-200 transition-all ease-linear"
+                                    className="h-full bg-blue-200 dark:bg-blue-400/60 transition-all ease-linear"
                                     style={{
                                         width: `${progress}%`,
                                         transitionDuration: `${duration}ms`

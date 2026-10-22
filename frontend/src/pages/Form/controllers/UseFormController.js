@@ -22,7 +22,7 @@ function temConteudoSalvo(saved) {
     if (saved.length > 1) return true;
 
     const { id, ...salvo } = saved[0];
-    const { id: _ignorado, ...vazio } = novoForm(id);
+    const { ...vazio } = novoForm(id);
 
     return JSON.stringify(salvo) !== JSON.stringify(vazio);
 }

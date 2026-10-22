@@ -72,7 +72,7 @@ export default function SentForms() {
     }), [dados]);
 
     return (
-        <main className='flex w-full h-[90vh] flex-col relative overflow-hidden'>
+        <main className='flex w-full flex-1 flex-col relative overflow-hidden bg-white dark:bg-gray-900'>
             <Header filtro={filtro} onFiltroChange={setFiltro} counts={counts} />
 
             {user.permissions.includes('VISUALIZAR_TODAS_SOLICITACOES') && (
@@ -82,24 +82,24 @@ export default function SentForms() {
                     role="switch"
                     aria-checked={verTodas}
                     aria-label="Alternar entre ver todas as solicitações ou apenas as minhas"
-                    className={`lg:absolute self-center cursor-pointer lg:top-4 lg:right-4 inline-flex items-center gap-2.5 rounded-full border  bg-white p-1 pl-3 text-xs 
-                    font-semibold text-slate-700 shadow-sm backdrop-blur-md transition-all duration-200 hover:border-slate-300 hover:bg-slate-100 active:scale-95
-                    ${verTodas ? 'border-blue-300/80' : 'border-slate-100/80'}
+                    className={`lg:absolute self-center cursor-pointer lg:top-4 lg:right-4 inline-flex items-center gap-2.5 rounded-full border  bg-white dark:bg-gray-800 p-1 pl-3 text-xs 
+                    font-semibold text-slate-700 dark:text-gray-200 shadow-sm dark:shadow-none backdrop-blur-md transition-all duration-200 hover:border-slate-300 hover:bg-slate-100 dark:hover:bg-gray-700 active:scale-95
+                    ${verTodas ? 'border-blue-300/80 dark:border-blue-500/50' : 'border-slate-100/80 dark:border-gray-700'}
                     `}
                 >
                     {/* Rótulo dinâmico com ícone */}
                     <div className="flex items-center gap-1.5 select-none">
                         {verTodas ? (
-                            <Users className="h-3.5 w-3.5 text-blue-600" />
+                            <Users className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                         ) : (
-                            <User className="h-3.5 w-3.5 text-slate-500" />
+                            <User className="h-3.5 w-3.5 text-slate-500 dark:text-gray-400" />
                         )}
-                        <span className="text-slate-600">Ver Todas</span>
+                        <span className="text-slate-600 dark:text-gray-300">Ver Todas</span>
                     </div>
 
                     {/* Botão do Switch (Track + Thumb) */}
                     <div
-                        className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${verTodas ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'
+                        className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${verTodas ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'
                             }`}
                     >
                         <span
@@ -111,15 +111,15 @@ export default function SentForms() {
             )}
 
 
-            <div className="relative flex-1 overflow-auto bg-white">
+            <div className="relative flex-1 overflow-auto bg-white dark:bg-gray-900 scrollbar-custom">
 
 
+                {/* Pontilhado de fundo: cinza claro no tema claro, cinza escuro no tema escuro */}
                 <div
-                    className="pointer-events-none fixed inset-x-0 top-[10vh] bottom-0 opacity-[0.4]"
-                    style={{
-                        backgroundImage: 'radial-gradient(circle, #9c9c9c 1px, transparent 1px)',
-                        backgroundSize: '18px 18px',
-                    }}
+                    className="pointer-events-none fixed inset-x-0 top-[10vh] bottom-0 opacity-[0.4]
+                        bg-[radial-gradient(circle,#9c9c9c_1px,transparent_1px)]
+                        dark:bg-[radial-gradient(circle,#4b5563_1px,transparent_1px)]
+                        bg-[size:18px_18px]"
                 />
 
                 <AnimatePresence mode="wait">
@@ -142,13 +142,13 @@ export default function SentForms() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="relative flex flex-col items-center justify-center gap-2 h-full text-slate-400"
+                            className="relative flex flex-col items-center justify-center gap-2 h-full text-slate-400 dark:text-gray-500"
                         >
-                            <span className="flex items-center justify-center w-14 h-14 rounded-full bg-white shadow-[0_1px_4px_rgba(15,23,42,0.08)]">
+                            <span className="flex items-center justify-center w-14 h-14 rounded-full bg-white dark:bg-gray-800 shadow-[0_1px_4px_rgba(15,23,42,0.08)] dark:shadow-none">
                                 <Inbox width={22} height={22} />
                             </span>
                             <p className="text-sm font-semibold">Nenhuma solicitação por aqui</p>
-                            <p className="text-xs text-slate-300">
+                            <p className="text-xs text-slate-300 dark:text-gray-600">
                                 {filtro === 'todas' ? 'Nada foi enviado ainda.' : 'Nada nessa categoria no momento.'}
                             </p>
                         </motion.div>

@@ -1,10 +1,8 @@
 package com.jonathas.projetoHE.controllers;
 
-import com.jonathas.projetoHE.dto.query.HomeCountDTO;
-import com.jonathas.projetoHE.dto.query.HomeInfoDTO;
-import com.jonathas.projetoHE.dto.query.PeriodoSolicitacoesDTO;
-import com.jonathas.projetoHE.dto.query.SolicitacaoDTO;
+import com.jonathas.projetoHE.dto.query.*;
 import com.jonathas.projetoHE.dto.query.mapper.HomeMapper;
+import com.jonathas.projetoHE.dto.query.mapper.QuantidadePessoasMapper;
 import com.jonathas.projetoHE.dto.query.mapper.SolicitacaoMapper;
 import com.jonathas.projetoHE.dto.zapsign.DocInfoResponseDTO;
 import com.jonathas.projetoHE.model.*;
@@ -19,7 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.data.domain.PageRequest;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -59,6 +57,9 @@ public class QueryController {
     private SolicitacaoMapper solicitacaoMapper;
 
     @Autowired HomeMapper homeMapper;
+
+    @Autowired
+    private QuantidadePessoasMapper quantidadePessoasMapper;
 
     @GetMapping("/plantas")
     public ResponseEntity<List<Plantas>> listarPlantas() {
@@ -186,6 +187,18 @@ public class QueryController {
                 .toList();
 
         return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/quantidadePessoas")
+    @PreAuthorize("hasAuthority('ENVIAR_EMAIL_RESTAURANTE')")
+    public ResponseEntity<List<QuantidadePessoasDTO>> QuantidadePessoas() {
+        LocalDate hoje = LocalDate.now();
+        LocalDate limite = hoje.plusDays(8);
+
+        List<QuantidadePessoasProjecaoDTO> dadosPlanos = solicitacaoRepository.listaQuantidadePessoas(hoje, limite);
+
+
+        return ResponseEntity.ok(quantidadePessoasMapper.toDTO(dadosPlanos));
     }
 
 }

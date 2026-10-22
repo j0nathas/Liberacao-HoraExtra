@@ -110,7 +110,7 @@ public class WebhookController {
 
                 sentEmailService.enviarEmail(
                         destinatarios,
-                        "Hora Extra Assinada - " + nomesDeptos,
+                        "✅ Hora Extra Assinada - " + nomesDeptos,
                         corpoEmail
                 );
 

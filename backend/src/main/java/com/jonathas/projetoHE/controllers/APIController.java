@@ -6,6 +6,7 @@ import com.jonathas.projetoHE.model.PeriodoSolicitacoesProjection;
 import com.jonathas.projetoHE.repositories.SolicitacaoRepository;
 import com.jonathas.projetoHE.repositories.SolicitacoesRepository;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -103,7 +104,7 @@ public class APIController {
         return ResponseEntity.ok(resposta);
     }
 
-    private String calcularTempoGasto(
+    private @NonNull String calcularTempoGasto(
             ZonedDateTime inicio,
             ZonedDateTime fim
     ) {

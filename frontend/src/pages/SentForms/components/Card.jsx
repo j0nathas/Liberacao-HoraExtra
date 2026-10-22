@@ -7,34 +7,34 @@ export default function Card({ dados, openInfo }) {
     const status = dados.status === "pending" ? "pendente" : dados.status === "signed" ? "aprovado" : dados.status === "recusado" ? "recusado" : "Não Enviado";
     const tone = {
         pendente: {
-            frame: "bg-amber-100",
-            ink: "text-amber-700",
-            pill: "bg-amber-50 text-amber-700",
+            frame: "bg-amber-100 dark:bg-amber-500/20",
+            ink: "text-amber-700 dark:text-amber-300",
+            pill: "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
             icon: <Clock width={15} height={15} />,
         },
         aprovado: {
-            frame: "bg-emerald-100",
-            ink: "text-emerald-700",
-            pill: "bg-emerald-50 text-emerald-700",
+            frame: "bg-emerald-100 dark:bg-emerald-500/20",
+            ink: "text-emerald-700 dark:text-emerald-300",
+            pill: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
             icon: <CircleCheckBig width={15} height={15} />,
         },
         "Não Enviado": {
-            frame: "bg-slate-100",
-            ink: "text-slate-600",
-            pill: "bg-slate-50 text-slate-600",
+            frame: "bg-slate-100 dark:bg-slate-500/20",
+            ink: "text-slate-600 dark:text-slate-300",
+            pill: "bg-slate-50 text-slate-600 dark:bg-slate-500/15 dark:text-slate-300",
             icon: <CircleSlash width={15} height={15} />,
         },
         recusado: {
-            frame: "bg-red-100",
-            ink: "text-red-600",
-            pill: "bg-red-50 text-red-600",
+            frame: "bg-red-100 dark:bg-red-500/20",
+            ink: "text-red-600 dark:text-red-300",
+            pill: "bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-300",
             icon: <CircleX width={15} height={15} />,
         },
     }[status];
 
     return (
-        <nav onClick={() => openInfo(dados)} className={`w-full drop-shadow-sm cursor-pointer flex flex-col rounded-[22px] p-1.5 ${tone.frame} transition-transform hover:-translate-y-0.5`}>
-            <div className="bg-white rounded-[17px] p-4 flex flex-col gap-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+        <nav onClick={() => openInfo(dados)} className={`w-full drop-shadow-sm dark:drop-shadow-none cursor-pointer flex flex-col rounded-[22px] p-1.5 ${tone.frame} transition-transform hover:-translate-y-0.5`}>
+            <div className="bg-white dark:bg-gray-800 rounded-[17px] p-4 flex flex-col gap-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none">
 
                 <section className="flex items-center justify-between">
                     <div className="flex items-center gap-1">
@@ -42,13 +42,13 @@ export default function Card({ dados, openInfo }) {
                             {tone.icon}
                             {status}
                         </span>
-                        <span className="text-[10px] font-semibold text-gray-400">#{dados.id}</span>
+                        <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500">#{dados.id}</span>
 
                     </div>
                 </section>
 
                 <div>
-                    <h3 className="text-lg font-bold text-gray-800 leading-tight">
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 leading-tight">
                         Semana {
                             [...new Set(
                                 dados.solicitacoes.map(solicitacao =>
@@ -63,14 +63,14 @@ export default function Card({ dados, openInfo }) {
                             {dados.solicitacoes.slice(0, 2).map((solicitacao, index) => (
                                 <p
                                     key={solicitacao.id}
-                                    className="text-sm text-gray-500 truncate bg-gray-50 rounded-sm px-2 p-1"
+                                    className="text-sm text-gray-500 dark:text-gray-300 truncate bg-gray-50 dark:bg-gray-700 rounded-sm px-2 p-1"
                                 >
                                     {solicitacao.motivoMacro}
                                 </p>
                             ))}
 
                             {dados.solicitacoes.length > 2 && (
-                                <p className="text-[10px] text-gray-500 font-semibold bg-gray-50 rounded-sm px-2 p-1">
+                                <p className="text-[10px] text-gray-500 dark:text-gray-300 font-semibold bg-gray-50 dark:bg-gray-700 rounded-sm px-2 p-1">
                                     +{dados.solicitacoes.length - 2}
                                 </p>
                             )}
@@ -82,13 +82,13 @@ export default function Card({ dados, openInfo }) {
                 </div>
 
                 <section className="flex flex-wrap gap-1.5">
-                    {/* <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[11px] font-semibold uppercase tracking-wide">
+                    {/* <span className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[11px] font-semibold uppercase tracking-wide">
                         {dados.turno}
                     </span>
-                    <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[11px] font-semibold uppercase tracking-wide">
+                    <span className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[11px] font-semibold uppercase tracking-wide">
                         {dados.departamento.departamento}
                     </span>
-                    <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[11px] font-semibold uppercase tracking-wide">
+                    <span className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[11px] font-semibold uppercase tracking-wide">
                         {totalAccHours(dados.inicio, dados.fim, dados.funcionarios.length)}h
                     </span> */}
                 </section>

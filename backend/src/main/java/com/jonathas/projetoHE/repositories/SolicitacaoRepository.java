@@ -1,6 +1,8 @@
 package com.jonathas.projetoHE.repositories;
 
 import com.jonathas.projetoHE.dto.query.HomeCountDTO;
+import com.jonathas.projetoHE.dto.query.QuantidadePessoasDTO;
+import com.jonathas.projetoHE.dto.query.QuantidadePessoasProjecaoDTO;
 import com.jonathas.projetoHE.dto.query.SolicitacaoExportDTO;
 import com.jonathas.projetoHE.model.Solicitacao;
 import com.jonathas.projetoHE.model.Solicitacoes;
@@ -8,10 +10,12 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -128,6 +132,67 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
     List<SolicitacaoExportDTO> buscarSolicitacoesParaExportacao(
             ZonedDateTime inicio,
             ZonedDateTime fim
+    );
+
+    @Query(value = """
+    SELECT 
+        sol.status AS status,
+        CAST(sols.inicio AS DATE) AS inicio,
+        tur.turno AS turno,
+        COUNT(func.id_funcionario) AS quantidadeFuncionarios
+    FROM [Projeto_HE].[dbo].[solicitacao] AS sol
+    INNER JOIN dbo.solicitacoes AS sols
+        ON sols.id_solicitacao = sol.id
+    INNER JOIN dbo.solicitacoes_justificativas AS jus
+        ON jus.id_solitacoes = sols.id
+    INNER JOIN dbo.solicitacoes_funcionarios AS func
+        ON func.id_justificativa = jus.id
+    INNER JOIN dbo.turnos AS tur
+        ON tur.id = sols.id_turno
+    WHERE sol.status NOT IN ('deleted', 'recusado')
+      AND sols.inicio >= :hoje
+      AND sols.inicio < :limite
+    GROUP BY 
+        sol.status,
+        CAST(sols.inicio AS DATE),
+        tur.turno
+    ORDER BY 
+        inicio DESC
+""", nativeQuery = true)
+    List<QuantidadePessoasProjecaoDTO> listaQuantidadePessoas(
+            @Param("hoje") LocalDate hoje,
+            @Param("limite") LocalDate limite
+    );
+
+    @Query(value = """
+    SELECT 
+        sol.status AS status,
+        CAST(sols.inicio AS DATE) AS inicio,
+        tur.turno AS turno,
+        COUNT(func.id_funcionario) AS quantidadeFuncionarios
+    FROM [Projeto_HE].[dbo].[solicitacao] AS sol
+    INNER JOIN dbo.solicitacoes AS sols
+        ON sols.id_solicitacao = sol.id
+    INNER JOIN dbo.solicitacoes_justificativas AS jus
+        ON jus.id_solitacoes = sols.id
+    INNER JOIN dbo.solicitacoes_funcionarios AS func
+        ON func.id_justificativa = jus.id
+    INNER JOIN dbo.turnos AS tur
+        ON tur.id = sols.id_turno
+    WHERE sol.status IN (:status)
+      AND sols.inicio >= :hoje
+      AND sols.inicio < :limite
+    GROUP BY 
+        sol.status,
+        CAST(sols.inicio AS DATE),
+        tur.turno
+    ORDER BY 
+        inicio DESC
+""", nativeQuery = true)
+    List<QuantidadePessoasProjecaoDTO> listaQuantidadePessoasEmail(
+            @Param("hoje") LocalDate hoje,
+            @Param("limite") LocalDate limite,
+            @Param("status") List<String> status
     );
 
 }

@@ -75,7 +75,7 @@ export default function Search({
                         setIndiceAtivo(-1);
                     }}
                     onFocus={() => setAberto(true)}
-                    className={`w-full bg-slate-50 border border-slate-200 text-slate-700 py-2.5 pl-10 pr-10 rounded-xl outline-none transition-all
+                    className={`w-full bg-slate-50 dark:bg-gray-600 dark:text-slate-50 dark:border-slate-500 border border-slate-200 text-slate-700 py-2.5 pl-10 pr-10 rounded-xl outline-none transition-all
                         ${disabled ? 'opacity-25 cursor-not-allowed bg-slate-100' : 'hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10'}
                     `}
                 />
@@ -84,7 +84,7 @@ export default function Search({
                     <button
                         type="button"
                         onClick={() => { onChange(""); onSelect(null); }}
-                        className="absolute right-3 p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors"
+                        className="absolute right-3 p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 dark:hover:bg-slate-400 transition-colors"
                     >
                         <ClearIcon size={16} />
                     </button>
@@ -98,14 +98,14 @@ export default function Search({
             </div>
 
             {aberto && !disabled && (
-                <ul className="absolute z-50 mt-2 max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl py-2">
+                <ul className="absolute z-50 mt-2 max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-700 shadow-xl py-2">
                     {resultados.length > 0 ? (
                         resultados.map((item, idx) => (
                             <li
                                 key={getOptionId(item)}
                                 onClick={() => selecionar(item)}
                                 onMouseEnter={() => setIndiceAtivo(idx)}
-                                className={`cursor-pointer px-4 py-2.5 text-sm transition-colors ${idx === indiceAtivo ? 'bg-blue-50 text-blue-700 font-medium' : 'text-slate-600 hover:bg-slate-50'
+                                className={`cursor-pointer px-4 py-2.5 text-sm transition-colors ${idx === indiceAtivo ? 'bg-blue-50 text-blue-700 font-medium dark:bg-slate-500 dark:text-white' : 'text-slate-600 dark:text-slate-500'
                                     }`}
                             >
                                 {getOptionLabel(item)}
