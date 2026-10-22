@@ -1,6 +1,7 @@
 package com.jonathas.projetoHE.repositories;
 
 import com.jonathas.projetoHE.dto.query.HomeCountDTO;
+import com.jonathas.projetoHE.dto.query.ListLobby.QueryDTO;
 import com.jonathas.projetoHE.dto.query.QuantidadePessoasDTO;
 import com.jonathas.projetoHE.dto.query.QuantidadePessoasProjecaoDTO;
 import com.jonathas.projetoHE.dto.query.SolicitacaoExportDTO;
@@ -194,5 +195,27 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
             @Param("limite") LocalDate limite,
             @Param("status") List<String> status
     );
+
+    @Query(value =
+            """
+        SELECT\s
+            CAST(sols.inicio AS DATE) as data,
+            turnos.turno as turno,
+            cadastro.Nome_Registro as nome,
+            cadastro.Codigo_Registro as re,\s
+            sol.status\s
+      FROM [Projeto_HE].[dbo].[solicitacao] sol
+      JOIN solicitacoes sols ON sol.id = sols.id_solicitacao
+      JOIN solicitacoes_justificativas jus ON sols.id = jus.id_solitacoes\s
+      JOIN solicitacoes_funcionarios fun ON jus.id = fun.id_justificativa
+      JOIN Cadastros_HE cadastro ON fun.id_funcionario = cadastro.ID
+      JOIN turnos turnos ON sols.id_turno = turnos.id
+      WHERE status NOT IN ('deleted', 'recusado') AND
+          sols.inicio >= CAST(GETDATE() AS DATE) AND
+          sols.inicio < DATEADD(day, 7, GETDATE())
+        """, nativeQuery = true
+    )
+
+    List<QueryDTO> listarPessoasPortaria();
 
 }

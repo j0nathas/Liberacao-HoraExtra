@@ -4,7 +4,7 @@ import { useState } from 'react'
 import api from '../services/api';
 import bye from '../../img/bye.png';
 import logo from '../../img/logo.png';
-import { X, Menu, Shredder, ClipboardPen, House, Sun, Moon, UtensilsCrossed } from 'lucide-react';
+import { X, Menu, Shredder, ClipboardPen, House, Sun, Moon, UtensilsCrossed, ScrollText } from 'lucide-react';
 import { useTheme } from "../hooks/useTheme.js";
 
 
@@ -18,7 +18,8 @@ const btnMenu = [
     { name: "Home", path: "/home", icon: House },
     { name: "Form", path: "/form", icon: ClipboardPen },
     { name: "Enviados", path: "/sent", icon: Shredder },
-    { name: "Refeições", path: "/refeicoes", icon: UtensilsCrossed, permission: "ENVIAR_EMAIL_RESTAURANTE" }
+    { name: "Refeições", path: "/refeicoes", icon: UtensilsCrossed, permission: "ENVIAR_EMAIL_RESTAURANTE" },
+    { name: "Lista", path: "/listLobby", icon: ScrollText }
 ];
 
 

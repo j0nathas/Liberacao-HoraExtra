@@ -9,6 +9,7 @@ import DocumentView from './PDF/DocumentView.jsx';
 import SentForms from './pages/SentForms/SentForms.jsx';
 import Charts from './pages/Charts/Charts.jsx';
 import RH from './pages/RH/RH.jsx';
+import ListLobby from './pages/ListLobby/ListLobby.jsx';
 
 import ProtectedRoute from './routes/ProtectedRoute.jsx';
 
@@ -17,6 +18,7 @@ const btnMenu = [
   { path: '/form', element: Form },
   { path: '/sent', element: SentForms },
   { path: '/charts', element: Charts },
+  { path: '/listLobby', element: ListLobby },
   { path: '/document', element: DocumentView },
   { path: '/refeicoes', element: RH, permissao: 'ENVIAR_EMAIL_RESTAURANTE' },
 ];

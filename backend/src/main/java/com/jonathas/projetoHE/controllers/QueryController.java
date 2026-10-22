@@ -1,6 +1,9 @@
 package com.jonathas.projetoHE.controllers;
 
 import com.jonathas.projetoHE.dto.query.*;
+import com.jonathas.projetoHE.dto.query.ListLobby.DatesDTO;
+import com.jonathas.projetoHE.dto.query.ListLobby.QueryDTO;
+import com.jonathas.projetoHE.dto.query.ListLobby.mapper.ListLobbyMapper;
 import com.jonathas.projetoHE.dto.query.mapper.HomeMapper;
 import com.jonathas.projetoHE.dto.query.mapper.QuantidadePessoasMapper;
 import com.jonathas.projetoHE.dto.query.mapper.SolicitacaoMapper;
@@ -60,6 +63,9 @@ public class QueryController {
 
     @Autowired
     private QuantidadePessoasMapper quantidadePessoasMapper;
+
+    @Autowired
+    private ListLobbyMapper listLobbyMapper;
 
     @GetMapping("/plantas")
     public ResponseEntity<List<Plantas>> listarPlantas() {
@@ -199,6 +205,12 @@ public class QueryController {
 
 
         return ResponseEntity.ok(quantidadePessoasMapper.toDTO(dadosPlanos));
+    }
+
+    @GetMapping("/listaPortaria")
+    public List<DatesDTO> listar() {
+        List<QueryDTO> rows = solicitacaoRepository.listarPessoasPortaria(); // sua query
+        return listLobbyMapper.toDiaList(rows);
     }
 
 }
