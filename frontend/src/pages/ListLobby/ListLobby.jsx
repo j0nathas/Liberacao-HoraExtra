@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,54 +13,32 @@ import {
     Sun,
     Sunset,
     Moon,
+    Briefcase,
     ChevronLeft,
     ChevronRight,
+    Loader
 } from "lucide-react";
-
-/* ---------- Constantes de estilo (mesmo padrão do CardDia) ---------- */
+import api from "../../services/api";
 
 const STATUS = {
     signed: {
         label: "Aprovado",
         icon: CheckCircle2,
         color: "text-emerald-400 dark:text-emerald-300",
-        bg: "bg-emerald-50 dark:bg-emerald-500/15",
-        border: "border-emerald-200 dark:border-emerald-500/20",
     },
     pending: {
         label: "Pendente",
         icon: Clock,
         color: "text-amber-500 dark:text-amber-300",
-        bg: "bg-amber-50 dark:bg-amber-500/15",
-        border: "border-amber-200 dark:border-amber-500/20",
     },
 };
 
-const TONS = {
-    pending: {
-        frame: "border-amber-200 bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10",
-        footer: "text-amber-700 dark:text-amber-300",
-    },
-    signed: {
-        frame: "border-emerald-200 bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10",
-        footer: "text-emerald-700 dark:text-emerald-300",
-    },
-    empty: {
-        frame: "border-slate-200 bg-slate-100 dark:border-gray-700 dark:bg-gray-800/60",
-        footer: "text-slate-400 dark:text-gray-500",
-    },
-};
-
+/* Nomes dos turnos exatamente como a API devolve */
 const TURNOS = [
-    { nome: "Manhã", icone: Sun },
-    { nome: "Tarde", icone: Sunset },
-    { nome: "Noite", icone: Moon },
-];
-
-const FILTROS = [
-    { id: "all", label: "Todos", icon: Users },
-    { id: "signed", label: "Aprovados", icon: CheckCircle2 },
-    { id: "pending", label: "Pendentes", icon: Clock },
+    { nome: "1º Turno", icone: Sun },
+    { nome: "2º Turno", icone: Sunset },
+    { nome: "3º Turno", icone: Moon },
+    { nome: "ADM", icone: Briefcase },
 ];
 
 const DIAS_EXIBIDOS = 7;
@@ -90,36 +68,32 @@ const formatarDiaSemana = (data, hoje) => {
 };
 
 const normalizar = (texto) =>
-    texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    String(texto ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 const plural = (n, singular, pluralTxt) => `${n} ${n === 1 ? singular : pluralTxt}`;
 
-function gerarMock() {
-    const pessoas = [
-        ["Ana Souza", "10234"], ["Bruno Lima", "10587"], ["Carla Mendes", "11002"],
-        ["Diego Alves", "10911"], ["Elaine Costa", "10455"], ["Fábio Rocha", "11230"],
-        ["Gabriela Nunes", "10678"], ["Hugo Martins", "11345"], ["Isabela Pires", "10099"],
-        ["João Ribeiro", "10812"], ["Kátia Moreira", "11120"], ["Lucas Andrade", "10390"],
-    ];
-
-    return Array.from({ length: DIAS_EXIBIDOS }, (_, i) => {
-        const d = new Date();
-        d.setHours(12, 0, 0, 0);
-        d.setDate(d.getDate() + i);
-        return formatarDataLocal(d);
-    }).flatMap((data, i) =>
-        pessoas
-            .filter((_, j) => i === 5 ? j < 2 : i === 6 ? false : true)
-            .map(([nome, re], j) => ({
-                id: `${data}-${re}`,
-                data,
-                turno: TURNOS[(i + j) % 3].nome,
-                nome,
-                re,
-                aprovado: (i + j) % 3 !== 0,
+/*
+ * Converte o retorno da API:
+ *   [{ data, turnos: [{ turno, funcionarios: [{ nome, re, status }] }] }]
+ * em uma lista plana de registros:
+ *   { id, data, turno, nome, re, aprovado }
+ */
+const achatarRegistros = (resposta) => {
+    if (!Array.isArray(resposta)) return [];
+    return resposta.flatMap((dia) =>
+        (dia.turnos ?? []).flatMap((t) =>
+            (t.funcionarios ?? []).map((f) => ({
+                // o mesmo RE pode aparecer em turnos diferentes no mesmo dia
+                id: `${dia.data}-${t.turno}-${f.re}`,
+                data: dia.data,
+                turno: t.turno,
+                nome: f.nome,
+                re: String(f.re),
+                aprovado: f.status === "signed",
             }))
+        )
     );
-}
+};
 
 /* ---------- Componentes ---------- */
 
@@ -140,9 +114,11 @@ function Destaque({ texto, termo }) {
 }
 
 function BadgeStatus({ aprovado }) {
-    const { icon: Icon, label, bg, border, color } = STATUS[aprovado ? "signed" : "pending"];
+    const { icon: Icon, label, color } = STATUS[aprovado ? "signed" : "pending"];
     return (
         <span
+            title={label}
+            aria-label={label}
             className={`inline-flex shrink-0 items-center gap-1 rounded-lg px-1 py-1 text-[11px] font-semibold ${color}`}
         >
             <Icon size={16} />
@@ -152,9 +128,19 @@ function BadgeStatus({ aprovado }) {
 
 function CardDiaLobby({ dia, hoje, ativo, busca, encontrados, onSelect }) {
     const vazio = dia.signed + dia.pending === 0;
-    const total = dia.signed + dia.pending;
-    const tom = TONS[vazio ? "empty" : dia.pending > 0 ? "pending" : "signed"];
     const semResultado = busca && encontrados === 0;
+
+    let cardClasses = "dark:bg-gray-800";
+    if (ativo) {
+        cardClasses = "bg-blue-50 ring-2 ring-blue-500 dark:bg-slate-700 dark:ring-offset-gray-900";
+    }
+
+    let iconeClasses = "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300";
+    if (ativo) {
+        iconeClasses = "bg-blue-600 text-white";
+    } else if (vazio) {
+        iconeClasses = "bg-slate-200 text-slate-400 dark:bg-gray-700 dark:text-gray-500";
+    }
 
     return (
         <div className="min-w-0 flex-[0_0_170px] pl-3">
@@ -162,21 +148,12 @@ function CardDiaLobby({ dia, hoje, ativo, busca, encontrados, onSelect }) {
                 type="button"
                 onClick={onSelect}
                 aria-pressed={ativo}
-                className={`flex h-full w-full cursor-pointer flex-col rounded-2xl p-1.5 text-left shadow-sm transition-all hover:shadow-md ${ativo ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-slate-700 dark:ring-offset-gray-900" : "dark:bg-gray-800"
-                    } ${semResultado ? "opacity-50" : ""}`}
+                className={`flex h-full w-full cursor-pointer flex-col rounded-2xl p-1.5 text-left shadow-sm transition-all hover:shadow-md ${cardClasses} ${semResultado ? "opacity-50" : ""}`}
             >
-                <div
-                    className={`flex-1 rounded-xl p-1 py-3 
-                        }`}
-                >
+                <div className="flex-1 rounded-xl p-1 py-3">
                     <div className="flex items-center gap-2.5">
                         <span
-                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-xl ${ativo
-                                ? "bg-blue-600 text-white"
-                                : vazio
-                                    ? "bg-slate-200 text-slate-400 dark:bg-gray-700 dark:text-gray-500"
-                                    : "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300"
-                                }`}
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-xl ${iconeClasses}`}
                         >
                             <CalendarDays size={10} />
                         </span>
@@ -200,11 +177,12 @@ function CardDiaLobby({ dia, hoje, ativo, busca, encontrados, onSelect }) {
 
 export default function ListLobby() {
     const hoje = formatarDataLocal(new Date());
-    const registros = useMemo(gerarMock, []);
 
     const [diaSelecionado, setDiaSelecionado] = useState(hoje);
-    const [filtro, setFiltro] = useState("all");
     const [busca, setBusca] = useState("");
+    const [dados, setDados] = useState([]);
+    const [carregando, setCarregando] = useState(true);
+    const [erro, setErro] = useState(false);
 
     const [emblaRef, emblaApi] = useEmblaCarousel({
         align: "start",
@@ -212,11 +190,36 @@ export default function ListLobby() {
         containScroll: "trimSnaps",
     });
 
+    useEffect(() => {
+        let ativo = true;
+
+        const carregarDados = async () => {
+            try {
+                const { data } = await api.get("/query/listaPortaria");
+                if (ativo) {
+                    setDados(data);
+                    setErro(false);
+                }
+            } catch (err) {
+                console.error("Erro ao carregar dados da portaria: " + err);
+                if (ativo) setErro(true);
+            } finally {
+                if (ativo) setCarregando(false);
+            }
+        };
+
+        void carregarDados();
+        return () => {
+            ativo = false;
+        };
+    }, []);
+
+    const registros = useMemo(() => achatarRegistros(dados), [dados]);
+
     const termo = normalizar(busca);
 
     const casaBusca = (r) =>
         !termo || normalizar(r.nome).includes(termo) || normalizar(r.re).includes(termo);
-    const casaFiltro = (r) => filtro === "all" || (filtro === "signed" ? r.aprovado : !r.aprovado);
 
     const dias = useMemo(
         () =>
@@ -230,22 +233,20 @@ export default function ListLobby() {
                     data,
                     signed: doDia.filter((r) => r.aprovado).length,
                     pending: doDia.filter((r) => !r.aprovado).length,
-                    encontrados: doDia.filter((r) => casaBusca(r) && casaFiltro(r)).length,
+                    encontrados: doDia.filter((r) => {
+                        const n = normalizar(busca);
+                        return !n || normalizar(r.nome).includes(n) || normalizar(r.re).includes(n);
+                    }).length,
                 };
             }),
-        [registros, termo, filtro]
+        [registros, busca]
     );
 
     const doDia = registros.filter((r) => r.data === diaSelecionado);
-    const visiveis = doDia.filter((r) => casaBusca(r) && casaFiltro(r));
-    const contagemFiltro = {
-        all: doDia.filter(casaBusca).length,
-        signed: doDia.filter((r) => casaBusca(r) && r.aprovado).length,
-        pending: doDia.filter((r) => casaBusca(r) && !r.aprovado).length,
-    };
+    const visiveis = doDia.filter(casaBusca);
 
     return (
-        <main className="min-h-screen flex-1 overflow-auto relative bg-slate-50 pb-16 transition-colors dark:bg-gray-900 bg-[radial-gradient(circle,#cbd5e1_1px,transparent_1px)] [background-size:22px_22px] dark:bg-[radial-gradient(circle,#374151_1px,transparent_1px)]">
+        <main className="relative min-h-screen flex-1 overflow-auto bg-slate-50 pb-16 transition-colors [background-size:22px_22px] bg-[radial-gradient(circle,#cbd5e1_1px,transparent_1px)] dark:bg-gray-900 dark:bg-[radial-gradient(circle,#374151_1px,transparent_1px)]">
             <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6">
                 {/* Dias */}
                 <section className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-gray-700 dark:bg-gray-800/60">
@@ -287,84 +288,95 @@ export default function ListLobby() {
 
                 {/* Lista do dia */}
                 <section className="rounded-3xl border border-slate-200 bg-slate-100/80 p-5 shadow-sm backdrop-blur dark:border-gray-700 dark:bg-gray-800/60">
+                    {carregando ? (
+                        <>
+                            <Loader size={14} />
+                            <p className="py-10 text-center text-sm text-slate-500 dark:text-gray-400">Carregando lista…</p>
+                        </>
+                    ) : erro ? (
+                        <p className="py-10 text-center text-sm text-red-500 dark:text-red-400">
+                            Não foi possível carregar a lista da portaria. Atualize a página para tentar de novo.
+                        </p>
+                    ) : (
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={diaSelecionado}
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-4"
+                            >
+                                {TURNOS.map(({ nome: turno, icone: Icone }) => {
+                                    const todos = doDia.filter((r) => r.turno === turno);
+                                    const aprovados = todos.filter((r) => r.aprovado).length;
+                                    const pessoas = visiveis.filter((r) => r.turno === turno);
+                                    const vazio = todos.length === 0;
 
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={diaSelecionado}
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2, ease: "easeOut" }}
-                            className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3"
-                        >
-                            {TURNOS.map(({ nome: turno, icone: Icone }) => {
-                                const todos = doDia.filter((r) => r.turno === turno);
-                                const aprovados = todos.filter((r) => r.aprovado).length;
-                                const pessoas = visiveis.filter((r) => r.turno === turno);
-                                const vazio = todos.length === 0;
-                                const tom = TONS[vazio ? "empty" : todos.length - aprovados > 0 ? "pending" : "signed"];
-
-                                return (
-                                    <article
-                                        key={turno}
-                                        className={`flex flex-col rounded-2xl p-1.5 shadow-sm ${vazio ? "bg-slate-50 dark:bg-gray-800/60" : "bg-white dark:bg-gray-800"}`}
-                                    >
-                                        <div
-                                            className={`flex-1 rounded-xl p-4`}
+                                    return (
+                                        <article
+                                            key={turno}
+                                            className={`flex flex-col rounded-2xl p-1.5 shadow-sm ${vazio ? "bg-slate-50 dark:bg-gray-800/60" : "bg-white dark:bg-gray-800"
+                                                }`}
                                         >
-                                            <header className="flex items-center gap-3">
-                                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
-                                                    <Icone size={19} />
-                                                </span>
-                                                <div className="min-w-0 flex-1">
-                                                    <h3 className="text-lg font-bold leading-tight text-slate-900 dark:text-gray-100">
-                                                        {turno}
-                                                    </h3>
-                                                    <p className="text-xs text-slate-500 dark:text-gray-400">
-                                                        {aprovados} de {plural(todos.length, "pessoa", "pessoas")} aprovados
-                                                    </p>
-                                                </div>
-                                            </header>
+                                            <div className="flex-1 rounded-xl p-4">
+                                                <header className="flex items-center gap-3">
+                                                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
+                                                        <Icone size={19} />
+                                                    </span>
+                                                    <div className="min-w-0 flex-1">
+                                                        <h3 className="text-lg font-bold leading-tight text-slate-900 dark:text-gray-100">
+                                                            {turno}
+                                                        </h3>
+                                                        <p className="text-xs text-slate-500 dark:text-gray-400">
+                                                            {aprovados} de {plural(todos.length, "pessoa", "pessoas")} aprovados
+                                                        </p>
+                                                    </div>
+                                                </header>
 
-                                            {pessoas.length === 0 ? (
-                                                <div className="mt-4 rounded-xl border border-dashed border-slate-300 py-8 text-center dark:border-gray-700">
-                                                    <Users size={20} className="mx-auto text-slate-300 dark:text-gray-600" />
-                                                    <p className="mt-2 text-xs text-slate-500 dark:text-gray-400">
-                                                        {vazio
-                                                            ? "Nenhuma pessoa neste turno"
-                                                            : "Nenhum resultado para os filtros"}
-                                                    </p>
-                                                </div>
-                                            ) : (
-                                                <ul className="mt-4 space-y-2">
-                                                    {pessoas.map((p) => (
-                                                        <li
-                                                            key={p.id}
-                                                            className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-700/50"
-                                                        >
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="truncate text-sm font-semibold text-slate-900 dark:text-gray-100">
-                                                                    <Destaque texto={p.nome} termo={busca} />
-                                                                </p>
-                                                                <p className="text-xs text-slate-500 dark:text-gray-400">
-                                                                    RE <Destaque texto={p.re} termo={busca} />
-                                                                </p>
-                                                            </div>
-                                                            <BadgeStatus aprovado={p.aprovado} />
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
-                                        </div>
-                                    </article>
-                                );
-                            })}
-                        </motion.div>
-                    </AnimatePresence>
+                                                {pessoas.length === 0 ? (
+                                                    <div className="mt-4 rounded-xl border border-dashed border-slate-300 py-8 text-center dark:border-gray-700">
+                                                        <Users size={20} className="mx-auto text-slate-300 dark:text-gray-600" />
+                                                        <p className="mt-2 text-xs text-slate-500 dark:text-gray-400">
+                                                            {vazio
+                                                                ? "Nenhuma pessoa neste turno"
+                                                                : "Nenhum resultado para os filtros"}
+                                                        </p>
+                                                    </div>
+                                                ) : (
+                                                    <ul className="mt-4 space-y-2">
+                                                        {pessoas.map((p) => (
+                                                            <li
+                                                                key={p.id}
+                                                                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-700/50"
+                                                            >
+                                                                <div className="min-w-0 flex-1">
+                                                                    <p
+                                                                        title={p.nome}
+                                                                        className="truncate text-sm font-semibold text-slate-900 dark:text-gray-100"
+                                                                    >
+                                                                        <Destaque texto={p.nome} termo={busca} />
+                                                                    </p>
+                                                                    <p className="text-xs text-slate-500 dark:text-gray-400">
+                                                                        RE <Destaque texto={p.re} termo={busca} />
+                                                                    </p>
+                                                                </div>
+                                                                <BadgeStatus aprovado={p.aprovado} />
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </div>
+                                        </article>
+                                    );
+                                })}
+                            </motion.div>
+                        </AnimatePresence>
+                    )}
                 </section>
             </div>
 
-            <div className="fixed w-90 top-[91%] left-[50%] translate-x-[-50%] bg-white dark:bg-gray-800 pt-4 px-4 pb-10 rounded-2xl border border-gray-200 dark:border-slate-600">
+            <div className="fixed left-[50%] top-[91%] w-90 translate-x-[-50%] rounded-2xl border border-gray-200 bg-white px-4 pb-10 pt-4 dark:border-slate-600 dark:bg-gray-800">
                 <Search
                     size={17}
                     className="pointer-events-none absolute left-8 top-[38%] -translate-y-1/2 text-slate-400 dark:text-gray-500"
@@ -375,7 +387,7 @@ export default function ListLobby() {
                     onChange={(e) => setBusca(e.target.value)}
                     placeholder="Buscar por nome ou RE"
                     aria-label="Buscar pessoa por nome ou RE"
-                    className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-10 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-blue-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:bg-gray-900"
+                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-10 text-sm text-slate-900 transition placeholder:text-slate-400 focus:border-blue-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:bg-gray-900"
                 />
                 {busca && (
                     <button
