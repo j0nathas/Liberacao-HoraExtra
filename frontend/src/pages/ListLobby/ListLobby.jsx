@@ -19,6 +19,7 @@ import {
     Loader
 } from "lucide-react";
 import api from "../../services/api";
+import toast from 'react-hot-toast';
 
 const STATUS = {
     signed: {
@@ -33,7 +34,6 @@ const STATUS = {
     },
 };
 
-/* Nomes dos turnos exatamente como a API devolve */
 const TURNOS = [
     { nome: "1º Turno", icone: Sun },
     { nome: "2º Turno", icone: Sunset },
@@ -72,18 +72,11 @@ const normalizar = (texto) =>
 
 const plural = (n, singular, pluralTxt) => `${n} ${n === 1 ? singular : pluralTxt}`;
 
-/*
- * Converte o retorno da API:
- *   [{ data, turnos: [{ turno, funcionarios: [{ nome, re, status }] }] }]
- * em uma lista plana de registros:
- *   { id, data, turno, nome, re, aprovado }
- */
 const achatarRegistros = (resposta) => {
     if (!Array.isArray(resposta)) return [];
     return resposta.flatMap((dia) =>
         (dia.turnos ?? []).flatMap((t) =>
             (t.funcionarios ?? []).map((f) => ({
-                // o mesmo RE pode aparecer em turnos diferentes no mesmo dia
                 id: `${dia.data}-${t.turno}-${f.re}`,
                 data: dia.data,
                 turno: t.turno,
@@ -130,9 +123,9 @@ function CardDiaLobby({ dia, hoje, ativo, busca, encontrados, onSelect }) {
     const vazio = dia.signed + dia.pending === 0;
     const semResultado = busca && encontrados === 0;
 
-    let cardClasses = "dark:bg-gray-800";
+    let cardClasses = "";
     if (ativo) {
-        cardClasses = "bg-blue-50 ring-2 ring-blue-500 dark:bg-slate-700 dark:ring-offset-gray-900";
+        cardClasses = " ring-2 ring-blue-500 dark:bg-slate-600 dark:ring-offset-gray-900";
     }
 
     let iconeClasses = "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300";
@@ -148,7 +141,9 @@ function CardDiaLobby({ dia, hoje, ativo, busca, encontrados, onSelect }) {
                 type="button"
                 onClick={onSelect}
                 aria-pressed={ativo}
-                className={`flex h-full w-full cursor-pointer flex-col rounded-2xl p-1.5 text-left shadow-sm transition-all hover:shadow-md ${cardClasses} ${semResultado ? "opacity-50" : ""}`}
+                className={`flex h-full w-full cursor-pointer flex-col rounded-2xl p-1.5 text-left shadow-sm transition-all hover:shadow-md ${cardClasses} ${semResultado ? "opacity-50" : ""}
+                ${vazio ? 'dark:bg-gray-800 bg-slate-50' : 'dark:bg-purple-900'}
+                `}
             >
                 <div className="flex-1 rounded-xl p-1 py-3">
                     <div className="flex items-center gap-2.5">
@@ -177,6 +172,26 @@ function CardDiaLobby({ dia, hoje, ativo, busca, encontrados, onSelect }) {
 
 export default function ListLobby() {
     const hoje = formatarDataLocal(new Date());
+
+    const [passagens, setPassagens] = useState([]);
+
+    useEffect(() => {
+        const importEnv = import.meta.env.VITE_IP_BACK_END;
+        const es = new EventSource(`${importEnv}/passagens/stream`, {
+            withCredentials: true,
+        });
+
+        es.addEventListener("passagem", (e) => {
+            const passagem = JSON.parse(e.data);
+            console.log(passagem);
+            toast.success(passagem.nome);
+            setPassagens((prev) => [passagem, ...prev].slice(0, 50));
+        });
+
+        es.onerror = () => console.log("Stream desconectado; o navegador tenta reconectar");
+
+        return () => es.close();
+    }, []);
 
     const [diaSelecionado, setDiaSelecionado] = useState(hoje);
     const [busca, setBusca] = useState("");
@@ -288,16 +303,19 @@ export default function ListLobby() {
 
                 {/* Lista do dia */}
                 <section className="rounded-3xl border border-slate-200 bg-slate-100/80 p-5 shadow-sm backdrop-blur dark:border-gray-700 dark:bg-gray-800/60">
-                    {carregando ? (
-                        <>
-                            <Loader size={14} />
-                            <p className="py-10 text-center text-sm text-slate-500 dark:text-gray-400">Carregando lista…</p>
-                        </>
-                    ) : erro ? (
+                    {carregando && (
+                        <aside className="flex flex-row items-center justify-center gap-2 py-10">
+                            <Loader size={14} className="animate-spin dark:text-white" />
+                            <p className="text-center text-sm text-slate-500 dark:text-gray-400 animate-pulse">Carregando lista…</p>
+
+                        </aside>
+                    )}
+                    {!carregando && erro && (
                         <p className="py-10 text-center text-sm text-red-500 dark:text-red-400">
                             Não foi possível carregar a lista da portaria. Atualize a página para tentar de novo.
                         </p>
-                    ) : (
+                    )}
+                    {!carregando && !erro && (
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={diaSelecionado}
@@ -312,11 +330,15 @@ export default function ListLobby() {
                                     const aprovados = todos.filter((r) => r.aprovado).length;
                                     const pessoas = visiveis.filter((r) => r.turno === turno);
                                     const vazio = todos.length === 0;
+                                    const mensagemVazia = vazio
+                                        ? "Nenhuma pessoa neste turno"
+                                        : "Nenhum resultado para os filtros";
+
 
                                     return (
                                         <article
                                             key={turno}
-                                            className={`flex flex-col rounded-2xl p-1.5 shadow-sm ${vazio ? "bg-slate-50 dark:bg-gray-800/60" : "bg-white dark:bg-gray-800"
+                                            className={`flex flex-col rounded-2xl p-1.5 shadow-sm ${vazio ? "bg-slate-50 dark:bg-gray-800/60 opacity-40" : "bg-white dark:bg-gray-800"
                                                 }`}
                                         >
                                             <div className="flex-1 rounded-xl p-4">
@@ -335,12 +357,10 @@ export default function ListLobby() {
                                                 </header>
 
                                                 {pessoas.length === 0 ? (
-                                                    <div className="mt-4 rounded-xl border border-dashed border-slate-300 py-8 text-center dark:border-gray-700">
-                                                        <Users size={20} className="mx-auto text-slate-300 dark:text-gray-600" />
-                                                        <p className="mt-2 text-xs text-slate-500 dark:text-gray-400">
-                                                            {vazio
-                                                                ? "Nenhuma pessoa neste turno"
-                                                                : "Nenhum resultado para os filtros"}
+                                                    <div className="flex items-center justify-center gap-2 mt-4 rounded-xl border border-dashed border-slate-300 py-2 text-center dark:border-gray-700">
+                                                        <Users size={20} className="text-slate-300 dark:text-gray-600" />
+                                                        <p className="text-xs text-slate-500 dark:text-gray-400">
+                                                            {mensagemVazia}
                                                         </p>
                                                     </div>
                                                 ) : (
