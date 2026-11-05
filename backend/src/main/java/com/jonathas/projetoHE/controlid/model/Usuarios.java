@@ -14,11 +14,14 @@ import lombok.Setter;
 public class Usuarios {
 
     @Id
-    Integer id;
+    Long id;
 
     @Column(name = "name")
     String name;
 
     @Column(name = "registration")
     String re;
+
+    @Column(name = "`idDevice`")
+    Long idDevice;
 }

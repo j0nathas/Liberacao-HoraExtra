@@ -47,25 +47,6 @@ public class TextUtils {
         return String.format("%dh%02dm", horas, minutos);
     }
 
-    public static String escapeCsv(String valor) {
-
-        if (valor == null) {
-            return "";
-        }
-
-        if (valor.contains(";") ||
-                valor.contains("\"") ||
-                valor.contains("\n") ||
-                valor.contains("\r")) {
-
-            return "\"" +
-                    valor.replace("\"", "\"\"") +
-                    "\"";
-        }
-
-        return valor;
-    }
-
     private static final DateTimeFormatter HORA_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public static String formatarHora(LocalDateTime hora) {

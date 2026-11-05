@@ -3,18 +3,25 @@ package com.jonathas.projetoHE.services;
 import com.jonathas.projetoHE.dto.post.IDLogDTO;
 import com.jonathas.projetoHE.model.LogsLiberacao;
 import com.jonathas.projetoHE.repositories.LogsLiberacaoRepository;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
+@RequiredArgsConstructor
 public class IDLogService {
 
-    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+    @Autowired
+    private final LogsLiberacaoRepository logsLiberacaoRepository;
 
-        private LogsLiberacaoRepository logsLiberacaoRepository;
+    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
     public SseEmitter registrar() {
         SseEmitter emitter = new SseEmitter(0L);
@@ -28,10 +35,11 @@ public class IDLogService {
     public void enviar(IDLogDTO evento) {
         System.out.println(evento);
 
-
-
         for (SseEmitter emitter : emitters) {
             try {
+
+                ZonedDateTime liberacao = ZonedDateTime.from(evento.hora().minus(20, ChronoUnit.HOURS));
+                logsLiberacaoRepository.acharUltimoRegistroRecente(liberacao, )
                 LogsLiberacao logsLiberacao = new LogsLiberacao();
 
 

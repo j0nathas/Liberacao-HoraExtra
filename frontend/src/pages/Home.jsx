@@ -45,7 +45,6 @@ export default function Home() {
       try {
         const response = await api.get(`/query/homeCount`);
         setCounts(response.data);
-        console.log(response.data)
       } catch (error) { console.error("Erro ao consultar documento:", error); }
     }
     HomeCount();

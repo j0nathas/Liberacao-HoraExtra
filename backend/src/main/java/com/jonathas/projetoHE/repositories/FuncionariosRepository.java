@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FuncionariosRepository extends JpaRepository<Funcionarios, Long> {
 
@@ -24,4 +25,11 @@ public interface FuncionariosRepository extends JpaRepository<Funcionarios, Long
     List<Funcionarios> pesquisarComFiltro(@Param("pesquisa") String pesquisa, @Param("codEmpresas") List<String> codEmpresas, Pageable pageable);
 
     List<Funcionarios> findTop20ByOrderByNameAsc();
+
+    @Query("""
+    SELECT TOP (1) FROM Funcionarios
+    WHERE Codigo_Registro = :re 
+    AND Codigo_Empresa = 
+""")
+    Optional<Funcionarios> findByR(Long codigoEmpresa);
 }
