@@ -83,6 +83,7 @@ const achatarRegistros = (resposta) => {
                 nome: f.nome,
                 re: String(f.re),
                 aprovado: f.status === "signed",
+                liberacao: f.liberacao
             }))
         )
     );
@@ -182,6 +183,7 @@ export default function ListLobby() {
         });
 
         es.addEventListener("passagem", (e) => {
+            console.log("Nova passagem recebida via SSE:", e);
             const passagem = JSON.parse(e.data);
             console.log(passagem);
             toast.success(passagem.nome);
@@ -214,6 +216,7 @@ export default function ListLobby() {
                 if (ativo) {
                     setDados(data);
                     setErro(false);
+                    console.log("Dados da portaria carregados com sucesso:", data);
                 }
             } catch (err) {
                 console.error("Erro ao carregar dados da portaria: " + err);
@@ -357,7 +360,7 @@ export default function ListLobby() {
                                                 </header>
 
                                                 {pessoas.length === 0 ? (
-                                                    <div className="flex items-center justify-center gap-2 mt-4 rounded-xl border border-dashed border-slate-300 py-2 text-center dark:border-gray-700">
+                                                    <div className={`flex items-center justify-center gap-2 mt-4 rounded-xl border border-dashed border-slate-300 py-2 text-center dark:border-gray-700`}>
                                                         <Users size={20} className="text-slate-300 dark:text-gray-600" />
                                                         <p className="text-xs text-slate-500 dark:text-gray-400">
                                                             {mensagemVazia}
@@ -368,7 +371,11 @@ export default function ListLobby() {
                                                         {pessoas.map((p) => (
                                                             <li
                                                                 key={p.id}
-                                                                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-700/50"
+                                                                className={`flex items-center gap-3 rounded-xl border px-3 py-2.5
+            ${p.liberacao === "liberado"
+                                                                        ? "border-emerald-400/30 bg-emerald-50 dark:border-emerald-400/30 dark:bg-emerald-500/10"
+                                                                        : "border-slate-200 bg-white dark:border-gray-700 dark:bg-gray-800"
+                                                                    }`}
                                                             >
                                                                 <div className="min-w-0 flex-1">
                                                                     <p
@@ -377,10 +384,12 @@ export default function ListLobby() {
                                                                     >
                                                                         <Destaque texto={p.nome} termo={busca} />
                                                                     </p>
+
                                                                     <p className="text-xs text-slate-500 dark:text-gray-400">
                                                                         RE <Destaque texto={p.re} termo={busca} />
                                                                     </p>
                                                                 </div>
+
                                                                 <BadgeStatus aprovado={p.aprovado} />
                                                             </li>
                                                         ))}

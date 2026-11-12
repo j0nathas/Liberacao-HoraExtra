@@ -8,6 +8,7 @@ import com.jonathas.projetoHE.dto.zapsign.DocumentDTO;
 import com.jonathas.projetoHE.model.RespHE;
 import com.jonathas.projetoHE.repositories.RespHeRepository;
 import com.jonathas.projetoHE.controlid.repositories.UsuariosRepository;
+import com.jonathas.projetoHE.repositories.SolicitacoesRepository;
 import com.jonathas.projetoHE.services.CorpoEmailService;
 import com.jonathas.projetoHE.services.IDLogService;
 import com.jonathas.projetoHE.services.SentEmailService;
@@ -21,6 +22,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.UnknownHostException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/post")
@@ -52,6 +57,9 @@ public class PostController {
     
     @Autowired
     private SetConfigService setConfigService;
+
+    @Autowired
+    private SolicitacoesRepository solicitacoesRepository;
 
     @PostMapping("/emailRestaurante")
     public ResponseEntity<?> emailRestaurante(
@@ -88,13 +96,19 @@ public class PostController {
                     continue;
                 }
 
+                LocalDateTime agora = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
+
+                List<Integer> listIdsSolicitacoes = solicitacoesRepository.verificarSeTemSolicitacoes(agora);
+
+                if(listIdsSolicitacoes == null) return(null);
+
                 usuariosRepository.findFirstByIdDeviceOrderByIdDesc(userId).ifPresentOrElse(
                         u -> {
                             System.out.println("Passou: " + u.getName() + " | RE " + u.getRe()
                                     + " | userId " + userId);
 
                             idLogService.enviar(new IDLogDTO(
-                                    u.getId(), u.getName(), u.getRe(), Instant.now()));
+                                    dto.deviceId(), c.id(), u.getId(), u.getName(), u.getRe(), agora));
                         },
                         () -> System.out.println("ID " + userId + " não encontrado na tabela users")
                 );

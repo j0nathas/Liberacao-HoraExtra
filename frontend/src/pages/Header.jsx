@@ -144,7 +144,7 @@ export default function Header() {
                 </div>
             )}
 
-            <div className='self-center justify-self-center lg:justify-self-start'> <img src={logo} width={50} alt="" /> </div>
+            <div className='self-center justify-self-center lg:justify-self-start'> <img src={logo} width={100} alt="" /> </div>
 
             <nav className="hidden lg:flex justify-self-center items-center gap-2">
                 {menusAutorizados.map((btn) => (

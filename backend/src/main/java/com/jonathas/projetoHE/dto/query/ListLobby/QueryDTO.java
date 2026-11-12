@@ -7,6 +7,8 @@ public record QueryDTO(
         String turno,
         String nome,
         String re,
-        String status
+        String status,
+        int id_solicitacoes,
+        String liberacao
 ) {
 }

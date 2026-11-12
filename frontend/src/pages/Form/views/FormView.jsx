@@ -265,9 +265,6 @@ export default function FormView({
             idTipo: type.id,
             limiteHora: type.limite
         });
-
-
-        console.log(currentForm)
     };
 
     const handleFormSubmit = (e) => {

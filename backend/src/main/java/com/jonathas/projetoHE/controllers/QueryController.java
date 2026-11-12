@@ -112,8 +112,8 @@ public class QueryController {
         String termoParaBusca = TextUtils.formatarParaLike(pesquisa);
 
         List<String> codEmpresas = "MLB".equals(planta)
-                ? List.of("710", "702")
-                : List.of("720");
+                ? List.of("810", "702")
+                : List.of("820");
 
         List<Funcionarios> resultados = funcionariosRepository.pesquisarComFiltro(
                 termoParaBusca,
@@ -209,7 +209,7 @@ public class QueryController {
 
     @GetMapping("/listaPortaria")
     public List<DatesDTO> listar() {
-        List<QueryDTO> rows = solicitacaoRepository.listarPessoasPortaria(); // sua query
+        List<QueryDTO> rows = solicitacaoRepository.listarPessoasPortaria();
         return listLobbyMapper.toDiaList(rows);
     }
 

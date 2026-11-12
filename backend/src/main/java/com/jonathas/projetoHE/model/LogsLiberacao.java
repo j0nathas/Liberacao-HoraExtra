@@ -16,15 +16,17 @@ public class LogsLiberacao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long id_device;
+
     private Long id_log;
 
     private Long id_user;
 
-    private int id_funcionario;
+    private Integer id_funcionario;
 
-    private int id_solicitacoes;
+    private Integer id_solicitacoes;
 
-    private String status;
+    private int id_logs_liberacao_eventos;
 
     private LocalDateTime data_liberacao;
 }

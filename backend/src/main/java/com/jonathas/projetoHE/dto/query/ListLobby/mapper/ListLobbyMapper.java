@@ -45,7 +45,7 @@ public class ListLobbyMapper {
     }
 
     private EmployeesDTO toFuncionario(QueryDTO row) {
-        return new EmployeesDTO(row.nome(), row.re(), row.status());
+        return new EmployeesDTO(row.nome(), row.re(), row.status(), row.id_solicitacoes(), row.liberacao());
     }
 
     private EmployeesDTO preferirAssinado(EmployeesDTO a, EmployeesDTO b) {

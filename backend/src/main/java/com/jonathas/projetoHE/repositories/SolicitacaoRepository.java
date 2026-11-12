@@ -203,13 +203,17 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
             turnos.turno as turno,
             cadastro.Nome_Registro as nome,
             cadastro.Codigo_Registro as re,\s
-            sol.status\s
+            sol.status\s,
+                  sols.id as id_solicitacoes,
+            eventos.evento as liberacao
       FROM [Projeto_HE].[dbo].[solicitacao] sol
       JOIN solicitacoes sols ON sol.id = sols.id_solicitacao
       JOIN solicitacoes_justificativas jus ON sols.id = jus.id_solitacoes\s
       JOIN solicitacoes_funcionarios fun ON jus.id = fun.id_justificativa
       JOIN Cadastros_HE cadastro ON fun.id_funcionario = cadastro.ID
       JOIN turnos turnos ON sols.id_turno = turnos.id
+      LEFT JOIN logs_liberacao logs ON logs.id_solicitacoes = sols.id
+      LEFT JOIN logs_liberacao_eventos eventos ON logs.id_logs_liberacao_eventos = eventos.id
       WHERE status NOT IN ('deleted', 'recusado') AND
           sols.inicio >= CAST(GETDATE() AS DATE) AND
           sols.inicio < DATEADD(day, 7, GETDATE())

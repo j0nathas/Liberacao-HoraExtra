@@ -157,7 +157,7 @@ export default function LoginScreen() {
                     "
                 >
                     <header className="flex flex-col items-center text-center gap-5 md:gap-6">
-                        <img src={logo} width={72} alt="Logo" className="md:w-20" />
+                        <img src={logo} width={200} alt="Logo" className="md:w-60" />
                         <div className="flex flex-col gap-1.5">
                             <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 leading-tight">
                                 Bem-vindo de volta
