@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import api from "../../services/api";
 import toast from 'react-hot-toast';
+import MenuLogs from "./components/MenuLogs";
 
 const STATUS = {
     signed: {
@@ -263,9 +264,28 @@ export default function ListLobby() {
     const doDia = registros.filter((r) => r.data === diaSelecionado);
     const visiveis = doDia.filter(casaBusca);
 
+    const minutosAtras = (min) => new Date(Date.now() - min * 60 * 1000);
+
+    const [historico] = useState(() => [
+        { nome: "JONATHAS SANTOS DE OLIVEIRA", re: "1835", liberacao: "bloqueado", setor: null, data: minutosAtras(2) },
+        { nome: "JONATHAS SANTOS DE OLIVEIRA", re: "1835", liberacao: "bloqueado", setor: null, data: minutosAtras(3) },
+        { nome: "JONATHAS SANTOS DE OLIVEIRA", re: "1835", liberacao: "bloqueado", setor: null, data: minutosAtras(9) },
+        { nome: "LEANDRO DONIZETI DE ALMEIDA", re: "922", liberacao: "liberado", setor: "INJEÇÃO", data: minutosAtras(9.5) },
+        { nome: "JONATHAS SANTOS DE OLIVEIRA", re: "1835", liberacao: "bloqueado", setor: null, data: minutosAtras(13) },
+        { nome: null, re: null, liberacao: "sem registro", setor: null, data: minutosAtras(14) },
+        { nome: null, re: null, liberacao: "sem registro", setor: null, data: minutosAtras(16) },
+        { nome: null, re: null, liberacao: "sem registro", setor: null, data: minutosAtras(17) },
+        { nome: "LEANDRO DONIZETI DE ALMEIDA", re: "922", liberacao: "liberado", setor: "INJEÇÃO", data: minutosAtras(300) },
+        { nome: null, re: null, liberacao: "sem registro", setor: null, data: minutosAtras(600) },
+    ]);
+
     return (
         <main className="relative min-h-screen flex-1 overflow-auto bg-slate-50 pb-16 transition-colors [background-size:22px_22px] bg-[radial-gradient(circle,#cbd5e1_1px,transparent_1px)] dark:bg-gray-900 dark:bg-[radial-gradient(circle,#374151_1px,transparent_1px)]">
             <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6">
+
+                <div className="flex justify-end">
+                    <MenuLogs logs={[...passagens, ...historico]} />
+                </div>
                 {/* Dias */}
                 <section className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-gray-700 dark:bg-gray-800/60">
                     <div className="relative">
